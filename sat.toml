@@ -968,7 +968,7 @@
     class = "pymappraiser.toast.ops.mappraiser.Mappraiser"
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
-    atm_name = "atm" # Observation detdata key for atm data to be added with the noise (if None, assume no atm)
+    atm_name = "None" # Observation detdata key for atm data to be added with the noise (if None, assume no atm)
     bandwidth = 16384 # Half-bandwidth for the noise model
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
