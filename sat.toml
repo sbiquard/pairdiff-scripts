@@ -499,7 +499,7 @@
     det_data_units = "Unit('K')" # Output units if creating detector data
     det_mask = 1 # Bit mask value for per-detector flagging
     enabled = true # If True, this class instance is marked as enabled
-    file = "ffp10_lensed_scl_100_nside0512.fits" # Path to healpix FITS file.  Use ';' if providing multiple files
+    file = "None" # Path to healpix FITS file.  Use ';' if providing multiple files
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "scan_map" # The 'name' of this class instance
     pixel_dist = "pixel_dist" # The Data key where the PixelDistribution object is located
@@ -713,10 +713,9 @@
     class = "pymappraiser.toast.ops.gainscrambler.MyGainScrambler"
     API = 0 # Internal interface version for this operator
     center = 1.0 # Gain distribution center
-    coherent_gain_error = false # Apply same gain error (of `sigma` percent) to all detectors. Use `pattern` to select e.g. the B detector of the detector pairs.
     component = 0 # Component index for this simulation
-    det_data_names = "['signal','atm','noise',]" # Observation detdata key to apply the gain error to
-    enabled = true # If True, this class instance is marked as enabled
+    det_data_names = "['signal','atm',]" # Observation detdata key to apply the gain error to
+    enabled = false # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "my_gainscrambler" # The 'name' of this class instance
     pattern = ".*" # Regex pattern to match against detector names. Only detectors that match the pattern are scrambled.
@@ -969,6 +968,7 @@
     class = "pymappraiser.toast.ops.mappraiser.Mappraiser"
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
+    atm_name = "atm" # Observation detdata key for atm data to be added with the noise (if None, assume no atm)
     bandwidth = 16384 # Half-bandwidth for the noise model
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
@@ -995,7 +995,7 @@
     noiseless = false # Activate noiseless mode
     nperseg = 0 # If 0, set nperseg = timestream length to compute the noise periodograms.
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
-    pair_diff = true # Process differenced timestreams between orthogonal detectors in pairs.
+    pair_diff = false # Process differenced timestreams between orthogonal detectors in pairs.
     paramfile = "None" # Read mappraiser parameters from this file
     params = "{}" # Parameters to pass to mappraiser
     pixel_pointing = "None" # This must be an instance of a pixel pointing operator
