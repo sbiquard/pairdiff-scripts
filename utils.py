@@ -72,3 +72,14 @@ def read_hits_cond(dirname, ref=None):
     )
 
     return hits, cond
+
+
+def read_residuals(dirname, ref=None):
+    # ref of the run
+    if ref is None:
+        ref = get_last_ref(dirname)
+
+    # read residuals file
+    fname = f"residuals_{ref}.dat"
+    data = np.loadtxt(os.path.join(dirname, fname), skiprows=1, usecols=1)
+    return data

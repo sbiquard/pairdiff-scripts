@@ -149,6 +149,20 @@ def plot_maps(
     fig.savefig(os.path.join(savedir, "maps.png"))
 
 
+def plot_residuals(data, savedir):
+    fig, ax = plt.subplots(figsize=[8, 6])
+    if data.size < 30:
+        fmt = "ko--"
+    else:
+        fmt = "k--"
+    ax.semilogy(np.arange(len(data)), np.sqrt(data / data[0]), fmt, label="PCG")
+    ax.set_title("PCG residuals evolution")
+    ax.set_xlabel("Step")
+    ax.set_ylabel("||r|| / ||r0||")
+    ax.grid(True)
+    fig.savefig(os.path.join(savedir, "pcg_residuals.png"))
+
+
 def process(args):
     # start timer
     tic = time.perf_counter()
@@ -157,12 +171,13 @@ def process(args):
     dirname, ref = args
 
     # create folder for the plots
-    savedir = os.path.join(dirname, "figs", ref)
+    savedir = os.path.join(dirname, "plots", ref)
     os.makedirs(savedir, exist_ok=True)
 
     # read data
     iqu, maps_out = utils.read_maps(dirname, ref=ref)
     hits, cond = utils.read_hits_cond(dirname, ref=ref)
+    residuals = utils.read_residuals(dirname, ref=ref)
     sky_in = 1e6 * hp.fitsfunc.read_map(
         "ffp10_lensed_scl_100_nside0512.fits", field=None, nest=True
     )
@@ -188,6 +203,7 @@ def process(args):
         rot=rot,
         map_range_P=10,
     )
+    plot_residuals(residuals, savedir)
 
     elapsed = time.perf_counter() - tic
     return ref, elapsed

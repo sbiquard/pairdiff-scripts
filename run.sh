@@ -20,7 +20,7 @@ logfile=$outdir/$ref.log
 echo "Writing $logfile"
 
 mpirun -np $ntask so_sim_mappraiser.py \
-    --ref \
+    --ref $ref \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \
@@ -39,7 +39,7 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --mappraiser.shared_flag_mask 0 \
     --mappraiser.enable \
     --mappraiser.mem_report \
-    --mappraiser.downscale 30 \
+    --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
     --my_gainscrambler.enable \
     --my_gainscrambler.center 1.01 \
