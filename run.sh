@@ -10,7 +10,7 @@ nside=512
 telescope=SAT1
 band=$(printf "SAT_f%03i" $freq)
 
-schedule="schedule.4_scans.txt"
+schedule="schedule.small.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/test
