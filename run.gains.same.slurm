@@ -42,10 +42,12 @@ cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/baseline
 mkdir -p $outdir
-logfile=$outdir/run.log
+ref=run0
+logfile=$outdir/$ref.log
 echo "Writing $logfile"
 
 srun so_sim_mappraiser.py \
+    --ref $ref \
     --thinfp 4 \
     --config sat.toml \
     --schedule $schedule \
@@ -63,7 +65,6 @@ srun so_sim_mappraiser.py \
     --mappraiser.det_flag_mask 0 \
     --mappraiser.shared_flag_mask 0 \
     --mappraiser.enable \
-    --mappraiser.atm_name "atm" \
     --mappraiser.mem_report \
     --mappraiser.downscale 30 \
     --mappraiser.pair_diff \
