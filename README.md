@@ -16,7 +16,7 @@ We only simulate the first calendar day of each month.
 ## Software
 
 * [TOAST 3.0.0a20.dev61](https://github.com/hpc4cmb/toast/tree/c2ac5a7806ecffeacd42ba47e64322076e824fb8)
-* [sotodlib 0.5.0+433.g73d2ba16](https://github.com/simonsobs/sotodlib/tree/1d1560c2a414f2d5cc2552bdf866837efebfd862)
+* [sotodlib 0.5.0+534.g468bd7f7](https://github.com/simonsobs/sotodlib/tree/468bd7f75eddb2b324a40a0c17917056221b21f4)
 * [midapack/mappraiser](https://github.com/B3Dcmb/midapack/tree/gaps)
 
 ## Files in this directory

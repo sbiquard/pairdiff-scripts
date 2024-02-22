@@ -465,7 +465,7 @@
     enabled = true # If True, this class instance is marked as enabled
     fade_time = "Quantity('6.00000000000000e+01 s')" # Fade in/out time to avoid a step at wind break.
     field_of_view = "Quantity('36 deg')" # Override the focalplane field of view
-    gain = 6e-05 # Scaling applied to the simulated TOD
+    gain = 4e-05 # Scaling applied to the simulated TOD
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     lmax_center = "Quantity('1.00000000000000e+00 m')" # Kolmogorov turbulence injection scale center
     lmax_sigma = "Quantity('1.00000000000000e-01 m')" # Kolmogorov turbulence injection scale sigma
@@ -483,14 +483,14 @@
     times = "times" # Observation shared key for timestamps
     turnaround_interval = "turnaround" # Interval name for turnarounds
     view = "None" # Use this view of the data in all observations
-    wind_dist = "Quantity('3.00000000000000e+03 m')" # Maximum wind drift before discarding the volume and creating a new one
-    xstep = "Quantity('5.00000000000000e+00 m')" # Size of volume elements in X direction
-    ystep = "Quantity('5.00000000000000e+00 m')" # Size of volume elements in Y direction
+    wind_dist = "Quantity('1.00000000000000e+03 m')" # Maximum wind drift before discarding the volume and creating a new one
+    xstep = "Quantity('4.00000000000000e+00 m')" # Size of volume elements in X direction
+    ystep = "Quantity('4.00000000000000e+00 m')" # Size of volume elements in Y direction
     z0_center = "Quantity('2.00000000000000e+03 m')" # Central value of the water vapor distribution
     z0_sigma = "Quantity('0.00000000000000e+00 m')" # Sigma of the water vapor distribution
     zatm = "Quantity('4.00000000000000e+04 m')" # Atmosphere extent for temperature profile
     zmax = "Quantity('2.00000000000000e+02 m')" # Atmosphere extent for water vapor integration
-    zstep = "Quantity('5.00000000000000e+00 m')" # Size of volume elements in Z direction
+    zstep = "Quantity('4.00000000000000e+00 m')" # Size of volume elements in Z direction
 
 [operators.scan_map]
     class = "toast.ops.scan_healpix.ScanHealpixMap"
