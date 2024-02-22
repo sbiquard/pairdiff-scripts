@@ -15,10 +15,12 @@ cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/test
 mkdir -p $outdir
-logfile=$outdir/run.log
+ref=run0
+logfile=$outdir/$ref.log
 echo "Writing $logfile"
 
 mpirun -np $ntask so_sim_mappraiser.py \
+    --ref \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \
