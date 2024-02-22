@@ -4,8 +4,8 @@ TODO:
 
 - [x] handle 'atm' detdata key in Mappraiser operator
 - [x] check flags
-- [ ] fix atm simulation (Bus error)
-- [ ] check downscale factor
-- [ ] plots
+- [ ] reduce atm volume for simulation on laptop (Bus error)
+- [ ] check simulation size and job scripts for JZ
+- [ ] map plots
 - [ ] power spectra
-- [ ] cosmological analysis (r)
+- [ ] cosmological analysis (r) + check downscale factor
