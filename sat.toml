@@ -414,7 +414,7 @@
     det_mask = 1 # Bit mask value for per-detector flagging
     detector_pointing = "None" # Operator that translates boresight Az/El pointing into detector frame
     detector_weights = "None" # Operator that translates boresight Az/El pointing into detector weights
-    enabled = false # If True, this class instance is marked as enabled
+    enabled = true # If True, this class instance is marked as enabled
     fade_time = "Quantity('6.00000000000000e+01 s')" # Fade in/out time to avoid a step at wind break.
     field_of_view = "Quantity('36 deg')" # Override the focalplane field of view
     gain = 0.0006 # Scaling applied to the simulated TOD
@@ -462,7 +462,7 @@
     det_mask = 1 # Bit mask value for per-detector flagging
     detector_pointing = "None" # Operator that translates boresight Az/El pointing into detector frame
     detector_weights = "None" # Operator that translates boresight Az/El pointing into detector weights
-    enabled = false # If True, this class instance is marked as enabled
+    enabled = true # If True, this class instance is marked as enabled
     fade_time = "Quantity('6.00000000000000e+01 s')" # Fade in/out time to avoid a step at wind break.
     field_of_view = "Quantity('36 deg')" # Override the focalplane field of view
     gain = 6e-05 # Scaling applied to the simulated TOD
