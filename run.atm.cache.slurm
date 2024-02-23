@@ -2,11 +2,11 @@
 #SBATCH --job-name=pdiff-atm-cache
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=30
-#SBATCH --ntasks-per-node=10
-#SBATCH --cpus-per-task=4
+#SBATCH --nodes=3
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=10
 #SBATCH --hint=nomultithread
-#SBATCH --time=02:00:00
+#SBATCH --time=01:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -28,9 +28,6 @@ echo "  OMP_NUM_THREADS = ${OMP_NUM_THREADS}"
 echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
-# echo launched commands
-set -x
-
 # simulation parameters
 freq=90
 nside=512
@@ -38,7 +35,6 @@ telescope=SAT1
 band=$(printf "SAT_f%03i" $freq)
 
 schedule="schedule.01.south.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/atm
 mkdir -p $outdir
@@ -53,7 +49,6 @@ srun so_sim_mappraiser.py \
     --telescope $telescope \
     --sample_rate 37 \
     --scan_map.disable \
-    --pixels_healpix_radec.nside 512 \
     --det_pointing_azel.shared_flag_mask 0 \
     --det_pointing_radec.shared_flag_mask 0 \
     --sim_atmosphere.shared_flag_mask 0 \

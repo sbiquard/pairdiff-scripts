@@ -28,9 +28,6 @@ echo "  OMP_NUM_THREADS = ${OMP_NUM_THREADS}"
 echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
-# echo launched commands
-set -x
-
 # simulation parameters
 freq=90
 nside=512
@@ -55,7 +52,6 @@ srun so_sim_mappraiser.py \
     --telescope $telescope \
     --sample_rate 37 \
     --scan_map.file $cmb_input \
-    --pixels_healpix_radec.nside 512 \
     --det_pointing_azel.shared_flag_mask 0 \
     --det_pointing_radec.shared_flag_mask 0 \
     --sim_atmosphere.shared_flag_mask 0 \

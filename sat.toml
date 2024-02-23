@@ -244,7 +244,7 @@
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "pixels_healpix_radec" # The 'name' of this class instance
     nest = true # If True, use NESTED ordering instead of RING
-    nside = 64 # The NSIDE resolution
+    nside = 512 # The NSIDE resolution
     nside_submap = 16 # The NSIDE of the submap resolution
     pixels = "pixels" # Observation detdata key for output pixel indices
     single_precision = false # If True, use 32bit int in output
