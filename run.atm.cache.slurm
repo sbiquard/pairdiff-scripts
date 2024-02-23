@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=10
 #SBATCH --hint=nomultithread
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
