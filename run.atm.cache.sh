@@ -1,9 +1,8 @@
 #!/bin/bash
 # Light version that can run on a laptop
 
-ulimit -n 4096
-export OMP_NUM_THREADS=1
-ntask=4
+export OMP_NUM_THREADS=4
+ntask=2
 
 freq=90
 nside=512
@@ -11,13 +10,13 @@ telescope=SAT1
 band=$(printf "SAT_f%03i" $freq)
 
 schedule="schedule.small.txt"
-# cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/atm
 mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"
 
+TOAST_LOGLEVEL="DEBUG" \
 mpirun -np $ntask so_sim_mappraiser.py \
     --thinfp 64 \
     --config sat.toml \
@@ -34,4 +33,5 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --sim_atmosphere_coarse.det_flag_mask 0 \
     --sim_atmosphere.cache_only \
     --out $outdir \
+    --sim_atmosphere_coarse.disable \
     >&$logfile

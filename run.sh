@@ -1,9 +1,8 @@
 #!/bin/bash
 # Light version that can run on a laptop
 
-ulimit -n 4096
-export OMP_NUM_THREADS=1
-ntask=4
+export OMP_NUM_THREADS=4
+ntask=2
 
 freq=90
 nside=512
@@ -15,12 +14,10 @@ cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/test
 mkdir -p $outdir
-ref=run0
-logfile=$outdir/$ref.log
+logfile=$outdir/run.log
 echo "Writing $logfile"
 
 mpirun -np $ntask so_sim_mappraiser.py \
-    --ref $ref \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \
@@ -45,6 +42,5 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --my_gainscrambler.sigma 0.0 \
     --my_gainscrambler.pattern ".*B" \
     --out $outdir \
-    --sim_atmosphere.disable \
     --sim_atmosphere_coarse.disable \
     >&$logfile
