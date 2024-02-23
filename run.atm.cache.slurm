@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-atm-cache
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=3
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=10
 #SBATCH --hint=nomultithread
@@ -42,7 +42,7 @@ logfile=$outdir/run.log
 echo "Writing $logfile"
 
 srun so_sim_mappraiser.py \
-    --thinfp 4 \
+    --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \
     --bands $band \
@@ -56,6 +56,8 @@ srun so_sim_mappraiser.py \
     --sim_atmosphere_coarse.shared_flag_mask 0 \
     --sim_atmosphere_coarse.det_flag_mask 0 \
     --sim_atmosphere.cache_only \
+    --sim_atmosphere.field_of_view "Quantity('35 deg')" \
+    --sim_atmosphere_coarse.disable \
     --out $outdir \
     >&$logfile
 

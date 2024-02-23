@@ -3,3 +3,4 @@ toast_out/
 atm_cache/
 atm_cache_coarse/
 __pycache__
+slurm*.out

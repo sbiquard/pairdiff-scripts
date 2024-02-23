@@ -416,7 +416,7 @@
     detector_weights = "None" # Operator that translates boresight Az/El pointing into detector weights
     enabled = true # If True, this class instance is marked as enabled
     fade_time = "Quantity('6.00000000000000e+01 s')" # Fade in/out time to avoid a step at wind break.
-    field_of_view = "Quantity('36 deg')" # Override the focalplane field of view
+    field_of_view = "None" # Override the focalplane field of view
     gain = 0.0006 # Scaling applied to the simulated TOD
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     lmax_center = "Quantity('1.00000000000000e+04 m')" # Kolmogorov turbulence injection scale center
@@ -464,7 +464,7 @@
     detector_weights = "None" # Operator that translates boresight Az/El pointing into detector weights
     enabled = true # If True, this class instance is marked as enabled
     fade_time = "Quantity('6.00000000000000e+01 s')" # Fade in/out time to avoid a step at wind break.
-    field_of_view = "Quantity('36 deg')" # Override the focalplane field of view
+    field_of_view = "None" # Override the focalplane field of view
     gain = 4e-05 # Scaling applied to the simulated TOD
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     lmax_center = "Quantity('1.00000000000000e+00 m')" # Kolmogorov turbulence injection scale center
