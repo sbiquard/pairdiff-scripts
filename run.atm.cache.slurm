@@ -56,7 +56,7 @@ srun so_sim_mappraiser.py \
     --sim_atmosphere_coarse.shared_flag_mask 0 \
     --sim_atmosphere_coarse.det_flag_mask 0 \
     --sim_atmosphere.cache_only \
-    --sim_atmosphere.field_of_view "Quantity('35 deg')" \
+    --sim_atmosphere.field_of_view "Quantity('40 deg')" \
     --sim_atmosphere_coarse.disable \
     --out $outdir \
     >&$logfile
