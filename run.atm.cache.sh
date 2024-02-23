@@ -26,7 +26,6 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --telescope $telescope \
     --sample_rate 37 \
     --scan_map.disable \
-    --pixels_healpix_radec.nside 512 \
     --det_pointing_azel.shared_flag_mask 0 \
     --det_pointing_radec.shared_flag_mask 0 \
     --sim_atmosphere.shared_flag_mask 0 \
