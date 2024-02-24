@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-atm-cache
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=1
+#SBATCH --nodes=10
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=10
 #SBATCH --hint=nomultithread
