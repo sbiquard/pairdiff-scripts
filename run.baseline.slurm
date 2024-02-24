@@ -64,6 +64,7 @@ srun so_sim_mappraiser.py \
     --mappraiser.mem_report \
     --mappraiser.downscale 30 \
     --mappraiser.pair_diff \
+    --sim_atmosphere_coarse.disable \
     --out $outdir \
     >&$logfile
 

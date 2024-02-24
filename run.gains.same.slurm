@@ -68,6 +68,7 @@ srun so_sim_mappraiser.py \
     --my_gainscrambler.center 1.01 \
     --my_gainscrambler.sigma 0.0 \
     --my_gainscrambler.pattern ".*B" \
+    --sim_atmosphere_coarse.disable \
     --out $outdir \
     >&$logfile
 
