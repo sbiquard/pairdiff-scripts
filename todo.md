@@ -5,7 +5,7 @@ TODO:
 - [x] handle 'atm' detdata key in Mappraiser operator
 - [x] check flags
 - [x] map plots
-- [/] cache (fine) atmosphere simulation on JZ
+- [x] cache (fine) atmosphere simulation on JZ
 - [ ] fix coarse atmosphere simulation
 - [ ] check simulation size and job scripts for JZ
 - [ ] power spectra
