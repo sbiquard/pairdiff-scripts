@@ -2,11 +2,11 @@
 #SBATCH --job-name=pdiff-baseline  # job name
 #SBATCH --account=nih@cpu          # use CPU allocation
 #SBATCH --qos=qos_cpu-dev          # dev qos (10 jobs, 2h max.)
-#SBATCH --nodes=30                 # number of nodes
+#SBATCH --nodes=50                 # number of nodes
 #SBATCH --ntasks-per-node=10       # number of MPI tasks per node
 #SBATCH --cpus-per-task=4          # number of cores per task
 #SBATCH --hint=nomultithread       # 1 thread / physical core (no hyperthreading)
-#SBATCH --time=02:00:00            # default: 10 minutes on cpu_p1
+#SBATCH --time=00:30:00            # default: 10 minutes on cpu_p1
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -39,13 +39,12 @@ cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/baseline
 mkdir -p $outdir
-ref=run0
+ref=nothinfp
 logfile=$outdir/$ref.log
 echo "Writing $logfile"
 
 srun so_sim_mappraiser.py \
     --ref $ref \
-    --thinfp 4 \
     --config sat.toml \
     --schedule $schedule \
     --bands $band \
