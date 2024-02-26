@@ -44,29 +44,29 @@ echo "Writing $logfile"
 
 # Time out the program before Slurm does
 timeout 115m \
-srun so_sim_mappraiser.py \
-  --thinfp 64 \
-  --config sat.toml \
-  --schedule $schedule \
-  --bands $band \
-  --telescope $telescope \
-  --sample_rate 37 \
-  --scan_map.disable \
-  --det_pointing_azel.shared_flag_mask 0 \
-  --det_pointing_radec.shared_flag_mask 0 \
-  --sim_atmosphere.shared_flag_mask 0 \
-  --sim_atmosphere.det_flag_mask 0 \
-  --sim_atmosphere_coarse.shared_flag_mask 0 \
-  --sim_atmosphere_coarse.det_flag_mask 0 \
-  --sim_atmosphere.cache_only \
-  --sim_atmosphere.field_of_view "Quantity('40 deg')" \
-  --sim_atmosphere_coarse.disable \
-  --out $outdir \
-  >>$logfile 2>&1
+    srun so_sim_mappraiser.py \
+    --thinfp 64 \
+    --config sat.toml \
+    --schedule $schedule \
+    --bands $band \
+    --telescope $telescope \
+    --sample_rate 37 \
+    --scan_map.disable \
+    --det_pointing_azel.shared_flag_mask 0 \
+    --det_pointing_radec.shared_flag_mask 0 \
+    --sim_atmosphere.shared_flag_mask 0 \
+    --sim_atmosphere.det_flag_mask 0 \
+    --sim_atmosphere_coarse.shared_flag_mask 0 \
+    --sim_atmosphere_coarse.det_flag_mask 0 \
+    --sim_atmosphere.cache_only \
+    --sim_atmosphere.field_of_view "Quantity('40 deg')" \
+    --sim_atmosphere_coarse.disable \
+    --out $outdir \
+    >>$logfile 2>&1
 
 # and requeue it
 if [[ $? == 124 ]]; then
-  scontrol requeue $SLURM_JOB_ID
+    scontrol requeue $SLURM_JOB_ID
 fi
 
 echo "$(date) : Done!"
