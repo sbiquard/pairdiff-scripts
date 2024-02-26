@@ -719,8 +719,10 @@
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "my_gainscrambler" # The 'name' of this class instance
     pattern = ".*" # Regex pattern to match against detector names. Only detectors that match the pattern are scrambled.
+    process_pairs = false # Process detectors in pairs
     realization = 0 # Realization index
     sigma = 0.001 # Gain distribution width
+    uniform = false # If True, scramble all detector pairs in the same way
 
 [operators.save_hdf5]
     class = "toast.ops.save_hdf5.SaveHDF5"
