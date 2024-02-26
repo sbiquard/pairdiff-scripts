@@ -68,6 +68,7 @@ for sigma in ${sigmas[*]}; do
         --mappraiser.pair_diff \
         --my_gainscrambler.enable \
         --my_gainscrambler.process_pairs \
+        --my_gainscrambler.uniform \
         --my_gainscrambler.sigma $sigma \
         --sim_atmosphere_coarse.disable \
         --out $outdir \
