@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-baseline
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=50
+#SBATCH --nodes=12
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
@@ -48,6 +48,7 @@ for sigma in ${sigmas[*]}; do
     echo "Writing $logfile"
 
     srun so_sim_mappraiser.py \
+        --thinfp 4 \
         --config sat.toml \
         --schedule $schedule \
         --bands $band \
