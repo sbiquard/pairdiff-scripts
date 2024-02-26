@@ -38,9 +38,9 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
     --my_gainscrambler.enable \
-    --my_gainscrambler.center 1.01 \
-    --my_gainscrambler.sigma 0.0 \
-    --my_gainscrambler.pattern ".*B" \
-    --out $outdir \
+    --my_gainscrambler.process_pairs \
+    --my_gainscrambler.uniform \
+    --my_gainscrambler.sigma 0.01 \
     --sim_atmosphere_coarse.disable \
+    --out $outdir \
     >$logfile 2>&1
