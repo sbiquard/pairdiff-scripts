@@ -34,4 +34,4 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --sim_atmosphere.cache_only \
     --out $outdir \
     --sim_atmosphere_coarse.disable \
-    >&$logfile
+    >$logfile 2>&1

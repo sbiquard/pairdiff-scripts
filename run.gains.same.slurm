@@ -70,6 +70,6 @@ srun so_sim_mappraiser.py \
     --my_gainscrambler.pattern ".*B" \
     --sim_atmosphere_coarse.disable \
     --out $outdir \
-    >&$logfile
+    >$logfile 2>&1
 
 echo "$(date) : Done!"

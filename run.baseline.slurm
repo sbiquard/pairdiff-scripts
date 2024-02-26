@@ -66,6 +66,6 @@ srun so_sim_mappraiser.py \
     --mappraiser.pair_diff \
     --sim_atmosphere_coarse.disable \
     --out $outdir \
-    >&$logfile
+    >$logfile 2>&1
 
 echo "$(date) : Done!"

@@ -43,4 +43,4 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --my_gainscrambler.pattern ".*B" \
     --out $outdir \
     --sim_atmosphere_coarse.disable \
-    >&$logfile
+    >$logfile 2>&1
