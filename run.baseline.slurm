@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-baseline  # job name
 #SBATCH --account=nih@cpu          # use CPU allocation
 #SBATCH --qos=qos_cpu-dev          # dev qos (10 jobs, 2h max.)
-#SBATCH --nodes=12                 # number of nodes
+#SBATCH --nodes=15                 # number of nodes
 #SBATCH --ntasks-per-node=10       # number of MPI tasks per node
 #SBATCH --cpus-per-task=4          # number of cores per task
 #SBATCH --hint=nomultithread       # 1 thread / physical core (no hyperthreading)

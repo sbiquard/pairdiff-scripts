@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-baseline
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=12
+#SBATCH --nodes=15
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
