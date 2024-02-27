@@ -47,3 +47,6 @@ Post-processing
 * `utils.py` : Some utility routines
 * `plot.py` : Produce difference maps and histograms for a given run
 * `spectrum.py` : Power spectrum routines
+* `get_mask_apo.py [min_hits]` : Create and save a mask (for power spectrum computations)
+  * optional argument to specify a hit threshold (defaults to 1000)
+  * requires [NaMaster](https://namaster.readthedocs.io)

@@ -1,10 +1,13 @@
 import numpy as np
 import pymaster as nmt
 
+from utils import timer
+
 NSIDE = 512
 NPIX = 12 * NSIDE * NSIDE
 
 
+@timer
 def get_mask_apo_and_binning(hits_map, min_hits=1000):
     # Apodize the mask on a scale of ~10deg
     mask = nmt.mask_apodization(hits_map > min_hits, 10.0, apotype="C1")
