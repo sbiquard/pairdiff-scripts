@@ -41,9 +41,9 @@ sigmas=(0.1 0.01 0.001 0.0001)
 
 for sigma in ${sigmas[*]}; do
     dir=$(printf "%e" $sigma | tail -c 4)
-    outdir=out/gains/uniform/$dir
+    outdir=out/gains/constant/$dir
     mkdir -p $outdir
-    
+
     logfile=$outdir/run.log
     echo "Writing $logfile"
 

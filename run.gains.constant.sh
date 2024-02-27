@@ -12,7 +12,7 @@ band=$(printf "SAT_f%03i" $freq)
 schedule="schedule.small.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=out/test
+outdir=out/gains/constant
 mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"

@@ -32,7 +32,8 @@ Setup
 Tests (laptop: truncated schedule, decimated focal plane)
 
 * `run.atm.cache.sh` : Simulate and cache the atmosphere simulation
-* `run.sh` : Run with gain errors which are the same for all detector pairs
+* `run.baseline.sh` : Run the baseline configuration (ideal case)
+* `run.gains.constant.sh` : Run with gain errors which are the same for all detector pairs
 
 Execution (Jean-Zay: full schedule)
 
@@ -40,3 +41,9 @@ Execution (Jean-Zay: full schedule)
 * `run.baseline.slurm` : Run the baseline configuration (ideal case)
 * `run.gains.constant.slurm` : Run with gain errors which are the same for all detector pairs
 * `run.gains.random.slurm` : Run with Gaussian distributed gain errors
+
+Post-processing
+
+* `utils.py` : Some utility routines
+* `plot.py` : Produce difference maps and histograms for a given run
+* `spectrum.py` : Power spectrum routines
