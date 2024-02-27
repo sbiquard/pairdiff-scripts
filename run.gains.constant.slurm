@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pdiff-baseline
+#SBATCH --job-name=pdiff-gains-cst
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
 #SBATCH --nodes=30
