@@ -714,6 +714,7 @@
     API = 0 # Internal interface version for this operator
     center = 1.0 # Gain distribution center
     component = 0 # Component index for this simulation
+    constant = false # If True, scramble all detector pairs in the same way
     det_data_names = "['signal','atm',]" # Observation detdata key to apply the gain error to
     enabled = false # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
@@ -722,7 +723,6 @@
     process_pairs = false # Process detectors in pairs
     realization = 0 # Realization index
     sigma = 0.01 # Gain distribution width
-    uniform = false # If True, scramble all detector pairs in the same way
 
 [operators.save_hdf5]
     class = "toast.ops.save_hdf5.SaveHDF5"
