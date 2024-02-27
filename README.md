@@ -26,4 +26,17 @@ Setup
 * `get_defaults.sh` : Use `so_sim_mappraiser` to generate a default parameter file for reference
 * `sat.toml` : Master parameter file for the `so_sim_mappraiser` workflow
 * `schedule.01.south.txt` : Schedule file
+* `schedule.small.txt` : Truncated schedule file for laptop tests
 * `ffp10_lensed_scl_100_nside0512.fits` : Input map to be observed during simulation
+
+Tests (laptop: truncated schedule, decimated focal plane)
+
+* `run.atm.cache.sh` : Simulate and cache the atmosphere simulation
+* `run.sh` : Run with gain errors which are the same for all detector pairs
+
+Execution (Jean-Zay: full schedule)
+
+* `run.atm.cache.slurm` : Simulate and cache the atmosphere simulation
+* `run.baseline.slurm` : Run the baseline configuration (ideal case)
+* `run.gains.constant.slurm` : Run with gain errors which are the same for all detector pairs
+* `run.gains.random.slurm` : Run with Gaussian distributed gain errors
