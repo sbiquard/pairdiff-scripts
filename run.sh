@@ -39,7 +39,7 @@ mpirun -np $ntask so_sim_mappraiser.py \
     --mappraiser.pair_diff \
     --my_gainscrambler.enable \
     --my_gainscrambler.process_pairs \
-    --my_gainscrambler.uniform \
+    --my_gainscrambler.constant \
     --my_gainscrambler.sigma 0.01 \
     --sim_atmosphere_coarse.disable \
     --out $outdir \
