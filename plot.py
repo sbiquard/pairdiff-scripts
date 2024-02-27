@@ -22,7 +22,6 @@ def plot_hits_cond(hits, cond, savedir, xsize=4000, rot=[15, -40]):
         xsize=xsize,
         notext=False,
         cmap="bwr",
-        nest=True,
     )
     hp.gnomview(
         cond,
@@ -32,7 +31,6 @@ def plot_hits_cond(hits, cond, savedir, xsize=4000, rot=[15, -40]):
         xsize=xsize,
         notext=False,
         cmap="bwr",
-        nest=True,
     )
     fig.savefig(os.path.join(savedir, "hits.png"))
 
@@ -110,7 +108,6 @@ def plot_maps(
             min=-map_range,
             max=map_range,
             cmap="bwr",
-            nest=True,
             unit=unit,
         )
 
@@ -126,7 +123,6 @@ def plot_maps(
                 min=-map_range,
                 max=map_range,
                 cmap="bwr",
-                nest=True,
                 unit=unit,
             )
             m = sky_in[i] - maps_out[i]
@@ -143,7 +139,6 @@ def plot_maps(
                 cmap="bwr",
                 min=offset - amp,
                 max=offset + amp,
-                nest=True,
                 unit=unit,
             )
     fig.savefig(os.path.join(savedir, "maps.png"))
@@ -179,7 +174,7 @@ def process(args):
     hits, cond = utils.read_hits_cond(dirname, ref=ref)
     residuals = utils.read_residuals(dirname, ref=ref)
     sky_in = 1e6 * hp.fitsfunc.read_map(
-        "ffp10_lensed_scl_100_nside0512.fits", field=None, nest=True
+        "ffp10_lensed_scl_100_nside0512.fits", field=None
     )
 
     # define a mask for pixels outside the solved patch

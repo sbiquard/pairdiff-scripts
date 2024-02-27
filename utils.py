@@ -46,13 +46,13 @@ def read_maps(dirname, ref=None):
     mapI = None
     if iqu:
         mapI = 1e6 * hp.fitsfunc.read_map(
-            os.path.join(dirname, f"mapI_{ref}.fits"), field=None, nest=True
+            os.path.join(dirname, f"mapI_{ref}.fits"), field=None
         )
     mapQ = 1e6 * hp.fitsfunc.read_map(
-        os.path.join(dirname, f"mapQ_{ref}.fits"), field=None, nest=True
+        os.path.join(dirname, f"mapQ_{ref}.fits"), field=None
     )
     mapU = 1e6 * hp.fitsfunc.read_map(
-        os.path.join(dirname, f"mapU_{ref}.fits"), field=None, nest=True
+        os.path.join(dirname, f"mapU_{ref}.fits"), field=None
     )
 
     return iqu, (mapI, mapQ, mapU)
@@ -65,11 +65,9 @@ def read_hits_cond(dirname, ref=None):
 
     # load hits and condition number maps
     hits = hp.fitsfunc.read_map(
-        os.path.join(dirname, f"Hits_{ref}.fits"), field=None, dtype=np.int32, nest=True
+        os.path.join(dirname, f"Hits_{ref}.fits"), field=None, dtype=np.int32
     )
-    cond = hp.fitsfunc.read_map(
-        os.path.join(dirname, f"Cond_{ref}.fits"), field=None, nest=True
-    )
+    cond = hp.fitsfunc.read_map(os.path.join(dirname, f"Cond_{ref}.fits"), field=None)
 
     return hits, cond
 
