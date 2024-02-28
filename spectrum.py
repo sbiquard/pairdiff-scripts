@@ -8,14 +8,20 @@ NPIX = 12 * NSIDE * NSIDE
 
 
 @timer
-def get_mask_apo_and_binning(hits_map, min_hits=1000):
-    # Apodize the mask on a scale of ~10deg
-    mask = nmt.mask_apodization(hits_map > min_hits, 10.0, apotype="C1")
+def get_mask_apo(hits_map, min_hits: int, aposize: float):
+    # Define the mask by cutting above a hit threshold
+    mask = hits_map > min_hits
 
-    # Initialize binning scheme with 10 ells per bandpower
-    b = nmt.NmtBin.from_nside_linear(NSIDE, 10)
+    # Apodize the mask
+    mask = nmt.mask_apodization(mask, aposize, apotype="C1")
 
-    return mask, b
+    return mask
+
+
+def get_binning(delta_ell: int):
+    # Initialize binning scheme
+    b = nmt.NmtBin.from_nside_linear(NSIDE, delta_ell)
+    return b
 
 
 def compute_spectra(m, mask_apo, binning):
