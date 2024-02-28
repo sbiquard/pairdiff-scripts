@@ -1,4 +1,5 @@
 import os
+import pathlib
 import numpy as np
 import healpy as hp
 import toml
@@ -81,3 +82,13 @@ def read_residuals(dirname, ref=None):
     fname = f"residuals_{ref}.dat"
     data = np.loadtxt(os.path.join(dirname, fname), skiprows=1, usecols=1)
     return data
+
+
+def read_mask(fname="out/mask_apo.fits"):
+    file = pathlib.Path(fname)
+    if file.exists():
+        mask = hp.read_map(file.resolve())
+        return mask
+    else:
+        msg = f"{file} not found -- run get_mask_apo.py to generate it"
+        raise FileNotFoundError(msg)
