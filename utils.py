@@ -32,6 +32,11 @@ def get_last_ref(dirname):
     return ref
 
 
+def read_input_sky(field=None):
+    sky = 1e6 * hp.fitsfunc.read_map("ffp10_lensed_scl_100_nside0512.fits", field=field)
+    return sky
+
+
 def read_maps(dirname, ref=None):
     # ref of the run
     if ref is None:

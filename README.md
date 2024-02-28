@@ -45,7 +45,7 @@ Execution (Jean-Zay: full schedule)
 Post-processing
 
 * `utils.py` : Some utility routines
-* `plot.py` : Produce difference maps and histograms for a given run
+* `plot_maps.py` : Produce difference maps and histograms for a given run
 * `spectrum.py` : Power spectrum routines
 * `get_mask_apo.py` : Create and save a mask (requires [NaMaster](https://namaster.readthedocs.io))
 * `compute_spectra.py` : Compute and save power spectra for all runs

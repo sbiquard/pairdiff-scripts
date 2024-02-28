@@ -157,9 +157,7 @@ def process(ref, dirname):
     maps = utils.read_maps(dirname, ref=ref)
     hits, cond = utils.read_hits_cond(dirname, ref=ref)
     residuals = utils.read_residuals(dirname, ref=ref)
-    sky_in = 1e6 * hp.fitsfunc.read_map(
-        "ffp10_lensed_scl_100_nside0512.fits", field=None
-    )
+    sky_in = utils.read_input_sky()
 
     # define a mask for pixels outside the solved patch
     mask = hits < 1
