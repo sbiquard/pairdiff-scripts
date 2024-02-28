@@ -67,19 +67,24 @@ def process(run, delta_ell):
     tic = time.perf_counter()
 
     # create directory if needed
-    (run / "spectra").mkdir(exist_ok=True)
+    cldir = run / "spectra"
+    cldir.mkdir(exist_ok=True)
 
     # check if there is something to do
     # TODO: handle several refs
-    file = run / "spectra" / "cells.npz"
-    if file.exists() and not args.overwrite:
+    full_cl_name = cldir / "full_cl.npz"
+    noise_cl_name = cldir / "noise_cl.npz"
+    if full_cl_name.exists() and noise_cl_name.exists() and not args.overwrite:
         return run, 0.0
 
     # read maps
     maps = utils.read_maps(run)
     if "I" in maps:
+        sky = utils.read_input_sky()
         maps = np.array([maps["I"], maps["Q"], maps["U"]])
     else:
+        # only polarization
+        sky = utils.read_input_sky(field=(1, 2))
         maps = np.array([maps["Q"], maps["U"]])
 
     # read mask and get binning scheme
@@ -87,8 +92,12 @@ def process(run, delta_ell):
     binning = spectrum.get_binning(delta_ell)
 
     # compute the spectra
-    cells = spectrum.compute_spectra(maps, mask_apo, binning)
-    np.savez(file, **cells)
+    full_cl = spectrum.compute_spectra(maps, mask_apo, binning)
+    noise_cl = spectrum.compute_spectra(maps - sky, mask_apo, binning)
+
+    # save to npz files
+    np.savez(full_cl_name, **full_cl, ell_arr=binning.get_effective_ells())
+    np.savez(noise_cl_name, **noise_cl, ell_arr=binning.get_effective_ells())
 
     elapsed = time.perf_counter() - tic
     return run, elapsed
@@ -123,7 +132,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="compute and save power spectra for all runs",
+        description="Compute and save power spectra for all runs.",
     )
     add_arguments(parser)
     args = parser.parse_args()
