@@ -41,17 +41,20 @@ def read_maps(dirname, ref=None):
     run = pathlib.Path(dirname)
     params = toml.load(run / "config_log.toml")
     params = params["operators"]["mappraiser"]
+
     # do we have iqu maps or just qu?
     iqu = not (params["pair_diff"]) or params["estimate_spin_zero"]
 
-    # load the output maps
-    mapI = None
+    # read the output maps and put them in a dict
+    maps = {}
     if iqu:
-        mapI = 1e6 * hp.fitsfunc.read_map(str(run / f"mapI_{ref}.fits"), field=None)
-    mapQ = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None)
-    mapU = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None)
+        maps["I"] = 1e6 * hp.fitsfunc.read_map(
+            str(run / f"mapI_{ref}.fits"), field=None
+        )
+    maps["Q"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None)
+    maps["U"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None)
 
-    return iqu, (mapI, mapQ, mapU)
+    return maps
 
 
 def read_hits_cond(dirname, ref=None):

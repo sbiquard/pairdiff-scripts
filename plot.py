@@ -36,41 +36,24 @@ def plot_hits_cond(hits, cond, savedir, xsize=4000, rot=[15, -40]):
     fig.savefig(savedir / "hits.png")
 
 
-def plot_res_hist(maps_out, iqu, sky_in, savedir):
-    if iqu:
-        aI = sky_in[0] - maps_out[0]
-        aI = aI[~np.isnan(aI)]
+def plot_res_hist(maps, sky_in, savedir):
+    resid = {}
+    convert = {"I": 0, "Q": 1, "U": 2}
 
-    aQ = sky_in[1] - maps_out[1]
-    aQ = aQ[~np.isnan(aQ)]
-
-    aU = sky_in[2] - maps_out[2]
-    aU = aU[~np.isnan(aU)]
+    for k, v in maps.items():
+        resid[k] = sky_in[convert[k]] - maps[k]
 
     fig, ax = plt.subplots(figsize=(7, 7))
 
-    if iqu:
-        for i in range(3):
-            stokes = list("TQU")[i]
-            residual = (aI, aQ, aU)[i]
-            hist(
-                residual,
-                bins="scott",
-                label=f"{stokes} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
-                histtype="step",
-                ax=ax,
-            )
-    else:
-        for i in range(2):
-            stokes = list("QU")[i]
-            residual = (aQ, aU)[i]
-            hist(
-                residual,
-                bins="scott",
-                label=f"{stokes} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
-                histtype="step",
-                ax=ax,
-            )
+    for stokes, residual in resid.items():
+        residual = residual[~np.isnan(residual)]
+        hist(
+            residual,
+            bins="scott",
+            label=f"{stokes} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
+            histtype="step",
+            ax=ax,
+        )
 
     fig.suptitle("Histograms of residuals")
     ax.set_xlabel("$\\mu K_{CMB}$")
@@ -80,8 +63,7 @@ def plot_res_hist(maps_out, iqu, sky_in, savedir):
 
 
 def plot_maps(
-    maps_out,
-    iqu,
+    maps,
     sky_in,
     savedir,
     xsize=4000,
@@ -93,12 +75,12 @@ def plot_maps(
     fig = plt.figure(figsize=(4 * ncol, 3 * nrow))
 
     unit = "$\\mu K_{CMB}$"
+    convert = {"I": 0, "Q": 1, "U": 2}
 
-    for i in range(3):
-        stokes = list("TQU")[i]
+    for i, stokes in enumerate(convert):
         map_range = map_range_T if i == 0 else map_range_P
 
-        # Input map
+        # Plot input sky
         hp.gnomview(
             sky_in[i],
             rot=rot,
@@ -112,10 +94,10 @@ def plot_maps(
             unit=unit,
         )
 
-        # Reconstructed map
-        if iqu or (i > 0):
+        if stokes in maps:
+            # Plot reconstructed map
             hp.gnomview(
-                maps_out[i],
+                maps[stokes],
                 rot=rot,
                 xsize=xsize,
                 sub=[nrow, ncol, 1 + 3 * i + 1],
@@ -126,12 +108,14 @@ def plot_maps(
                 cmap="bwr",
                 unit=unit,
             )
-            m = sky_in[i] - maps_out[i]
-            offset = np.nanmedian(m)
-            rms = np.nanstd(m)
+
+            # Plot difference map
+            diff = sky_in[i] - maps[stokes]
+            offset = np.nanmedian(diff)
+            rms = np.nanstd(diff)
             amp = 2 * rms
             hp.gnomview(
-                sky_in[i] - maps_out[i],
+                diff,
                 rot=rot,
                 xsize=xsize,
                 sub=[nrow, ncol, 1 + 3 * i + 2],
@@ -142,6 +126,7 @@ def plot_maps(
                 max=offset + amp,
                 unit=unit,
             )
+
     fig.savefig(savedir / "maps.png")
 
 
@@ -169,7 +154,7 @@ def process(ref, dirname):
     savedir.mkdir(parents=True, exist_ok=True)
 
     # read data
-    iqu, maps_out = utils.read_maps(dirname, ref=ref)
+    maps = utils.read_maps(dirname, ref=ref)
     hits, cond = utils.read_hits_cond(dirname, ref=ref)
     residuals = utils.read_residuals(dirname, ref=ref)
     sky_in = 1e6 * hp.fitsfunc.read_map(
@@ -178,19 +163,17 @@ def process(ref, dirname):
 
     # define a mask for pixels outside the solved patch
     mask = hits < 1
-    for m in maps_out:
-        if m is not None:
-            m[mask] = np.nan
+    for m in maps.values():
+        m[mask] = np.nan
     cond[mask] = np.nan
 
     xsize = 2500
     rot = [50, -40]  # SO south patch
 
     plot_hits_cond(hits, cond, savedir, xsize=xsize, rot=rot)
-    plot_res_hist(maps_out, iqu, sky_in, savedir)
+    plot_res_hist(maps, sky_in, savedir)
     plot_maps(
-        maps_out,
-        iqu,
+        maps,
         sky_in,
         savedir,
         xsize=xsize,
