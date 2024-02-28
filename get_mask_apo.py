@@ -34,7 +34,9 @@ def f(min_hits):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="create and save an apodized mask (for power spectrum computations)",
+    )
     parser.add_argument(
         "--min-hits",
         dest="min_hits",
