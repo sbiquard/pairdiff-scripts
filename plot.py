@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from astropy.visualization import hist
 import multiprocessing
 import time
+import functools
 
 import utils
 
@@ -158,15 +159,12 @@ def plot_residuals(data, savedir):
     fig.savefig(savedir / "pcg_residuals.png")
 
 
-def process(args):
+def process(ref, dirname):
     # start timer
     tic = time.perf_counter()
 
-    # unpack args
-    dirname, ref = args
-    run = pathlib.Path(dirname)
-
     # create folder for the plots
+    run = pathlib.Path(dirname)
     savedir = run / "plots" / ref
     savedir.mkdir(parents=True, exist_ok=True)
 
@@ -216,9 +214,8 @@ def main(dirname, refs, verbose):
     with multiprocessing.Pool(processes=ncpu) as pool:
         if verbose:
             print(f"Using {ncpu} CPU")
-        for ref, elapsed in pool.imap_unordered(
-            process, zip((dirname for _ in refs), refs)
-        ):
+        partial_func = functools.partial(process, dirname=dirname)
+        for ref, elapsed in pool.imap_unordered(partial_func, refs):
             if verbose:
                 print(f"Processed ref '{ref}' in {elapsed:.3f} seconds")
 
