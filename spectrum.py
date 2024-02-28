@@ -25,13 +25,13 @@ def get_binning(delta_ell: int):
 
 
 def compute_spectra(m, mask_apo, binning):
-    m = np.array(m)
-    iqu = m.size == 3
+    # Check input shape
+    iqu = m.shape[0] == 3
 
     if iqu:
         # Initialize a spin-0 and spin-2 field
-        f_0 = nmt.NmtField(mask_apo, [m[:, 0]])
-        f_2 = nmt.NmtField(mask_apo, [m[:, 1], m[:, 2]])
+        f_0 = nmt.NmtField(mask_apo, m[:, 0])
+        f_2 = nmt.NmtField(mask_apo, m[:, 1:])
 
         # Compute MASTER estimator
         # spin-0 x spin-0
@@ -41,11 +41,11 @@ def compute_spectra(m, mask_apo, binning):
         # spin-2 x spin-2
         cl_22 = nmt.compute_full_master(f_2, f_2, binning)
 
-        return cl_00, cl_02, cl_22
+        return {"cl_00": cl_00, "cl_02": cl_02, "cl_22": cl_22}
     else:
         # Assume we only have Q and U maps
-        f_2 = nmt.NmtField(mask_apo, [m[:, 1], m[:, 2]])
+        f_2 = nmt.NmtField(mask_apo, m)
         # spin-2 x spin-2
         cl_22 = nmt.compute_full_master(f_2, f_2, binning)
 
-        return cl_22
+        return {"cl_22": cl_22}
