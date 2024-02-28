@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
+import argparse
 import healpy as hp
 import matplotlib.pyplot as plt
 
@@ -34,5 +34,12 @@ def f(min_hits):
 
 
 if __name__ == "__main__":
-    min_hits = int(sys.argv[1]) if len(sys.argv) >= 2 else None
-    f(min_hits)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--min-hits",
+        dest="min_hits",
+        type=int,
+        help="hit count threshold (default: 1000)",
+    )
+    args = parser.parse_args()
+    f(args.min_hits)
