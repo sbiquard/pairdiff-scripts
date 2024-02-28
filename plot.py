@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import os
-import sys
+import argparse
+import pathlib
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ def plot_hits_cond(hits, cond, savedir, xsize=4000, rot=[15, -40]):
         notext=False,
         cmap="bwr",
     )
-    fig.savefig(os.path.join(savedir, "hits.png"))
+    fig.savefig(savedir / "hits.png")
 
 
 def plot_res_hist(maps_out, iqu, sky_in, savedir):
@@ -75,7 +75,7 @@ def plot_res_hist(maps_out, iqu, sky_in, savedir):
     ax.set_xlabel("$\\mu K_{CMB}$")
     ax.grid(True)
     ax.legend()
-    fig.savefig(os.path.join(savedir, "diff_histograms.png"))
+    fig.savefig(savedir / "diff_histograms.png")
 
 
 def plot_maps(
@@ -141,7 +141,7 @@ def plot_maps(
                 max=offset + amp,
                 unit=unit,
             )
-    fig.savefig(os.path.join(savedir, "maps.png"))
+    fig.savefig(savedir / "maps.png")
 
 
 def plot_residuals(data, savedir):
@@ -155,7 +155,7 @@ def plot_residuals(data, savedir):
     ax.set_xlabel("Step")
     ax.set_ylabel("||r|| / ||r0||")
     ax.grid(True)
-    fig.savefig(os.path.join(savedir, "pcg_residuals.png"))
+    fig.savefig(savedir / "pcg_residuals.png")
 
 
 def process(args):
@@ -164,10 +164,11 @@ def process(args):
 
     # unpack args
     dirname, ref = args
+    run = pathlib.Path(dirname)
 
     # create folder for the plots
-    savedir = os.path.join(dirname, "plots", ref)
-    os.makedirs(savedir, exist_ok=True)
+    savedir = run / "plots" / ref
+    savedir.mkdir(parents=True, exist_ok=True)
 
     # read data
     iqu, maps_out = utils.read_maps(dirname, ref=ref)
@@ -204,26 +205,30 @@ def process(args):
     return ref, elapsed
 
 
-def main(dirname, refs):
+def main(dirname, refs, verbose):
+    if refs is None:
+        refs = [utils.get_last_ref(dirname)]
+    if verbose:
+        print(f"Process {len(refs)} ref(s) in '{dirname}'")
+
     # Use up to 4 cpus
-    ncpu = min(len(refs), multiprocessing.cpu_count())
+    ncpu = min(len(refs), 4)
     with multiprocessing.Pool(processes=ncpu) as pool:
-        print(f"Using {ncpu} CPU")
+        if verbose:
+            print(f"Using {ncpu} CPU")
         for ref, elapsed in pool.imap_unordered(
             process, zip((dirname for _ in refs), refs)
         ):
-            print(f"Processed ref '{ref}' in {elapsed:.3f} seconds")
+            if verbose:
+                print(f"Processed ref '{ref}' in {elapsed:.3f} seconds")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        raise RuntimeError("Usage: ./display_maps.py dirname [refs]")
-    else:
-        dirname = sys.argv[1]
-        dirname = os.path.join(os.getcwd(), dirname)
-        if len(sys.argv) < 3:
-            refs = [utils.get_last_ref(dirname)]
-        else:
-            refs = sys.argv[2:]
-        print(f"Begin work in directory '{dirname}' with {len(refs)} ref(s)")
-        main(dirname, refs)
+    parser = argparse.ArgumentParser(
+        description="Plot difference maps and histograms for a given run."
+    )
+    parser.add_argument("dirname", type=str, help="name of directory")
+    parser.add_argument("--refs", nargs="*", type=str, help="refs to process")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
+    args = parser.parse_args()
+    main(args.dirname, args.refs, args.verbose)
