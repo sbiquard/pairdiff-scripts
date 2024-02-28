@@ -48,3 +48,5 @@ Post-processing
 * `plot.py` : Produce difference maps and histograms for a given run
 * `spectrum.py` : Power spectrum routines
 * `get_mask_apo.py` : Create and save a mask (requires [NaMaster](https://namaster.readthedocs.io))
+* `compute_spectra.py` : Compute and save power spectra for all runs
+* `run.spectra.slurm` : Job script to compute power spectra

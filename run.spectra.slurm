@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=40
 #SBATCH --hint=nomultithread
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 
 cd ${SLURM_SUBMIT_DIR}
 
@@ -16,5 +16,6 @@ conda deactivate
 conda activate namaster
 
 date
-srun python compute_spectra.py -v -n 40
+ncpu=$SLURM_CPUS_PER_TASK
+srun python compute_spectra.py -v -n $ncpu
 echo "$(date) : Done!"
