@@ -1,4 +1,3 @@
-import numpy as np
 import pymaster as nmt
 
 from utils import timer
