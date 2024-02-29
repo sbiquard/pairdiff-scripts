@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pdiff-gains-random
+#SBATCH --job-name=pdiff-gains-random-iqu
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-t3
 #SBATCH --nodes=35
