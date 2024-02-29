@@ -60,7 +60,7 @@ def process(dirname):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compute and save power spectra for all runs.",
+        description="Compute and save power spectra for one run.",
     )
     parser.add_argument("dirname", type=str, help="name of directory")
     args = parser.parse_args()

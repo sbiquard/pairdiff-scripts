@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import pathlib
 import numpy as np
 import multiprocessing
 import functools
@@ -10,32 +9,6 @@ import time
 import utils
 import spectrum
 import plot_spectra
-
-
-SKIP_DIRS = ["plots", "spectra", "atm"]
-
-
-def get_all_runs(root, exclude=SKIP_DIRS):
-    root = pathlib.Path(root)
-    for item in root.iterdir():
-        if not item.is_dir():
-            # skip files
-            continue
-        if item.name in exclude:
-            # skip excluded directories
-            continue
-        if contains_log(item):
-            # only yield if the directory contains a log file
-            # i.e. it contains the output of a run
-            yield item
-        # recursively explore
-        yield from get_all_runs(item)
-
-
-def contains_log(run: pathlib.Path):
-    for _ in run.glob("*.log"):
-        return True
-    return False
 
 
 def add_arguments(parser):
@@ -113,7 +86,7 @@ def plot(run):
 
 
 def main(args):
-    runs = list(get_all_runs("out"))
+    runs = list(utils.get_all_runs("out"))
     # hp.projview(mask_apo)
     # plt.show()
 
