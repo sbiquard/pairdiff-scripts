@@ -17,24 +17,15 @@ LATRA = [-70, -10]
 
 
 def plot_hits_cond(hits, cond, savedir, cmap="bwr"):
+    def plot(m, title):
+        hp.cartview(m, norm="hist", title=title, lonra=LONRA, latra=LATRA, cmap=cmap)
+
     # Plot hits
-    hp.cartview(
-        hits,
-        title="Hits map",
-        lonra=LONRA,
-        latra=LATRA,
-        cmap=cmap,
-    )
+    plot(hits, "Hits map")
     plt.savefig(savedir / "hits.png")
 
     # Plot cond
-    hp.cartview(
-        cond,
-        title="Inverse condition number map",
-        lonra=LONRA,
-        latra=LATRA,
-        cmap=cmap,
-    )
+    plot(cond, "Inverse condition number map")
     plt.savefig(savedir / "cond.png")
 
 
