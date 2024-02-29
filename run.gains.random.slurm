@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-gains-random
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=30
+#SBATCH --nodes=35
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
@@ -65,7 +65,6 @@ for sigma in ${sigmas[*]}; do
         --mappraiser.shared_flag_mask 0 \
         --mappraiser.enable \
         --mappraiser.mem_report \
-        --mappraiser.downscale 30 \
         --mappraiser.pair_diff \
         --my_gainscrambler.enable \
         --my_gainscrambler.process_pairs \

@@ -979,7 +979,7 @@
     det_flags = "flags" # Observation detdata key for flags to use
     det_mask = 7 # Bit mask value for per-detector flagging
     do_gap_filling = false # Perform gap filling on the data
-    downscale = 1 # Scale down the noise by the sqrt of this number to artifically increase S/N ratio
+    downscale = 300 # Scale down the noise by the sqrt of this number to artifically increase S/N ratio
     enabled = true # If True, this class instance is marked as enabled
     enlFac = 1 # Enlargement factor for ECG
     estimate_spin_zero = false # When doing pair-diff, still estimate a spin-zero field (T) alongside Q and U.

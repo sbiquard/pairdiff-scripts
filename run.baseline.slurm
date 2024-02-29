@@ -2,7 +2,7 @@
 #SBATCH --job-name=pdiff-baseline  # job name
 #SBATCH --account=nih@cpu          # use CPU allocation
 #SBATCH --qos=qos_cpu-dev          # dev qos (10 jobs, 2h max.)
-#SBATCH --nodes=30                 # number of nodes
+#SBATCH --nodes=35                 # number of nodes
 #SBATCH --ntasks-per-node=10       # number of MPI tasks per node
 #SBATCH --cpus-per-task=4          # number of cores per task
 #SBATCH --hint=nomultithread       # 1 thread / physical core (no hyperthreading)
@@ -60,7 +60,6 @@ srun so_sim_mappraiser.py \
     --mappraiser.shared_flag_mask 0 \
     --mappraiser.enable \
     --mappraiser.mem_report \
-    --mappraiser.downscale 30 \
     --mappraiser.pair_diff \
     --sim_atmosphere_coarse.disable \
     --out $outdir \
