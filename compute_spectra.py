@@ -9,6 +9,7 @@ import time
 
 import utils
 import spectrum
+import plot_spectra
 
 
 SKIP_DIRS = ["plots", "spectra", "atm"]
@@ -60,9 +61,12 @@ def add_arguments(parser):
         default=4,
         help="number of CPUs to use (default: 4)",
     )
+    parser.add_argument(
+        "-p", "--plot", action="store_true", help="save a plot of the computed spectra"
+    )
 
 
-def process(run, delta_ell):
+def process(run, delta_ell: int):
     # start timer
     tic = time.perf_counter()
 
@@ -103,6 +107,11 @@ def process(run, delta_ell):
     return run, elapsed
 
 
+def plot(run):
+    plot_spectra.process(run)
+    return run
+
+
 def main(args):
     runs = list(get_all_runs("out"))
     # hp.projview(mask_apo)
@@ -126,6 +135,11 @@ def main(args):
                     print(f"Skipped '{run}' (nothing to do)")
                 else:
                     print(f"Processed '{run}' in {elapsed:.3f} seconds")
+        if args.plot:
+            # produce plots if needed
+            for run in pool.imap_unordered(plot, runs):
+                if args.verbose:
+                    print(f"Produced plot for '{run}'")
 
     return
 
