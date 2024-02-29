@@ -29,8 +29,8 @@ def compute_spectra(m, mask_apo, binning):
 
     if iqu:
         # Initialize a spin-0 and spin-2 field
-        f_0 = nmt.NmtField(mask_apo, m[:, 0])
-        f_2 = nmt.NmtField(mask_apo, m[:, 1:])
+        f_0 = nmt.NmtField(mask_apo, [m[0]])
+        f_2 = nmt.NmtField(mask_apo, m[1:])
 
         # Compute MASTER estimator
         # spin-0 x spin-0
