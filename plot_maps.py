@@ -12,28 +12,30 @@ import functools
 
 import utils
 
+LONRA = [-95, 135]
+LATRA = [-70, -10]
 
-def plot_hits_cond(hits, cond, savedir, xsize=4000, rot=[15, -40]):
-    fig = plt.figure(figsize=(10, 4))
-    hp.gnomview(
+
+def plot_hits_cond(hits, cond, savedir, cmap="bwr"):
+    # Plot hits
+    hp.cartview(
         hits,
         title="Hits map",
-        sub=[1, 2, 1],
-        rot=rot,
-        xsize=xsize,
-        notext=False,
-        cmap="bwr",
+        lonra=LONRA,
+        latra=LATRA,
+        cmap=cmap,
     )
-    hp.gnomview(
+    plt.savefig(savedir / "hits.png")
+
+    # Plot cond
+    hp.cartview(
         cond,
         title="Inverse condition number map",
-        sub=[1, 2, 2],
-        rot=rot,
-        xsize=xsize,
-        notext=False,
-        cmap="bwr",
+        lonra=LONRA,
+        latra=LATRA,
+        cmap=cmap,
     )
-    fig.savefig(savedir / "hits.png")
+    plt.savefig(savedir / "cond.png")
 
 
 def plot_res_hist(maps, sky_in, savedir):
@@ -66,13 +68,12 @@ def plot_maps(
     maps,
     sky_in,
     savedir,
-    xsize=4000,
-    rot=[15, -40],
+    cmap="bwr",
     map_range_T=500,
     map_range_P=20,
 ):
     nrow, ncol = 3, 3
-    fig = plt.figure(figsize=(4 * ncol, 3 * nrow))
+    fig = plt.figure(figsize=(8 * ncol, 4 * nrow))
 
     unit = "$\\mu K_{CMB}$"
     convert = {"I": 0, "Q": 1, "U": 2}
@@ -81,31 +82,31 @@ def plot_maps(
         map_range = map_range_T if i == 0 else map_range_P
 
         # Plot input sky
-        hp.gnomview(
+        hp.cartview(
             sky_in[i],
-            rot=rot,
-            xsize=xsize,
-            sub=[nrow, ncol, 1 + 3 * i],
             title=f"Input {stokes}",
+            lonra=LONRA,
+            latra=LATRA,
+            sub=[nrow, ncol, 1 + 3 * i],
             notext=False,
             min=-map_range,
             max=map_range,
-            cmap="bwr",
+            cmap=cmap,
             unit=unit,
         )
 
         if stokes in maps:
             # Plot reconstructed map
-            hp.gnomview(
+            hp.cartview(
                 maps[stokes],
-                rot=rot,
-                xsize=xsize,
-                sub=[nrow, ncol, 1 + 3 * i + 1],
                 title=f"Reconstructed {stokes} map",
+                lonra=LONRA,
+                latra=LATRA,
+                sub=[nrow, ncol, 1 + 3 * i + 1],
                 notext=False,
                 min=-map_range,
                 max=map_range,
-                cmap="bwr",
+                cmap=cmap,
                 unit=unit,
             )
 
@@ -114,12 +115,12 @@ def plot_maps(
             offset = np.nanmedian(diff)
             rms = np.nanstd(diff)
             amp = 2 * rms
-            hp.gnomview(
+            hp.cartview(
                 diff,
-                rot=rot,
-                xsize=xsize,
-                sub=[nrow, ncol, 1 + 3 * i + 2],
                 title=f"Difference {stokes}",
+                lonra=LONRA,
+                latra=LATRA,
+                sub=[nrow, ncol, 1 + 3 * i + 2],
                 notext=False,
                 cmap="bwr",
                 min=offset - amp,
@@ -141,6 +142,7 @@ def plot_residuals(data, savedir):
     ax.set_xlabel("Step")
     ax.set_ylabel("||r|| / ||r0||")
     ax.grid(True)
+    ax.legend()
     fig.savefig(savedir / "pcg_residuals.png")
 
 
@@ -165,19 +167,9 @@ def process(ref, dirname):
         m[mask] = np.nan
     cond[mask] = np.nan
 
-    xsize = 2500
-    rot = [50, -40]  # SO south patch
-
-    plot_hits_cond(hits, cond, savedir, xsize=xsize, rot=rot)
+    plot_hits_cond(hits, cond, savedir)
     plot_res_hist(maps, sky_in, savedir)
-    plot_maps(
-        maps,
-        sky_in,
-        savedir,
-        xsize=xsize,
-        rot=rot,
-        map_range_P=10,
-    )
+    plot_maps(maps, sky_in, savedir, map_range_P=10)
     plot_residuals(residuals, savedir)
 
     elapsed = time.perf_counter() - tic

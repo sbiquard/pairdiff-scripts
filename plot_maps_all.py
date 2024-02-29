@@ -43,19 +43,9 @@ def process(run):
         m[mask] = np.nan
     cond[mask] = np.nan
 
-    xsize = 2500
-    rot = [50, -40]  # SO south patch
-
-    plot_maps.plot_hits_cond(hits, cond, plotdir, xsize=xsize, rot=rot)
+    plot_maps.plot_hits_cond(hits, cond, plotdir)
     plot_maps.plot_res_hist(maps, sky_in, plotdir)
-    plot_maps.plot_maps(
-        maps,
-        sky_in,
-        plotdir,
-        xsize=xsize,
-        rot=rot,
-        map_range_P=10,
-    )
+    plot_maps.plot_maps(maps, sky_in, plotdir, map_range_P=10)
     plot_maps.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
