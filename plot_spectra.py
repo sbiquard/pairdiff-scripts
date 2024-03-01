@@ -16,6 +16,58 @@ CUSTOM_LINES = [
     Line2D([0], [0], color="k", linestyle="dashed"),
 ]
 
+CUSTOM_LABELS = ["TT", "TE", "EE", "BB", "full", "noise"]
+
+
+def plot(cl, ax, ls="solid", dl=False):
+    ell_arr = cl["ell_arr"]
+    cl_00 = cl.get("cl_00")
+    cl_02 = cl.get("cl_02")
+    cl_22 = cl.get("cl_22")
+
+    def _plot(temp, cross, pol, ells):
+        has_T = False
+        if temp is not None:
+            has_T = True
+            ax.plot(ells, temp[0], "r", linestyle=ls)
+        if cross is not None:
+            ax.plot(ells, np.fabs(cross[0]), "y", linestyle=ls)
+        ax.plot(ells, pol[0], "g", linestyle=ls)
+        ax.plot(ells, pol[3], "b", linestyle=ls)
+        return has_T
+
+    has_T: bool
+    if dl:
+        has_T = _plot(
+            cl_00 * ell_arr * (ell_arr + 1) / (2 * np.pi),
+            cl_02 * ell_arr * (ell_arr + 1) / (2 * np.pi),
+            cl_22 * ell_arr * (ell_arr + 1) / (2 * np.pi),
+            ell_arr,
+        )
+    else:
+        has_T = _plot(cl_00, cl_02, cl_22, ell_arr)
+    return has_T
+
+
+def decorate(ax, has_T: bool = False, dl: bool = False):
+    ax.loglog()
+    ax.set_xlim(left=20)
+    ax.set_xlabel("$\\ell$", fontsize=16)
+    ylabel: str
+    if dl:
+        ylabel = "$\\ell(\\ell+1) \\times C_\\ell / 2\\pi$"
+    else:
+        ylabel = "$C_\\ell$"
+    ax.set_ylabel(ylabel, fontsize=16)
+    slc = slice(None if has_T else 2, None)
+    ax.legend(
+        CUSTOM_LINES[slc],
+        CUSTOM_LABELS[slc],
+        loc="upper right",
+        ncol=2,
+        labelspacing=0.1,
+    )
+
 
 def process(dirname):
     # Create 'plots' directory if needed
@@ -27,34 +79,12 @@ def process(dirname):
     cldir = run / "spectra"
     full_cl = np.load(cldir / "full_cl.npz")
     noise_cl = np.load(cldir / "noise_cl.npz")
-    ell_arr = full_cl["ell_arr"]
-
-    def plot(cl, ax, ls):
-        cl_00 = cl.get("cl_00")
-        cl_02 = cl.get("cl_02")
-        cl_22 = cl.get("cl_22")
-        if cl_00 is not None:
-            ax.plot(ell_arr, cl_00[0], "r", linestyle=ls)
-        if cl_02 is not None:
-            ax.plot(ell_arr, np.fabs(cl_02[0]), "y", linestyle=ls)
-        ax.plot(ell_arr, cl_22[0], "g", linestyle=ls)
-        ax.plot(ell_arr, cl_22[3], "b", linestyle=ls)
 
     fig, ax = plt.subplots()
     fig.suptitle("Power spectra and noise spectra of estimated maps")
-    plot(full_cl, ax, "solid")
-    plot(noise_cl, ax, "dashed")
-    ax.loglog()
-    ax.set_xlim(left=20)
-    ax.set_xlabel("$\\ell$", fontsize=16)
-    ax.set_ylabel("$C_\\ell$", fontsize=16)
-    ax.legend(
-        CUSTOM_LINES,
-        ["TT", "TE", "EE", "BB", "full", "noise"],
-        loc="upper right",
-        ncol=2,
-        labelspacing=0.1,
-    )
+    has_tt = plot(full_cl, ax, ls="solid")
+    plot(noise_cl, ax, ls="dashed")
+    decorate(ax, has_tt)
     plt.savefig(plotdir / "spectra.png")
 
 
