@@ -42,7 +42,7 @@ sigmas=(0.1 0.01 0.001 0.0001)
 sigma=${sigmas[$SLURM_ARRAY_TASK_ID]}
 
 dir=$(printf "%e" $sigma | tail -c 4)
-outdir=out/gains/random/$dir
+outdir=out/gains/random/iqu/$dir
 mkdir -p $outdir
 
 logfile=$outdir/run.log
