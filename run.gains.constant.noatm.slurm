@@ -73,6 +73,7 @@ for sigma in ${sigmas[*]}; do
         --sim_atmosphere_coarse.disable \
         --sim_atmosphere.disable \
         --my_gainscrambler.det_data_names "['signal',]" \
+        --mappraiser.atm_name "None" \
         --out $outdir \
         >$logfile 2>&1
 
