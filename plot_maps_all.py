@@ -18,12 +18,6 @@ def add_arguments(parser):
         default=4,
         help="number of CPUs to use (default: 4)",
     )
-    parser.add_argument(
-        "-o",
-        "--overwrite",
-        action="store_true",
-        help="overwrite previously computed spectra",
-    )
 
 
 def process(run):

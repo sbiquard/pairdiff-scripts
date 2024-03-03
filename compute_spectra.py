@@ -39,9 +39,13 @@ def add_arguments(parser):
     )
 
 
-def process(run, delta_ell: int):
+def process(run, delta_ell: int, overwrite: bool):
     # start timer
     tic = time.perf_counter()
+
+    # check if directory is complete
+    if not utils.is_complete(run):
+        return run, None
 
     # create directory if needed
     cldir = run / "spectra"
@@ -51,7 +55,7 @@ def process(run, delta_ell: int):
     # TODO: handle several refs
     full_cl_name = cldir / "full_cl.npz"
     noise_cl_name = cldir / "noise_cl.npz"
-    if full_cl_name.exists() and noise_cl_name.exists() and not args.overwrite:
+    if full_cl_name.exists() and noise_cl_name.exists() and not overwrite:
         return run, 0.0
 
     # read maps
@@ -101,8 +105,15 @@ def main(args):
     with multiprocessing.Pool(processes=ncpu) as pool:
         if args.verbose:
             print(f"Using {ncpu} CPU")
-        partial_func = functools.partial(process, delta_ell=args.delta_ell)
+        partial_func = functools.partial(
+            process, delta_ell=args.delta_ell, overwrite=args.overwrite
+        )
+        runs_complete = list()
         for run, elapsed in pool.imap_unordered(partial_func, runs):
+            if elapsed is None:
+                print(f"Could not compute spectra for '{run}' (missing files)")
+                continue
+            runs_complete.append(run)
             if args.verbose:
                 if elapsed == 0.0:
                     print(f"Skipped '{run}' (nothing to do)")
@@ -110,7 +121,7 @@ def main(args):
                     print(f"Processed '{run}' in {elapsed:.3f} seconds")
         if args.plot:
             # produce plots if needed
-            for run in pool.imap_unordered(plot, runs):
+            for run in pool.imap_unordered(plot, runs_complete):
                 if args.verbose:
                     print(f"Produced plot for '{run}'")
 
