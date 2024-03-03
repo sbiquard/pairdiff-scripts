@@ -23,10 +23,12 @@ def plot_hits_cond(hits, cond, savedir, cmap="bwr"):
     # Plot hits
     plot(hits, "Hits map")
     plt.savefig(savedir / "hits.png")
+    plt.close()
 
     # Plot cond
     plot(cond, "Inverse condition number map")
     plt.savefig(savedir / "cond.png")
+    plt.close()
 
 
 def plot_res_hist(maps, sky_in, savedir):
@@ -53,6 +55,7 @@ def plot_res_hist(maps, sky_in, savedir):
     ax.grid(True)
     ax.legend()
     fig.savefig(savedir / "diff_histograms.png")
+    plt.close(fig)
 
 
 def plot_maps(
@@ -120,6 +123,7 @@ def plot_maps(
             )
 
     fig.savefig(savedir / "maps.png")
+    plt.close(fig)
 
 
 def plot_residuals(data, savedir):
@@ -135,6 +139,7 @@ def plot_residuals(data, savedir):
     ax.grid(True)
     ax.legend()
     fig.savefig(savedir / "pcg_residuals.png")
+    plt.close(fig)
 
 
 def process(ref, dirname):
