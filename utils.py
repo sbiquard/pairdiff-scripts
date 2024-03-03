@@ -58,6 +58,27 @@ def get_last_ref(dirname):
     return ref
 
 
+def is_complete(run: pathlib.Path):
+    try:
+        ref = get_last_ref(run)
+    except FileNotFoundError:
+        return False
+
+    fnames = (
+        f"Cond_{ref}.fits",
+        f"Hits_{ref}.fits",
+        f"mapQ_{ref}.fits",
+        f"mapU_{ref}.fits",
+        f"residuals_{ref}.dat",
+    )
+
+    for fname in fnames:
+        if not (run / fname).exists():
+            return False
+
+    return True
+
+
 def read_input_sky(field=None):
     sky = 1e6 * hp.fitsfunc.read_map("ffp10_lensed_scl_100_nside0512.fits", field=field)
     return sky

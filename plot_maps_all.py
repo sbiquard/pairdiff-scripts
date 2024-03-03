@@ -18,11 +18,21 @@ def add_arguments(parser):
         default=4,
         help="number of CPUs to use (default: 4)",
     )
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        action="store_true",
+        help="overwrite previously computed spectra",
+    )
 
 
 def process(run):
     # start timer
     tic = time.perf_counter()
+
+    # check if directory is complete
+    if not utils.is_complete(run):
+        return run, None
 
     # create directory if needed
     plotdir = run / "plots"
@@ -67,6 +77,9 @@ def main(args):
         if args.verbose:
             print(f"Using {ncpu} CPU")
         for run, elapsed in pool.imap_unordered(process, runs):
+            if elapsed is None:
+                print(f"Could not plot maps for '{run}' (missing files)")
+                continue
             if args.verbose:
                 print(f"Processed '{run}' in {elapsed:.3f} seconds")
     return
