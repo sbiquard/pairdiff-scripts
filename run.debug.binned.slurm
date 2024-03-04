@@ -38,7 +38,7 @@ schedule="schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 sigma=0.1
-outdir=out/gains/constant/e01-binned
+outdir=out/gains/constant/e-01-binned
 mkdir -p $outdir
 
 logfile=$outdir/run.log
