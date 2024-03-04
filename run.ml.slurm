@@ -60,6 +60,7 @@ srun so_sim_mappraiser.py \
     --mappraiser.shared_flag_mask 0 \
     --mappraiser.enable \
     --mappraiser.mem_report \
+    --mappraiser.atm_name "None" \
     --sim_atmosphere_coarse.disable \
     --sim_atmosphere.disable \
     --out $outdir \
