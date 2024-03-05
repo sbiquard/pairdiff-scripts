@@ -89,8 +89,9 @@ def process(run, ref: str, mask_name: str, delta_ell: int, overwrite: bool):
     return run, elapsed
 
 
-def plot(run):
-    plot_spectra.process(run)
+def plot(run, ref: str):
+    ref: str = "" if ref is None else f"_{ref}"
+    plot_spectra.process(run, ref)
     return run
 
 
@@ -130,7 +131,9 @@ def main(args):
                     print(f"Processed '{run}' in {elapsed:.3f} seconds")
         if args.plot:
             # produce plots if needed
-            for run in pool.imap_unordered(plot, runs_complete):
+            for run in pool.imap_unordered(
+                functools.partial(plot, ref=args.ref), runs_complete
+            ):
                 if args.verbose:
                     print(f"Produced plot for '{run}'")
 

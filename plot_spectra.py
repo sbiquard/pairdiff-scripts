@@ -69,7 +69,7 @@ def decorate(ax, has_T: bool = False, dl: bool = False):
     )
 
 
-def process(dirname):
+def process(dirname, ref: str = ""):
     # Create 'plots' directory if needed
     run = pathlib.Path(dirname)
     plotdir = run / "plots"
@@ -77,8 +77,8 @@ def process(dirname):
 
     # Read spectra
     cldir = run / "spectra"
-    full_cl = np.load(cldir / "full_cl.npz")
-    noise_cl = np.load(cldir / "noise_cl.npz")
+    full_cl = np.load(cldir / f"full_cl{ref}.npz")
+    noise_cl = np.load(cldir / f"noise_cl{ref}.npz")
 
     fig, ax = plt.subplots()
     fig.suptitle("Power spectra and noise spectra of estimated maps")
