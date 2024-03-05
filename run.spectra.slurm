@@ -17,5 +17,5 @@ conda activate namaster
 
 date
 ncpu=$SLURM_CPUS_PER_TASK
-srun python compute_spectra.py --verbose -n $ncpu --plot
+srun python compute_spectra.py --verbose -n $ncpu --plot --mask mask_apo_10000 --ref more_hits
 echo "$(date) : Done!"

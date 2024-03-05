@@ -136,11 +136,11 @@ def read_residuals(dirname, ref=None):
     return data
 
 
-def read_mask(fname="out/mask_apo.fits"):
-    file = pathlib.Path(fname)
+def read_mask(fname="mask_apo"):
+    file = pathlib.Path("out") / f"{fname}.fits"
     if file.exists():
         mask = hp.read_map(str(file))
         return mask
     else:
-        msg = f"{file} not found -- run get_mask_apo.py to generate it"
+        msg = f"{file} not found -- run `get_mask_apo.py --out {fname}` to generate it"
         raise FileNotFoundError(msg)
