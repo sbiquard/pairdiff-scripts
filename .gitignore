@@ -1,7 +1,7 @@
-out/
-toast_out/
+*out/
 atm_cache/
 atm_cache_coarse/
 __pycache__
 slurm*.out
 .vscode/
+notebooks/
