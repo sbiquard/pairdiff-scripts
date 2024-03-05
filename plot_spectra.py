@@ -85,7 +85,7 @@ def process(dirname, ref: str = ""):
     has_tt = plot(full_cl, ax, ls="solid")
     plot(noise_cl, ax, ls="dashed")
     decorate(ax, has_tt)
-    plt.savefig(plotdir / "spectra.png")
+    plt.savefig(plotdir / f"spectra{ref}.png")
 
 
 if __name__ == "__main__":
