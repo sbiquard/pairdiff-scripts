@@ -80,14 +80,7 @@ def simulate_data(job, otherargs, runargs, comm):
 
     wrk.simulate_sky_map_signal(job, otherargs, runargs, data)
     wrk.simulate_conviqt_signal(job, otherargs, runargs, data)
-
-    if job_ops.sim_noise.enabled and job_ops.my_sim_noise.enabled:
-        log.warning_rank(
-            "Operators 'sim_noise' and 'my_sim_noise' are both enabled. Only the first one will be applied."
-        )
-        job_ops.my_sim_noise.enabled = False
     wrk.simulate_detector_noise(job, otherargs, runargs, data)
-    pwrk.simulate_detector_noise(job, otherargs, runargs, data)
 
     if job_ops.gainscrambler.enabled and job_ops.my_gainscrambler.enabled:
         log.warning_rank(
@@ -111,9 +104,25 @@ def simulate_data(job, otherargs, runargs, comm):
 def reduce_data(job, otherargs, runargs, data):
     log = toast.utils.Logger.get()
 
+    # add atmosphere to noise buffer
+    if job.operators.sim_atmosphere.enabled:
+        atm_name = job.operators.sim_atmosphere.det_data
+        noise_name = job.operators.sim_noise.det_data
+        if atm_name != noise_name:
+            msg = f"Adding atmosphere '{atm_name}' to noise buffer '{noise_name}'"
+            log.info_rank(msg, data.comm.comm_world)
+            toast.ops.arithmetic.Combine(
+                op="add",
+                first=noise_name,
+                second=atm_name,
+                result=noise_name,
+            ).apply(data)
+
     wrk.flag_noise_outliers(job, otherargs, runargs, data)
     wrk.noise_estimation(job, otherargs, runargs, data)
     wrk.raw_statistics(job, otherargs, runargs, data)
+
+    # replace mapmaker with mappraiser
     # wrk.mapmaker(job, otherargs, runargs, data)
     pwrk.mapmaker_mappraiser(job, otherargs, runargs, data)
 
@@ -195,13 +204,15 @@ def main():
     wrk.setup_simulate_sky_map_signal(operators)
     wrk.setup_simulate_conviqt_signal(operators)
     wrk.setup_simulate_detector_noise(operators)
-    pwrk.setup_simulate_detector_noise(operators)  # for my_sim_noise
-    wrk.setup_simulate_calibration_error(operators)
-    pwrk.setup_simulate_calibration_error(operators)  # for my_gainscrambler
+
+    # replace gain scrambler with our own
+    # wrk.setup_simulate_calibration_error(operators)
+    pwrk.setup_simulate_calibration_error(operators)
+
     wrk.setup_save_data_hdf5(operators)
 
-    wrk.setup_flag_noise_outliers(operators)  #! to investigate
-    wrk.setup_noise_estimation(operators)  #! to investigate
+    wrk.setup_flag_noise_outliers(operators)
+    wrk.setup_noise_estimation(operators)
     wrk.setup_raw_statistics(operators)
     wrk.setup_mapmaker(operators, templates)
     pwrk.setup_mapmaker_mappraiser(parser, operators)

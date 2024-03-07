@@ -17,7 +17,7 @@ mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"
 
-mpirun -np $ntask so_sim_mappraiser.py \
+mpirun -np $ntask ./toast_mappraiser_workflow.py \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \

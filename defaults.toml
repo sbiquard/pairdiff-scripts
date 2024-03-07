@@ -680,35 +680,6 @@
     serial = true # Use legacy serial implementation instead of batched
     times = "times" # Observation shared key for timestamps
 
-[operators.my_sim_noise]
-    class = "pymappraiser.toast.ops.sim_noise.MySimNoise"
-    API = 0 # Internal interface version for this operator
-    component = 0 # The noise component index
-    det_data = "signal" # Observation detdata key for accumulating noise timestreams
-    det_data_units = "Unit('K')" # Output units if creating detector data
-    enabled = false # If True, this class instance is marked as enabled
-    enforce_band = false # Modify PSD on the fly to enforce band diagonality of the noise covariance matrix
-    half_bandwidth = 64 # Half bandwidth of the noise covariance matrix (only used when `enforce_band` is True)
-    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
-    name = "my_sim_noise" # The 'name' of this class instance
-    noise_model = "noise_model" # Observation key containing the noise model
-    realization = 0 # The noise realization index
-    serial = true # Use legacy serial implementation instead of batched
-    times = "times" # Observation shared key for timestamps
-
-[operators.gainscrambler]
-    class = "toast.ops.gainscrambler.GainScrambler"
-    API = 0 # Internal interface version for this operator
-    center = 1.0 # Gain distribution center
-    component = 0 # Component index for this simulation
-    det_data = "signal" # Observation detdata key to apply the gain error to
-    enabled = false # If True, this class instance is marked as enabled
-    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
-    name = "gainscrambler" # The 'name' of this class instance
-    pattern = ".*" # Regex pattern to match against detector names. Only detectors that match the pattern are scrambled.
-    realization = 0 # Realization index
-    sigma = 0.001 # Gain distribution width
-
 [operators.my_gainscrambler]
     class = "pymappraiser.toast.ops.gainscrambler.MyGainScrambler"
     API = 0 # Internal interface version for this operator

@@ -44,7 +44,7 @@ mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"
 
-srun so_sim_mappraiser.py \
+srun ./toast_mappraiser_workflow.py \
     --thinfp 4 \
     --config sat.toml \
     --schedule $schedule \
