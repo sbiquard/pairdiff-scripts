@@ -9,10 +9,10 @@ nside=512
 telescope=SAT1
 band=$(printf "SAT_f%03i" $freq)
 
-schedule="schedule.small.2.txt"
+schedule="schedule.small.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=out/gains/constant/slow_sample
+outdir=out/gains/constant
 mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"
@@ -37,11 +37,10 @@ mpirun -np $ntask ./toast_mappraiser_workflow.py \
     --mappraiser.mem_report \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
-    --mappraiser.nperseg_frac 0.1 \
     --my_gainscrambler.enable \
     --my_gainscrambler.process_pairs \
     --my_gainscrambler.constant \
-    --my_gainscrambler.sigma 0.1 \
+    --my_gainscrambler.sigma 0.01 \
     --sim_atmosphere_coarse.disable \
     --out $outdir \
     >$logfile 2>&1
