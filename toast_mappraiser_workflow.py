@@ -42,13 +42,12 @@ from toast.observation import default_values as defaults
 
 from sotodlib.toast import ops as so_ops
 from sotodlib.toast import workflows as wrk
+import pymappraiser.toast.workflows as pwrk
 
 # Make sure pixell uses a reliable FFT engine
 import pixell.fft
 
 pixell.fft.engine = "fftw"
-
-import pymappraiser.toast.workflows as pwrk
 
 
 def simulate_data(job, otherargs, runargs, comm):
@@ -82,12 +81,7 @@ def simulate_data(job, otherargs, runargs, comm):
     wrk.simulate_conviqt_signal(job, otherargs, runargs, data)
     wrk.simulate_detector_noise(job, otherargs, runargs, data)
 
-    if job_ops.gainscrambler.enabled and job_ops.my_gainscrambler.enabled:
-        log.warning_rank(
-            "Operators 'gainscrambler' and 'my_gainscrambler' are both enabled. Only the first one will be applied."
-        )
-        job_ops.my_gainscrambler.enabled = False
-    wrk.simulate_calibration_error(job, otherargs, runargs, data)
+    # wrk.simulate_calibration_error(job, otherargs, runargs, data)
     pwrk.simulate_calibration_error(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(msg="(whole node)", comm=comm, silent=True)
