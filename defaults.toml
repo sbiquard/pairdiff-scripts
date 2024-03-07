@@ -970,7 +970,6 @@
     class = "pymappraiser.toast.ops.mappraiser.Mappraiser"
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
-    atm_name = "None" # Observation detdata key for atm data to be added with the noise (if None, assume no atm)
     bandwidth = 16384 # Half-bandwidth for the noise model
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
@@ -995,7 +994,7 @@
     noise_name = "noise" # Observation detdata key for noise data (if None, triggers noiseless mode)
     noise_scale = "noise_scale" # Observation key with optional scaling factor for noise PSDs
     noiseless = false # Activate noiseless mode
-    nperseg = 0 # If 0, set nperseg = timestream length to compute the noise periodograms.
+    nperseg_frac = 1.0 # Fraction of timestream length to use for computing noise periodograms with Welch method.
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
     pair_diff = false # Process differenced timestreams between orthogonal detectors in pairs.
     paramfile = "None" # Read mappraiser parameters from this file

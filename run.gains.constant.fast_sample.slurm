@@ -67,6 +67,7 @@ srun so_sim_mappraiser.py \
     --mappraiser.enable \
     --mappraiser.mem_report \
     --mappraiser.pair_diff \
+    --mappraiser.save_psd \
     --mappraiser.nperseg_frac 0.01 \
     --my_gainscrambler.enable \
     --my_gainscrambler.process_pairs \

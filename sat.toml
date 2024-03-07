@@ -970,7 +970,6 @@
     class = "pymappraiser.toast.ops.mappraiser.Mappraiser"
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
-    atm_name = "atm" # Observation detdata key for atm data to be added with the noise (if None, assume no atm)
     bandwidth = 8192 # Half-bandwidth for the noise model
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
@@ -1005,7 +1004,7 @@
     ptcomm_flag = 6 # Choose collective communication scheme
     purge_det_data = false # If True, clear all observation detector data after copying to mappraiser buffers
     realization = 0 # Noise realization index (for gap filling)
-    save_psd = true # Save noise PSD information during inv_tt computation
+    save_psd = false # Save noise PSD information during inv_tt computation
     shared_flag_mask = 13 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     signal_fraction = 1.0 # Fraction of the sky signal to keep
