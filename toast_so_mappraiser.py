@@ -75,9 +75,7 @@ def simulate_data(job, otherargs, runargs, comm):
     so_wrk.simulate_sky_map_signal(job, otherargs, runargs, data)
     so_wrk.simulate_conviqt_signal(job, otherargs, runargs, data)
     so_wrk.simulate_detector_noise(job, otherargs, runargs, data)
-
-    # so_wrk.simulate_calibration_error(job, otherargs, runargs, data)
-    wrk.simulate_calibration_error(job, otherargs, runargs, data)
+    so_wrk.simulate_calibration_error(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(msg="(whole node)", comm=comm, silent=True)
     log.info_rank(f"After simulating data:  {mem}", comm)
@@ -112,7 +110,6 @@ def reduce_data(job, otherargs, runargs, data):
     so_wrk.raw_statistics(job, otherargs, runargs, data)
 
     # replace mapmaker with mappraiser
-    # so_wrk.mapmaker(job, otherargs, runargs, data)
     wrk.mapmaker(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(
@@ -193,10 +190,7 @@ def main():
     so_wrk.setup_simulate_sky_map_signal(operators)
     so_wrk.setup_simulate_conviqt_signal(operators)
     so_wrk.setup_simulate_detector_noise(operators)
-
-    # replace gain scrambler with our own
-    # so_wrk.setup_simulate_calibration_error(operators)
-    wrk.setup_simulate_calibration_error(operators)
+    so_wrk.setup_simulate_calibration_error(operators)
 
     so_wrk.setup_save_data_hdf5(operators)
 

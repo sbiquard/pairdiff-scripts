@@ -1,14 +1,8 @@
-"""Utility to use the Mappraiser operator in a TOAST workflow"""
+"""Mapmaking with the MAPPRAISER framework."""
 
-import numpy as np
 import pymappraiser.toast as ptoast
-import toast
-import toast.ops
-from astropy import units as u
 from pymappraiser.toast import Mappraiser
-from sotodlib.toast import ops as so_ops
 from sotodlib.toast.workflows.job import workflow_timer
-from toast.observation import default_values as defaults
 
 
 def setup_mapmaker(parser, operators):
