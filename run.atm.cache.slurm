@@ -44,7 +44,7 @@ echo "Writing $logfile"
 
 # Time out the program before Slurm does
 timeout 115m \
-    srun ./toast_mappraiser_workflow.py \
+    srun ./toast_so_mappraiser.py \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \

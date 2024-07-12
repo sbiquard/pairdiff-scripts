@@ -18,7 +18,7 @@ logfile=$outdir/run.log
 echo "Writing $logfile"
 
 TOAST_LOGLEVEL="DEBUG" \
-mpirun -np $ntask ./toast_mappraiser_workflow.py \
+mpirun -np $ntask ./toast_so_mappraiser.py \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \

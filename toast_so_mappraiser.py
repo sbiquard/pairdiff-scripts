@@ -8,11 +8,11 @@ This script runs an SO time domain simulation and reduces data to maps using Map
 
 You can see the automatically generated command line options with:
 
-    toast_mappraiser_workflow.py --help
+    toast_so_mappraiser.py --help
 
 Or you can dump a config file with all the default values with:
 
-    toast_mappraiser_workflow.py --default_toml config.toml
+    toast_so_mappraiser.py --default_toml config.toml
 
 This script contains just comments about what is going on.  For details about all the
 options for a specific Operator, see the documentation or use the help() function from
