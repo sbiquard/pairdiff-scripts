@@ -17,7 +17,6 @@ Or you can dump a config file with all the default values with:
 This script contains just comments about what is going on.  For details about all the
 options for a specific Operator, see the documentation or use the help() function from
 an interactive python session.
-
 """
 
 import argparse
@@ -27,26 +26,20 @@ import sys
 import traceback
 
 import numpy as np
-
-from astropy import units as u
-
-# Import sotodlib.toast first, since that sets default object names
-# to use in toast.
-import sotodlib.toast as sotoast
-
+import pixell.fft
+import sotodlib.toast as sotoast  # import before toast to set the correct names
 import toast
 import toast.ops
-
+import toast.utils
+from astropy import units as u
+from sotodlib.toast import ops as so_ops
+from sotodlib.toast import workflows as so_wrk
 from toast.mpi import MPI, Comm
 from toast.observation import default_values as defaults
 
-from sotodlib.toast import ops as so_ops
-from sotodlib.toast import workflows as wrk
-import pymappraiser.toast.workflows as pwrk
+import workflow as wrk
 
 # Make sure pixell uses a reliable FFT engine
-import pixell.fft
-
 pixell.fft.engine = "fftw"
 
 
@@ -55,39 +48,41 @@ def simulate_data(job, otherargs, runargs, comm):
     job_ops = job.operators
 
     if job_ops.sim_ground.enabled:
-        data = wrk.simulate_observing(job, otherargs, runargs, comm)
+        data = so_wrk.simulate_observing(job, otherargs, runargs, comm)
+        if data is None:
+            raise RuntimeError("Failed to simulate observing")
     else:
-        group_size = wrk.reduction_group_size(job, runargs, comm)
+        group_size = so_wrk.reduction_group_size(job, runargs, comm)
         toast_comm = toast.Comm(world=comm, groupsize=group_size)
         data = toast.Data(comm=toast_comm)
         # Load data from all formats
-        wrk.load_data_hdf5(job, otherargs, runargs, data)
-        wrk.load_data_books(job, otherargs, runargs, data)
-        wrk.load_data_context(job, otherargs, runargs, data)
+        so_wrk.load_data_hdf5(job, otherargs, runargs, data)
+        so_wrk.load_data_books(job, otherargs, runargs, data)
+        so_wrk.load_data_context(job, otherargs, runargs, data)
         # optionally zero out
         if otherargs.zero_loaded_data:
             toast.ops.Reset(detdata=[defaults.signal])
 
-    wrk.select_pointing(job, otherargs, runargs, data)
-    wrk.simple_noise_models(job, otherargs, runargs, data)
-    wrk.simulate_atmosphere_signal(job, otherargs, runargs, data)
+    so_wrk.select_pointing(job, otherargs, runargs, data)
+    so_wrk.simple_noise_models(job, otherargs, runargs, data)
+    so_wrk.simulate_atmosphere_signal(job, otherargs, runargs, data)
 
     # Shortcut if we are only caching the atmosphere.  If this job is only caching
     # (not observing) the atmosphere, then return at this point.
     if job.operators.sim_atmosphere.cache_only:
         return data
 
-    wrk.simulate_sky_map_signal(job, otherargs, runargs, data)
-    wrk.simulate_conviqt_signal(job, otherargs, runargs, data)
-    wrk.simulate_detector_noise(job, otherargs, runargs, data)
+    so_wrk.simulate_sky_map_signal(job, otherargs, runargs, data)
+    so_wrk.simulate_conviqt_signal(job, otherargs, runargs, data)
+    so_wrk.simulate_detector_noise(job, otherargs, runargs, data)
 
-    # wrk.simulate_calibration_error(job, otherargs, runargs, data)
-    pwrk.simulate_calibration_error(job, otherargs, runargs, data)
+    # so_wrk.simulate_calibration_error(job, otherargs, runargs, data)
+    wrk.simulate_calibration_error(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(msg="(whole node)", comm=comm, silent=True)
     log.info_rank(f"After simulating data:  {mem}", comm)
 
-    wrk.save_data_hdf5(job, otherargs, runargs, data)
+    so_wrk.save_data_hdf5(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(msg="(whole node)", comm=comm, silent=True)
     log.info_rank(f"After saving data:  {mem}", comm)
@@ -112,13 +107,13 @@ def reduce_data(job, otherargs, runargs, data):
                 result=noise_name,
             ).apply(data)
 
-    wrk.flag_noise_outliers(job, otherargs, runargs, data)
-    wrk.noise_estimation(job, otherargs, runargs, data)
-    wrk.raw_statistics(job, otherargs, runargs, data)
+    so_wrk.flag_noise_outliers(job, otherargs, runargs, data)
+    so_wrk.noise_estimation(job, otherargs, runargs, data)
+    so_wrk.raw_statistics(job, otherargs, runargs, data)
 
     # replace mapmaker with mappraiser
-    # wrk.mapmaker(job, otherargs, runargs, data)
-    pwrk.mapmaker_mappraiser(job, otherargs, runargs, data)
+    # so_wrk.mapmaker(job, otherargs, runargs, data)
+    wrk.mapmaker(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(
         msg="(whole node)", comm=data.comm.comm_world, silent=True
@@ -185,33 +180,33 @@ def main():
     templates = list()
 
     # Loading data from disk is disabled by default
-    wrk.setup_load_data_hdf5(operators)
-    wrk.setup_load_data_books(operators)
-    wrk.setup_load_data_context(operators)
+    so_wrk.setup_load_data_hdf5(operators)
+    so_wrk.setup_load_data_books(operators)
+    so_wrk.setup_load_data_context(operators)
 
     # Simulated observing is enabled by default
-    wrk.setup_simulate_observing(parser, operators)
+    so_wrk.setup_simulate_observing(parser, operators)
 
-    wrk.setup_pointing(operators)
-    wrk.setup_simple_noise_models(operators)
-    wrk.setup_simulate_atmosphere_signal(operators)
-    wrk.setup_simulate_sky_map_signal(operators)
-    wrk.setup_simulate_conviqt_signal(operators)
-    wrk.setup_simulate_detector_noise(operators)
+    so_wrk.setup_pointing(operators)
+    so_wrk.setup_simple_noise_models(operators)
+    so_wrk.setup_simulate_atmosphere_signal(operators)
+    so_wrk.setup_simulate_sky_map_signal(operators)
+    so_wrk.setup_simulate_conviqt_signal(operators)
+    so_wrk.setup_simulate_detector_noise(operators)
 
     # replace gain scrambler with our own
-    # wrk.setup_simulate_calibration_error(operators)
-    pwrk.setup_simulate_calibration_error(operators)
+    # so_wrk.setup_simulate_calibration_error(operators)
+    wrk.setup_simulate_calibration_error(operators)
 
-    wrk.setup_save_data_hdf5(operators)
+    so_wrk.setup_save_data_hdf5(operators)
 
-    wrk.setup_flag_noise_outliers(operators)
-    wrk.setup_noise_estimation(operators)
-    wrk.setup_raw_statistics(operators)
-    wrk.setup_mapmaker(operators, templates)
-    pwrk.setup_mapmaker_mappraiser(parser, operators)
+    so_wrk.setup_flag_noise_outliers(operators)
+    so_wrk.setup_noise_estimation(operators)
+    so_wrk.setup_raw_statistics(operators)
+    so_wrk.setup_mapmaker(operators, templates)
+    wrk.setup_mapmaker(parser, operators)
 
-    job, config, otherargs, runargs = wrk.setup_job(
+    job, config, otherargs, runargs = so_wrk.setup_job(
         parser=parser, operators=operators, templates=templates
     )
 

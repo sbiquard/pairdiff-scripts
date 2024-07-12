@@ -1,10 +1,10 @@
-import pathlib
-import numpy as np
-import healpy as hp
-import toml
-
 import functools
+import pathlib
 import time
+
+import healpy as hp
+import numpy as np
+import toml
 
 
 def timer(func):
