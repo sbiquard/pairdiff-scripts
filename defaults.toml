@@ -1,5 +1,5 @@
 # TOAST config
-# Generated with version 3.0.0a20.dev61
+# Generated with version 0b87ae18
 
 [operators]
 [operators.load_hdf5]
@@ -270,16 +270,18 @@
     API = 0 # Internal interface version for this operator
     auto_bounds = true # If True, set the bounding box based on boresight and field of view
     bounds = "()" # The (lon_min, lon_max, lat_min, lat_max) values (Quantities)
-    center = "(Quantity('1.80000000000000e+02 deg'),Quantity('0.00000000000000e+00 deg'),)" # The center Lon/Lat coordinates (Quantities) of the projection
+    center = "()" # The center Lon/Lat coordinates (Quantities) of the projection
     center_offset = "None" # Optional name of shared field with lon, lat offset in degrees
+    coord_frame = "EQU" # Supported values are AZEL, EQU, GAL, ECL
     create_dist = "None" # Create the submap distribution for all detectors and store in the Data key specified
     detector_pointing = "None" # Operator that translates boresight pointing into detector frame
-    dimensions = "(710,350,)" # The Lon/Lat pixel dimensions of the projection
+    dimensions = "(1000,1000,)" # The Lon/Lat pixel dimensions of the projection
     enabled = false # If True, this class instance is marked as enabled
+    fits_header = "None" # FITS file containing header to use with pre-existing WCS parameters
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "pixels_wcs_azel" # The 'name' of this class instance
     pixels = "pixels" # Observation detdata key for output pixel indices
-    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN
+    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN, SFL
     resolution = "(Quantity('5.00000000000000e-03 deg'),Quantity('5.00000000000000e-03 deg'),)" # The Lon/Lat projection resolution (Quantities) along the 2 axes
     single_precision = false # If True, use 32bit int in output
     submaps = 1 # Number of submaps to use
@@ -289,21 +291,23 @@
 [operators.pixels_wcs_azel_final]
     class = "toast.ops.pixels_wcs.PixelsWCS"
     API = 0 # Internal interface version for this operator
-    auto_bounds = false # If True, set the bounding box based on boresight and field of view
+    auto_bounds = true # If True, set the bounding box based on boresight and field of view
     bounds = "()" # The (lon_min, lon_max, lat_min, lat_max) values (Quantities)
-    center = "(Quantity('1.80000000000000e+02 deg'),Quantity('0.00000000000000e+00 deg'),)" # The center Lon/Lat coordinates (Quantities) of the projection
+    center = "()" # The center Lon/Lat coordinates (Quantities) of the projection
     center_offset = "None" # Optional name of shared field with lon, lat offset in degrees
+    coord_frame = "EQU" # Supported values are AZEL, EQU, GAL, ECL
     create_dist = "None" # Create the submap distribution for all detectors and store in the Data key specified
     detector_pointing = "None" # Operator that translates boresight pointing into detector frame
-    dimensions = "(710,350,)" # The Lon/Lat pixel dimensions of the projection
+    dimensions = "(1000,1000,)" # The Lon/Lat pixel dimensions of the projection
     enabled = false # If True, this class instance is marked as enabled
+    fits_header = "None" # FITS file containing header to use with pre-existing WCS parameters
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "pixels_wcs_azel_final" # The 'name' of this class instance
     pixels = "pixels" # Observation detdata key for output pixel indices
-    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN
-    resolution = "(Quantity('5.00000000000000e-01 deg'),Quantity('5.00000000000000e-01 deg'),)" # The Lon/Lat projection resolution (Quantities) along the 2 axes
+    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN, SFL
+    resolution = "()" # The Lon/Lat projection resolution (Quantities) along the 2 axes
     single_precision = false # If True, use 32bit int in output
-    submaps = 10 # Number of submaps to use
+    submaps = 1 # Number of submaps to use
     use_astropy = true # If True, use astropy for world to pix conversion
     view = "None" # Use this view of the data in all observations
 
@@ -312,16 +316,18 @@
     API = 0 # Internal interface version for this operator
     auto_bounds = true # If True, set the bounding box based on boresight and field of view
     bounds = "()" # The (lon_min, lon_max, lat_min, lat_max) values (Quantities)
-    center = "(Quantity('1.80000000000000e+02 deg'),Quantity('0.00000000000000e+00 deg'),)" # The center Lon/Lat coordinates (Quantities) of the projection
+    center = "()" # The center Lon/Lat coordinates (Quantities) of the projection
     center_offset = "None" # Optional name of shared field with lon, lat offset in degrees
+    coord_frame = "EQU" # Supported values are AZEL, EQU, GAL, ECL
     create_dist = "None" # Create the submap distribution for all detectors and store in the Data key specified
     detector_pointing = "None" # Operator that translates boresight pointing into detector frame
-    dimensions = "(710,350,)" # The Lon/Lat pixel dimensions of the projection
+    dimensions = "(1000,1000,)" # The Lon/Lat pixel dimensions of the projection
     enabled = false # If True, this class instance is marked as enabled
+    fits_header = "None" # FITS file containing header to use with pre-existing WCS parameters
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "pixels_wcs_radec" # The 'name' of this class instance
     pixels = "pixels" # Observation detdata key for output pixel indices
-    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN
+    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN, SFL
     resolution = "(Quantity('5.00000000000000e-03 deg'),Quantity('5.00000000000000e-03 deg'),)" # The Lon/Lat projection resolution (Quantities) along the 2 axes
     single_precision = false # If True, use 32bit int in output
     submaps = 1 # Number of submaps to use
@@ -331,21 +337,23 @@
 [operators.pixels_wcs_radec_final]
     class = "toast.ops.pixels_wcs.PixelsWCS"
     API = 0 # Internal interface version for this operator
-    auto_bounds = false # If True, set the bounding box based on boresight and field of view
+    auto_bounds = true # If True, set the bounding box based on boresight and field of view
     bounds = "()" # The (lon_min, lon_max, lat_min, lat_max) values (Quantities)
-    center = "(Quantity('1.80000000000000e+02 deg'),Quantity('0.00000000000000e+00 deg'),)" # The center Lon/Lat coordinates (Quantities) of the projection
+    center = "()" # The center Lon/Lat coordinates (Quantities) of the projection
     center_offset = "None" # Optional name of shared field with lon, lat offset in degrees
+    coord_frame = "EQU" # Supported values are AZEL, EQU, GAL, ECL
     create_dist = "None" # Create the submap distribution for all detectors and store in the Data key specified
     detector_pointing = "None" # Operator that translates boresight pointing into detector frame
-    dimensions = "(710,350,)" # The Lon/Lat pixel dimensions of the projection
+    dimensions = "(1000,1000,)" # The Lon/Lat pixel dimensions of the projection
     enabled = false # If True, this class instance is marked as enabled
+    fits_header = "None" # FITS file containing header to use with pre-existing WCS parameters
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "pixels_wcs_radec_final" # The 'name' of this class instance
     pixels = "pixels" # Observation detdata key for output pixel indices
-    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN
-    resolution = "(Quantity('5.00000000000000e-01 deg'),Quantity('5.00000000000000e-01 deg'),)" # The Lon/Lat projection resolution (Quantities) along the 2 axes
+    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN, SFL
+    resolution = "()" # The Lon/Lat projection resolution (Quantities) along the 2 axes
     single_precision = false # If True, use 32bit int in output
-    submaps = 10 # Number of submaps to use
+    submaps = 1 # Number of submaps to use
     use_astropy = true # If True, use astropy for world to pix conversion
     view = "None" # Use this view of the data in all observations
 
@@ -403,6 +411,7 @@
     cache_dir = "None" # Directory to use for loading / saving atmosphere realizations
     cache_only = false # If True, only cache the atmosphere, do not observe it.
     component = 123456 # The component index to use for this atmosphere simulation
+    corr_lim = 0.001 # Correlation limit is used to measure the correlation length of the simulation.  Elements further than correlation length apart have their covariance set to zero.
     debug_plots = false # If True, make plots of the debug snapshots
     debug_snapshots = false # If True, dump snapshots of the atmosphere slabs to pickle files
     debug_spectrum = false # If True, dump out Kolmogorov debug files
@@ -451,6 +460,7 @@
     cache_dir = "None" # Directory to use for loading / saving atmosphere realizations
     cache_only = false # If True, only cache the atmosphere, do not observe it.
     component = 123456 # The component index to use for this atmosphere simulation
+    corr_lim = 0.001 # Correlation limit is used to measure the correlation length of the simulation.  Elements further than correlation length apart have their covariance set to zero.
     debug_plots = false # If True, make plots of the debug snapshots
     debug_snapshots = false # If True, dump snapshots of the atmosphere slabs to pickle files
     debug_spectrum = false # If True, dump out Kolmogorov debug files
@@ -580,16 +590,18 @@
     API = 0 # Internal interface version for this operator
     auto_bounds = true # If True, set the bounding box based on boresight and field of view
     bounds = "()" # The (lon_min, lon_max, lat_min, lat_max) values (Quantities)
-    center = "(Quantity('1.80000000000000e+02 deg'),Quantity('0.00000000000000e+00 deg'),)" # The center Lon/Lat coordinates (Quantities) of the projection
+    center = "()" # The center Lon/Lat coordinates (Quantities) of the projection
     center_offset = "None" # Optional name of shared field with lon, lat offset in degrees
+    coord_frame = "EQU" # Supported values are AZEL, EQU, GAL, ECL
     create_dist = "None" # Create the submap distribution for all detectors and store in the Data key specified
     detector_pointing = "None" # Operator that translates boresight pointing into detector frame
-    dimensions = "(710,350,)" # The Lon/Lat pixel dimensions of the projection
+    dimensions = "(1000,1000,)" # The Lon/Lat pixel dimensions of the projection
     enabled = false # If True, this class instance is marked as enabled
+    fits_header = "None" # FITS file containing header to use with pre-existing WCS parameters
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "scan_wcs_map_pixels" # The 'name' of this class instance
     pixels = "pixels_scan_map" # Observation detdata key for output pixel indices
-    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN
+    projection = "CAR" # Supported values are CAR, CEA, MER, ZEA, TAN, SFL
     resolution = "(Quantity('5.00000000000000e-03 deg'),Quantity('5.00000000000000e-03 deg'),)" # The Lon/Lat projection resolution (Quantities) along the 2 axes
     single_precision = false # If True, use 32bit int in output
     submaps = 1 # Number of submaps to use
@@ -680,20 +692,22 @@
     serial = true # Use legacy serial implementation instead of batched
     times = "times" # Observation shared key for timestamps
 
-[operators.my_gainscrambler]
-    class = "pymappraiser.toast.ops.gainscrambler.MyGainScrambler"
+[operators.gainscrambler]
+    class = "toast.ops.gainscrambler.GainScrambler"
     API = 0 # Internal interface version for this operator
-    center = 1.0 # Gain distribution center
     component = 0 # Component index for this simulation
     constant = false # If True, scramble all detector pairs in the same way
-    det_data_names = "['signal',]" # Observation detdata key to apply the gain error to
+    det_data_names = "['signal',]" # Observation detdata key(s) to apply the gain error to
+    dist = "gaussian" # Gain distribution density
     enabled = false # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
-    name = "my_gainscrambler" # The 'name' of this class instance
+    location = 1.0 # Distribution location parameter
+    name = "gainscrambler" # The 'name' of this class instance
     pattern = ".*" # Regex pattern to match against detector names. Only detectors that match the pattern are scrambled.
     process_pairs = false # Process detectors in pairs
     realization = 0 # Realization index
-    sigma = 0.001 # Gain distribution width
+    scale = 0.001 # Distribution scale parameter
+    store = false # Store the scrambled values
 
 [operators.save_hdf5]
     class = "toast.ops.save_hdf5.SaveHDF5"
@@ -743,9 +757,9 @@
     pixel_dist = "pixel_dist" # The Data key where the PixelDistribution object is located.  Only relevant if `maskfile` and/or `mapfile` are set
     pixel_pointing = "None" # An instance of a pixel pointing operator.  Only relevant if `maskfile` and/or `mapfile` are set
     pol = true # Sample also the polarized part of the map
-    remove_common_mode = true # Remove common mode signal before estimation
+    remove_common_mode = false # Remove common mode signal before estimation
     save_cov = false # Save also the sample covariance
-    shared_flag_mask = 13 # Bit mask value for optional shared flagging
+    shared_flag_mask = 15 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     stationary_period = "Quantity('8.64000000000000e+04 s')" # Break the observation into several estimation periods of this length
     stokes_weights = "None" # An instance of a Stokes weights operator.  Only relevant if `mapfile` is set
@@ -811,9 +825,9 @@
     pixel_dist = "pixel_dist" # The Data key where the PixelDistribution object is located.  Only relevant if `maskfile` and/or `mapfile` are set
     pixel_pointing = "None" # An instance of a pixel pointing operator.  Only relevant if `maskfile` and/or `mapfile` are set
     pol = true # Sample also the polarized part of the map
-    remove_common_mode = true # Remove common mode signal before estimation
+    remove_common_mode = false # Remove common mode signal before estimation
     save_cov = false # Save also the sample covariance
-    shared_flag_mask = 13 # Bit mask value for optional shared flagging
+    shared_flag_mask = 15 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     stationary_period = "Quantity('8.64000000000000e+04 s')" # Break the observation into several estimation periods of this length
     stokes_weights = "None" # An instance of a Stokes weights operator.  Only relevant if `mapfile` is set
@@ -849,7 +863,7 @@
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "raw_statistics" # The 'name' of this class instance
     output_dir = "None" # If specified, write output data products to this directory
-    shared_flag_mask = 13 # Bit mask value for optional shared flagging
+    shared_flag_mask = 15 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     view = "None" # Use this view of the data in all observations
 
@@ -872,7 +886,7 @@
     pixel_dist = "pix_dist" # The Data key where the PixelDist object should be stored
     pixel_pointing = "None" # This must be an instance of a pixel pointing operator
     pre_process = "None" # Optional extra operator to run prior to binning
-    shared_flag_mask = 13 # Bit mask value for optional telescope flagging
+    shared_flag_mask = 15 # Bit mask value for optional telescope flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     stokes_weights = "None" # This must be an instance of a Stokes weights operator
     sync_type = "alltoallv" # Communication algorithm: 'allreduce' or 'alltoallv'
@@ -896,7 +910,7 @@
     pixel_dist = "pix_dist_final" # The Data key where the PixelDist object should be stored
     pixel_pointing = "None" # This must be an instance of a pixel pointing operator
     pre_process = "None" # Optional extra operator to run prior to binning
-    shared_flag_mask = 13 # Bit mask value for optional telescope flagging
+    shared_flag_mask = 15 # Bit mask value for optional telescope flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     stokes_weights = "None" # This must be an instance of a Stokes weights operator
     sync_type = "alltoallv" # Communication algorithm: 'allreduce' or 'alltoallv'
@@ -938,7 +952,7 @@
     write_solver_products = false # If True, write out equivalent solver products.
 
 [operators.mappraiser]
-    class = "pymappraiser.toast.ops.mappraiser.Mappraiser"
+    class = "pymappraiser.toast.mappraiser.Mappraiser"
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
     bandwidth = 16384 # Half-bandwidth for the noise model
@@ -962,6 +976,7 @@
     mem_report = false # Print system memory use while staging/unstaging data
     name = "mappraiser" # The 'name' of this class instance
     noise_model = "noise_model" # Observation key containing the noise model
+    noise_model_fit = "noise_estim_fit" # Observation key containing a noise model fitted to the data
     noise_name = "noise" # Observation detdata key for noise data (if None, triggers noiseless mode)
     noise_scale = "noise_scale" # Observation key with optional scaling factor for noise PSDs
     noiseless = false # Activate noiseless mode
@@ -976,12 +991,13 @@
     purge_det_data = false # If True, clear all observation detector data after copying to mappraiser buffers
     realization = 0 # Noise realization index (for gap filling)
     save_psd = false # Save noise PSD information during inv_tt computation
-    shared_flag_mask = 13 # Bit mask value for optional shared flagging
+    shared_flag_mask = 15 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     signal_fraction = 1.0 # Fraction of the sky signal to keep
     solver = 0 # Choose mapmaking solver (0->PCG, 1->ECG)
     stokes_weights = "None" # This must be an instance of a Stokes weights operator
     tol = 1e-12 # Convergence threshold for the iterative solver
+    use_noise_model = false # Use an existing noise model fitted to the data (`noise_model_fit` trait)
     z_2lvl = 0 # Size of 2lvl deflation space
 
 [operators.mem_count]
@@ -1000,7 +1016,7 @@
     debug_plots = "None" # If not None, make debugging plots in this directory
     det_data = "signal" # Observation detdata key for the timestream data
     det_data_units = "Unit('K')" # Desired units of detector data
-    det_flag_mask = 1 # Bit mask value for solver flags
+    det_flag_mask = 7 # Bit mask value for solver flags
     det_flags = "flags" # Observation detdata key for solver flags to use
     det_mask = 1 # Bit mask value for per-detector flagging
     enabled = false # If True, this class instance is marked as enabled
@@ -1020,7 +1036,7 @@
     data = "None" # This must be an instance of a Data class (or None)
     det_data = "signal" # Observation detdata key for the timestream data
     det_data_units = "Unit('K')" # Desired units of detector data
-    det_flag_mask = 1 # Bit mask value for solver flags
+    det_flag_mask = 7 # Bit mask value for solver flags
     det_flags = "flags" # Observation detdata key for solver flags to use
     det_mask = 1 # Bit mask value for per-detector flagging
     enabled = false # If True, this class instance is marked as enabled

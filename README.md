@@ -23,8 +23,8 @@ We only simulate the first calendar day of each month.
 
 Setup
 
-* `get_defaults.sh` : Use `so_sim_mappraiser` to generate a default parameter file for reference
-* `sat.toml` : Master parameter file for the `so_sim_mappraiser` workflow
+* `get_defaults.sh` : Use `toast_so_mappraiser.py` to generate a default parameter file for reference
+* `sat.toml` : Master parameter file for the `toast_so_mappraiser.py` workflow
 * `schedule.01.south.txt` : Schedule file
 * `schedule.small.txt` : Truncated schedule file for laptop tests
 * `ffp10_lensed_scl_100_nside0512.fits` : Input map to be observed during simulation
