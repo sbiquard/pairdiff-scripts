@@ -1,0 +1,3 @@
+[submodule "toast"]
+	path = toast
+	url = https://github.com/sbiquard/toast
