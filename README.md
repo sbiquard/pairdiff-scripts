@@ -8,16 +8,15 @@ The simulation comprises only the SAT 90 GHz frequency band and spans one observ
 
 We simulate the following data:
 
-* noise : atmosphere, instrumental noise
+* noise: atmosphere, instrumental noise
 * cmb
 
 We only simulate the first calendar day of each month.
 
 ## Software
 
-* [TOAST 3.0.0a20.dev61](https://github.com/hpc4cmb/toast/tree/c2ac5a7806ecffeacd42ba47e64322076e824fb8)
-* [sotodlib 0.5.0+534.g468bd7f7](https://github.com/simonsobs/sotodlib/tree/468bd7f75eddb2b324a40a0c17917056221b21f4)
-* [midapack/mappraiser](https://github.com/B3Dcmb/midapack/tree/gaps)
+The software packages used are [TOAST 3](https://github.com/hpc4cmb/toast/tree/toast3), [sotodlib](https://github.com/simonsobs/sotodlib) and [midapack/mappraiser](https://github.com/B3Dcmb/midapack/tree/gaps).
+They are provided as submodules of this repository so that the exact setup can be reproduced by others.
 
 ## Files in this directory
 
