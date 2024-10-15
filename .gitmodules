@@ -1,3 +1,6 @@
 [submodule "toast"]
 	path = toast
 	url = https://github.com/sbiquard/toast
+[submodule "midapack"]
+	path = midapack
+	url = https://github.com/B3Dcmb/midapack
