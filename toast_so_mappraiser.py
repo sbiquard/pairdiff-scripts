@@ -37,7 +37,7 @@ from sotodlib.toast import workflows as so_wrk
 from toast.mpi import MPI, Comm
 from toast.observation import default_values as defaults
 
-import workflow as wrk
+from pymappraiser.workflow import setup_mapmaker_mappraiser, mapmaker_mappraiser
 
 # Make sure pixell uses a reliable FFT engine
 pixell.fft.engine = "fftw"
@@ -109,8 +109,8 @@ def reduce_data(job, otherargs, runargs, data):
     so_wrk.noise_estimation(job, otherargs, runargs, data)
     so_wrk.raw_statistics(job, otherargs, runargs, data)
 
-    # replace mapmaker with mappraiser
-    wrk.mapmaker(job, otherargs, runargs, data)
+    # use mappraiser as mapmaker
+    mapmaker_mappraiser(job, otherargs, runargs, data)
 
     mem = toast.utils.memreport(
         msg="(whole node)", comm=data.comm.comm_world, silent=True
@@ -198,7 +198,9 @@ def main():
     so_wrk.setup_noise_estimation(operators)
     so_wrk.setup_raw_statistics(operators)
     so_wrk.setup_mapmaker(operators, templates)
-    wrk.setup_mapmaker(parser, operators)
+
+    # setup mappraiser operator
+    setup_mapmaker_mappraiser(parser, operators)
 
     job, config, otherargs, runargs = so_wrk.setup_job(
         parser=parser, operators=operators, templates=templates
