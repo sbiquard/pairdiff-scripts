@@ -37,6 +37,5 @@ mpirun -np $ntask ./toast_so_mappraiser.py \
     --mappraiser.mem_report \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
-    --sim_atmosphere_coarse.disable \
     --out $outdir \
     >$logfile 2>&1

@@ -1,7 +1,6 @@
 # TOAST config
-# Generated with version 0b87ae18
+# Generated with version f963f420
 
-[operators]
 [operators.load_hdf5]
     class = "toast.ops.load_hdf5.LoadHDF5"
     API = 0 # Internal interface version for this operator
@@ -47,26 +46,33 @@
 [operators.load_context]
     class = "sotodlib.toast.ops.load_context.LoadContext"
     API = 0 # Internal interface version for this operator
-    ax_boresight_az = "boresight_az" # Field with boresight Az
-    ax_boresight_el = "boresight_el" # Field with boresight El
-    ax_boresight_roll = "boresight_roll" # Field with boresight Roll
+    analytic_bandpass = false # Add analytic bandpass to each detector
+    ax_boresight_az = "boresight:az" # Field with boresight Az
+    ax_boresight_el = "boresight:el" # Field with boresight El
+    ax_boresight_roll = "boresight:roll" # Field with boresight Roll
     ax_det_flags = "[]" # Tuples of (field, bit_value) merged to det_flags
     ax_det_signal = "signal" # Name of field to associate with det_data
+    ax_detinfo_wafer_key = "stream_id" # Name of the det_info property containing the wafer ID
     ax_flags = "[]" # Tuples of (field, bit value) merged to shared_flags
+    ax_hwp_angle = "hwp_angle" # Field with HWP angle
+    ax_pathsep = ":" # Path separator when flattening nested fields
     ax_times = "timestamps" # Name of field to associate with times
     axis_detector = "dets" # Name of the LabelAxis for the detector direction
     axis_sample = "samps" # Name of the OffsetAxis for the sample direction
     azimuth = "azimuth" # Observation shared key for boresight Azimuth
     bands = "[]" # Only load this list of band values
+    bandwidth = 0.2 # Fractional bandwith used in analytic bandpass
     boresight_angle = "None" # Observation shared key for boresight rotation angle (if it is used)
     boresight_azel = "boresight_azel" # Observation shared key for boresight Az/El quaternions
     boresight_radec = "boresight_radec" # Observation shared key for boresight RA/DEC quaternions
+    combine_wafers = false # If True, combine all wafers into a single observation
     context = "None" # The Context, which should exist on all processes
     context_file = "None" # Create a context from this file
     corotator_angle = "None" # Observation shared key for corotator_angle (if it is used)
     det_data = "signal" # Observation detdata key for detector signal
     det_data_units = "Unit('K')" # Output units if creating detector data
     det_flags = "flags" # Observation detdata key for detector flags
+    dets_select = "{}" # The `dets` selection dictionary to pass to get_obs()
     detset_key = "None" # Column of the focalplane detector_data to use for data distribution
     detsets = "[]" # Only load this list of detset values
     elevation = "elevation" # Observation shared key for boresight Elevation
@@ -74,8 +80,10 @@
     hwp_angle = "None" # Observation shared key for HWP angle (if it is used)
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "load_context" # The 'name' of this class instance
+    observation_file = "None" # Text file containing observation IDs to load
     observation_regex = "None" # Regular expression match to apply to observation IDs
     observations = "[]" # List of observation IDs to load
+    preprocess_config = "None" # Apply pre-processing with this configuration
     readout_ids = "[]" # Only load this list of readout_id values
     roll = "roll" # Observation shared key for boresight Roll
     shared_flags = "flags" # Observation shared key for common flags
@@ -104,7 +112,7 @@
     elnod_mask = 8 # Bit mask to raise elevation nod flags with
     elnod_start = false # Perform an el-nod before the scan
     elnods = "[]" # List of relative el_nods
-    enabled = true # If True, this class instance is marked as enabled
+    enabled = false # If True, this class instance is marked as enabled
     fix_rate_on_sky = true # If True, `scan_rate_az` is given in sky coordinates and azimuthal rate on mount will be adjusted to meet it.  If False, `scan_rate_az` is used as the mount azimuthal rate.
     hwp_angle = "None" # Observation shared key for HWP angle
     hwp_rpm = "None" # The rate (in RPM) of the HWP rotation
@@ -173,6 +181,42 @@
     time_sigma = "None" # 1-sigma difference between real and nominal time stamps
     times = "times" # Observation shared key for timestamps
 
+[operators.det_pointing_azel_sim]
+    class = "toast.ops.pointing_detector.pointing_detector.PointingDetectorSimple"
+    API = 0 # Internal interface version for this operator
+    boresight = "boresight_azel" # Observation shared key for boresight
+    coord_in = "None" # The input boresight coordinate system ('C', 'E', 'G')
+    coord_out = "None" # The output coordinate system ('C', 'E', 'G')
+    det_mask = 1 # Bit mask value for per-detector flagging
+    enabled = false # If True, this class instance is marked as enabled
+    hwp_angle = "hwp_angle" # Observation shared key for HWP angle
+    hwp_angle_offset = "Quantity('0.00000000000000e+00 deg')" # HWP angle offset to apply when constructing deflection
+    hwp_deflection_radius = "None" # If non-zero, nominal detector pointing will be deflected in a circular pattern according to HWP phase.
+    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
+    name = "det_pointing_azel_sim" # The 'name' of this class instance
+    quats = "quats_azel_sim" # Observation detdata key for output quaternions
+    shared_flag_mask = 1 # Bit mask value for optional flagging
+    shared_flags = "flags" # Observation shared key for telescope flags to use
+    view = "None" # Use this view of the data in all observations
+
+[operators.det_pointing_radec_sim]
+    class = "toast.ops.pointing_detector.pointing_detector.PointingDetectorSimple"
+    API = 0 # Internal interface version for this operator
+    boresight = "boresight_radec" # Observation shared key for boresight
+    coord_in = "None" # The input boresight coordinate system ('C', 'E', 'G')
+    coord_out = "None" # The output coordinate system ('C', 'E', 'G')
+    det_mask = 1 # Bit mask value for per-detector flagging
+    enabled = false # If True, this class instance is marked as enabled
+    hwp_angle = "hwp_angle" # Observation shared key for HWP angle
+    hwp_angle_offset = "Quantity('0.00000000000000e+00 deg')" # HWP angle offset to apply when constructing deflection
+    hwp_deflection_radius = "None" # If non-zero, nominal detector pointing will be deflected in a circular pattern according to HWP phase.
+    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
+    name = "det_pointing_radec_sim" # The 'name' of this class instance
+    quats = "quats_radec_sim" # Observation detdata key for output quaternions
+    shared_flag_mask = 1 # Bit mask value for optional flagging
+    shared_flags = "flags" # Observation shared key for telescope flags to use
+    view = "None" # Use this view of the data in all observations
+
 [operators.det_pointing_azel]
     class = "toast.ops.pointing_detector.pointing_detector.PointingDetectorSimple"
     API = 0 # Internal interface version for this operator
@@ -181,6 +225,9 @@
     coord_out = "None" # The output coordinate system ('C', 'E', 'G')
     det_mask = 1 # Bit mask value for per-detector flagging
     enabled = true # If True, this class instance is marked as enabled
+    hwp_angle = "hwp_angle" # Observation shared key for HWP angle
+    hwp_angle_offset = "Quantity('0.00000000000000e+00 deg')" # HWP angle offset to apply when constructing deflection
+    hwp_deflection_radius = "None" # If non-zero, nominal detector pointing will be deflected in a circular pattern according to HWP phase.
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "det_pointing_azel" # The 'name' of this class instance
     quats = "quats_azel" # Observation detdata key for output quaternions
@@ -196,6 +243,9 @@
     coord_out = "None" # The output coordinate system ('C', 'E', 'G')
     det_mask = 1 # Bit mask value for per-detector flagging
     enabled = true # If True, this class instance is marked as enabled
+    hwp_angle = "hwp_angle" # Observation shared key for HWP angle
+    hwp_angle_offset = "Quantity('0.00000000000000e+00 deg')" # HWP angle offset to apply when constructing deflection
+    hwp_deflection_radius = "None" # If non-zero, nominal detector pointing will be deflected in a circular pattern according to HWP phase.
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "det_pointing_radec" # The 'name' of this class instance
     quats = "quats_radec" # Observation detdata key for output quaternions
@@ -787,6 +837,8 @@
 [operators.noise_cut_flag]
     class = "toast.ops.noise_model.FlagNoiseFit"
     API = 0 # Internal interface version for this operator
+    det_data = "signal" # Observation detdata key for timestreams (only if RMS cut enabled)
+    det_flag_mask = 1 # Bit mask value for detector sample flagging (only if RMS cut used)
     det_flags = "flags" # Observation detdata key for flags to use
     det_mask = 1 # Bit mask value for per-detector flagging
     enabled = true # If True, this class instance is marked as enabled
@@ -796,6 +848,7 @@
     outlier_flag_mask = 2 # Bit mask to raise flags with
     sigma_NET = 5.0 # Flag detectors with NET values outside this range
     sigma_fknee = 5.0 # Flag detectors with knee frequency values outside this range
+    sigma_rms = "None" # In addition to flagging based on estimated model, also apply overall TOD cut
 
 [operators.noise_estim]
     class = "toast.ops.noise_estimation.NoiseEstim"
@@ -955,6 +1008,7 @@
     class = "pymappraiser.toast.mappraiser.Mappraiser"
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
+    az_name = "azimuth" # Observation boresight azimuth key
     bandwidth = 16384 # Half-bandwidth for the noise model
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
@@ -964,40 +1018,52 @@
     det_mask = 7 # Bit mask value for per-detector flagging
     do_gap_filling = true # Perform gap filling on the data
     downscale = 1 # Scale down the noise by the sqrt of this number to artifically increase S/N ratio
-    enabled = true # If True, this class instance is marked as enabled
+    enabled = false # If True, this class instance is marked as enabled
     enlFac = 1 # Enlargement factor for ECG
     estimate_spin_zero = false # When doing pair-diff, still estimate a spin-zero field (T) alongside Q and U.
     fill_noise_zero = false # Fill the noise vector with zeros just before calling Mappraiser
+    fixed_polybase = 0 # Flag to set a specific polynomial baseline length. When False the baseline length is set to the sweep duration (ground only).
     gap_stgy = 0 # Strategy for handling timestream gaps
+    hwpangle_name = "hwp_angle" # Observation hwp angle key
+    hwpssbaseline_length = 10.0 # HWPSS baseline length in seconds (default = 10.0s)
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
-    limit_det = "None" # Limit the number of local detectors to this number.
+    map_maker = "ML" # Map-making approach: 'ML' for maximum likelihood (downweigthing approach), 'MT' for marginalized templates.
     maxiter = 3000 # Maximum number of iterations allowed for the solver
     mcmode = false # If true, Madam will store auxiliary information such as pixel matrices and noise filter
     mem_report = false # Print system memory use while staging/unstaging data
     name = "mappraiser" # The 'name' of this class instance
+    nhwp = 0 # Order of HWPSS templates
     noise_model = "noise_model" # Observation key containing the noise model
     noise_model_fit = "noise_estim_fit" # Observation key containing a noise model fitted to the data
     noise_name = "noise" # Observation detdata key for noise data (if None, triggers noiseless mode)
     noise_scale = "noise_scale" # Observation key with optional scaling factor for noise PSDs
     noiseless = false # Activate noiseless mode
-    nperseg_frac = 1.0 # Fraction of timestream length to use for computing noise periodograms with Welch method.
+    npoly = 0 # Order of polynomial templates
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
     pair_diff = false # Process differenced timestreams between orthogonal detectors in pairs.
     paramfile = "None" # Read mappraiser parameters from this file
     params = "{}" # Parameters to pass to mappraiser
     pixel_pointing = "None" # This must be an instance of a pixel pointing operator
+    polybaseline_length = 10.0 # Polynomial baseline length in seconds (default = 10.0s)
     precond = 0 # Choose preconditioner (0->BJ, 1->2lvl a priori, 2->2lvl a posteriori)
     ptcomm_flag = 6 # Choose collective communication scheme
     purge_det_data = false # If True, clear all observation detector data after copying to mappraiser buffers
     realization = 0 # Noise realization index (for gap filling)
+    restore_det_data = false # If True, restore detector data to observations on completion
     save_psd = false # Save noise PSD information during inv_tt computation
+    sbins = 0 # Number of azimuth bins in the SSS template
     shared_flag_mask = 15 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     signal_fraction = 1.0 # Fraction of the sky signal to keep
     solver = 0 # Choose mapmaking solver (0->PCG, 1->ECG)
+    sss = 0 # Scan Synchronous Signal template flag.
     stokes_weights = "None" # This must be an instance of a Stokes weights operator
+    times = "times" # Observation shared key for timestamps
     tol = 1e-12 # Convergence threshold for the iterative solver
+    translate_timestamps = false # Translate timestamps to enforce monotonicity
+    uniform_w = 0 # Flag to use a uniform white noise model in reduction.
     use_noise_model = false # Use an existing noise model fitted to the data (`noise_model_fit` trait)
+    view = "None" # Use this view of the data in all observations
     z_2lvl = 0 # Size of 2lvl deflation space
 
 [operators.mem_count]
@@ -1009,7 +1075,6 @@
     prefix = "''" # Prefix for log messages
     silent = false # If True, return the memory used but do not log the result
 
-[templates]
 [templates.baselines]
     class = "toast.templates.offset.offset.Offset"
     data = "None" # This must be an instance of a Data class (or None)
@@ -1048,4 +1113,43 @@
     key = "azimuth" # Observation data key for the periodic quantity
     minimum_bin_hits = 3 # Minimum number of samples per amplitude bin
     name = "azss" # The 'name' of this class instance
+    view = "None" # Use this view of the data in all observations
+
+[templates.hwpss]
+    class = "toast.templates.hwpss.Hwpss"
+    data = "None" # This must be an instance of a Data class (or None)
+    debug_plots = "None" # If not None, make debugging plots in this directory
+    det_data = "signal" # Observation detdata key for the timestream data
+    det_data_units = "Unit('K')" # Desired units of detector data
+    det_flag_mask = 7 # Bit mask value for solver flags
+    det_flags = "flags" # Observation detdata key for solver flags to use
+    det_mask = 1 # Bit mask value for per-detector flagging
+    enabled = false # If True, this class instance is marked as enabled
+    harmonics = 5 # Number of harmonics to consider in the expansion
+    hwp_angle = "hwp_angle" # Observation shared key for HWP angle
+    hwp_flag_mask = 1 # Bit mask to use when considering valid HWP angle values.
+    hwp_flags = "flags" # Observation shared key for HWP flags
+    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
+    name = "hwpss" # The 'name' of this class instance
+    times = "times" # Observation shared key for timestamps
+    view = "None" # Use this view of the data in all observations
+
+[templates.fourier2d]
+    class = "toast.templates.fourier2d.Fourier2D"
+    correlation_amplitude = 10.0 # Scale factor of the filter
+    correlation_length = "Quantity('5.00000000000000e+00 s')" # Correlation length in time
+    data = "None" # This must be an instance of a Data class (or None)
+    debug_plots = "None" # If not None, make debugging plots in this directory
+    det_data = "signal" # Observation detdata key for the timestream data
+    det_data_units = "Unit('K')" # Desired units of detector data
+    det_flag_mask = 7 # Bit mask value for solver flags
+    det_flags = "flags" # Observation detdata key for solver flags to use
+    det_mask = 1 # Bit mask value for per-detector flagging
+    enabled = true # If True, this class instance is marked as enabled
+    fit_subharmonics = false # If True, fit subharmonics
+    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
+    name = "fourier2d" # The 'name' of this class instance
+    noise_model = "None" # Observation key containing the optional noise model
+    order = 1 # The filter order
+    times = "times" # Observation shared key for timestamps
     view = "None" # Use this view of the data in all observations
