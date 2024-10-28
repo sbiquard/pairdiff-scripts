@@ -1,0 +1,13 @@
+43,44c43,46
+< from .. import ops as so_ops
+< from .. import workflows as wrk
+---
+> from sotodlib.toast import ops as so_ops
+> from sotodlib.toast import workflows as wrk
+> 
+> from pymappraiser.workflow import setup_mapmaker_mappraiser, mapmaker_mappraiser
+122a125
+>         mapmaker_mappraiser(job, otherargs, runargs, data)
+251a255,256
+> 
+>     setup_mapmaker_mappraiser(parser, operators)

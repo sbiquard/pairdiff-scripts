@@ -4,7 +4,7 @@
 [submodule "midapack"]
 	path = midapack
 	url = https://github.com/B3Dcmb/midapack
-	branch = gaps
+	branch = gaps-maxL
 [submodule "sotodlib"]
 	path = sotodlib
 	url = https://github.com/simonsobs/sotodlib

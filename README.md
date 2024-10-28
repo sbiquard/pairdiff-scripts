@@ -18,12 +18,17 @@ We only simulate the first calendar day of each month.
 The software packages used are [TOAST 3](https://github.com/hpc4cmb/toast/tree/toast3), [sotodlib](https://github.com/simonsobs/sotodlib) and [midapack/mappraiser](https://github.com/B3Dcmb/midapack/tree/gaps).
 They are provided as submodules of this repository so that the exact setup can be reproduced by others.
 
+The simulation worfklow, `so_mappraiser.py`, is a modified version of a script in sotodlib and can be obtained by running the following command:
+```bash
+patch sotodlib/sotodlib/toast/scripts/so_sim.py -o so_mappraiser.py < so_sim.patch
+```
+
 ## Files in this directory
 
 Setup
 
-* `get_defaults.sh` : Use `toast_so_mappraiser.py` to generate a default parameter file for reference
-* `sat.toml` : Master parameter file for the `toast_so_mappraiser.py` workflow
+* `get_defaults.sh` : Use `so_mappraiser.py` to generate a default parameter file for reference
+* `sat.toml` : Master parameter file for the `so_mappraiser.py` workflow
 * `schedule.01.south.txt` : Schedule file
 * `schedule.small.txt` : Truncated schedule file for laptop tests
 * `ffp10_lensed_scl_100_nside0512.fits` : Input map to be observed during simulation
