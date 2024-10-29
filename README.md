@@ -35,16 +35,16 @@ Setup
 
 Tests (laptop: truncated schedule, decimated focal plane)
 
-* `run.atm.cache.sh` : Simulate and cache the atmosphere simulation
-* `run.baseline.sh` : Run the baseline configuration (ideal case)
-* `run.gains.constant.sh` : Run with gain errors which are the same for all detector pairs
+* `scripts/run.atm.cache.sh` : Simulate and cache the atmosphere simulation
+* `scripts/run.baseline.sh` : Run the baseline configuration (ideal case)
+* `scripts/run.gains.constant.sh` : Run with gain errors which are the same for all detector pairs
 
 Execution (Jean-Zay: full schedule)
 
-* `run.atm.cache.slurm` : Simulate and cache the atmosphere simulation
-* `run.baseline.slurm` : Run the baseline configuration (ideal case)
-* `run.gains.constant.slurm` : Run with gain errors which are the same for all detector pairs
-* `run.gains.random.slurm` : Run with Gaussian distributed gain errors
+* `slurm/run.atm.cache.slurm` : Simulate and cache the atmosphere simulation
+* `slurm/run.baseline.slurm` : Run the baseline configuration (ideal case)
+* `slurm/run.gains.constant.slurm` : Run with gain errors which are the same for all detector pairs
+* `slurm/run.gains.random.slurm` : Run with Gaussian distributed gain errors
 
 Post-processing
 
@@ -53,4 +53,4 @@ Post-processing
 * `spectrum.py` : Power spectrum routines
 * `get_mask_apo.py` : Create and save a mask (requires [NaMaster](https://namaster.readthedocs.io))
 * `compute_spectra.py` : Compute and save power spectra for all runs
-* `run.spectra.slurm` : Job script to compute power spectra
+* `slurm/run.spectra.slurm` : Job script to compute power spectra
