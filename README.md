@@ -15,8 +15,8 @@ We only simulate the first calendar day of each month.
 
 ## Software
 
-The software packages used are [TOAST 3](https://github.com/hpc4cmb/toast/tree/toast3), [sotodlib](https://github.com/simonsobs/sotodlib) and [midapack/mappraiser](https://github.com/B3Dcmb/midapack/tree/gaps).
-They are provided as submodules of this repository so that the exact setup can be reproduced by others.
+The software packages used are [TOAST 3](https://github.com/hpc4cmb/toast/tree/toast3), [sotodlib](https://github.com/simonsobs/sotodlib) and [mappraiser](https://github.com/B3Dcmb/midapack/tree/gaps-maxL).
+They are provided as submodules of this repository so that the exact setup can be reproduced easily.
 
 The simulation worfklow, `so_mappraiser.py`, is a modified version of a script in sotodlib and can be obtained by running the following command:
 ```bash
