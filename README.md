@@ -25,6 +25,8 @@ patch sotodlib/sotodlib/toast/scripts/so_sim.py -o so_mappraiser.py < so_sim.pat
 
 ## Files in this directory
 
+Unless otherwise noted, all scripts should be run from the root of the repository.
+
 Setup
 
 * `get_defaults.sh` : Use `so_mappraiser.py` to generate a default parameter file for reference
