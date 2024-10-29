@@ -301,6 +301,16 @@
     name = "default_model" # The 'name' of this class instance
     noise_model = "noise_model" # The observation key for storing the noise model
 
+[operators.variable_model]
+    class = "toast.ops.variable_noise_model.VariableNoiseModel"
+    API = 0 # Internal interface version for this operator
+    enabled = true # If True, this class instance is marked as enabled
+    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
+    name = "variable_model" # The 'name' of this class instance
+    noise_model = "var_noise_model" # The observation key for storing the noise model
+    realization = 0 # The model realization index
+    scatter = 0.1 # Fractional scatter in the noise parameters
+
 [operators.elevation_model]
     class = "toast.ops.elevation_noise.ElevationNoise"
     API = 0 # Internal interface version for this operator
@@ -992,7 +1002,7 @@
     det_data = "signal" # Observation detdata key for simulated signal
     drift_rate = "None" # If non-zero, the width of the Gaussian distribution to draw drift rate [1/hour] from.  All detectors will observe the same drift rate.
     enabled = false # If True, this class instance is marked as enabled
-    fname_hwpss = "/home/sbiquard/.pyenv/versions/3.10.13/envs/pair-diff/lib/python3.10/site-packages/sotodlib/toast/ops/data/hwpss_per_chi.pck" # File containing measured or estimated HWPSS profiles
+    fname_hwpss = "/home/sbiquard/work/pairdiff/simu-sat/sotodlib/sotodlib/toast/ops/data/hwpss_per_chi.pck" # File containing measured or estimated HWPSS profiles
     hwp_angle = "hwp_angle" # Observation shared key for HWP angle
     hwpss_drift_alpha = 1.0 # The power law exponent of the HWPSS random drift.
     hwpss_drift_coupling_center = 1.0 # Mean coupling strength between the detectors and the HWPSS random drift mode.
@@ -1819,7 +1829,6 @@
     fill_noise_zero = false # Fill the noise vector with zeros just before calling Mappraiser
     gap_stgy = 0 # Strategy for handling timestream gaps
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
-    limit_det = "None" # Limit the number of local detectors to this number.
     maxiter = 3000 # Maximum number of iterations allowed for the solver
     mcmode = false # If true, Madam will store auxiliary information such as pixel matrices and noise filter
     mem_report = false # Print system memory use while staging/unstaging data

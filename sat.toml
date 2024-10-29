@@ -296,10 +296,20 @@
 [operators.default_model]
     class = "toast.ops.noise_model.DefaultNoiseModel"
     API = 0 # Internal interface version for this operator
-    enabled = true # If True, this class instance is marked as enabled
+    enabled = false # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "default_model" # The 'name' of this class instance
     noise_model = "noise_model" # The observation key for storing the noise model
+
+[operators.variable_model]
+    class = "toast.ops.variable_noise_model.VariableNoiseModel"
+    API = 0 # Internal interface version for this operator
+    enabled = true # If True, this class instance is marked as enabled
+    kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
+    name = "variable_model" # The 'name' of this class instance
+    noise_model = "noise_model" # The observation key for storing the noise model
+    realization = 0 # The model realization index
+    scatter = 0.1 # Fractional scatter in the noise parameters
 
 [operators.elevation_model]
     class = "toast.ops.elevation_noise.ElevationNoise"
