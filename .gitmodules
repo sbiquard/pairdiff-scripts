@@ -7,4 +7,5 @@
 	branch = gaps-maxL
 [submodule "sotodlib"]
 	path = sotodlib
-	url = https://github.com/simonsobs/sotodlib
+	url = https://github.com/sbiquard/sotodlib
+	branch = sb/pairdiff
