@@ -1,5 +1,5 @@
 # TOAST config
-# Generated with version f963f420
+# Generated with version c711376b
 
 [operators.load_hdf5]
     class = "toast.ops.load_hdf5.LoadHDF5"
@@ -310,6 +310,7 @@
     noise_model = "noise_model" # The observation key for storing the noise model
     realization = 0 # The model realization index
     scatter = 0.1 # Fractional scatter in the noise parameters
+    use_white = false # Use white noise instead of 1/f
 
 [operators.elevation_model]
     class = "toast.ops.elevation_noise.ElevationNoise"
