@@ -1,0 +1,8 @@
+--config
+sat.toml 
+--bands
+SAT_f090
+--telescope
+SAT1
+--sample_rate
+37 

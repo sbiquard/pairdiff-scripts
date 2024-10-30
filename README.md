@@ -31,15 +31,21 @@ Setup
 
 * `get_defaults.sh` : Use `so_mappraiser.py` to generate a default parameter file for reference
 * `sat.toml` : Master parameter file for the `so_mappraiser.py` workflow
+* `schedule.opti.txt` : Schedule file with a single scan
 * `schedule.01.south.txt` : Schedule file
 * `schedule.small.txt` : Truncated schedule file for laptop tests
 * `ffp10_lensed_scl_100_nside0512.fits` : Input map to be observed during simulation
 
 Tests (laptop: truncated schedule, decimated focal plane)
 
-* `scripts/run.atm.cache.sh` : Simulate and cache the atmosphere simulation
-* `scripts/run.baseline.sh` : Run the baseline configuration (ideal case)
-* `scripts/run.gains.constant.sh` : Run with gain errors which are the same for all detector pairs
+* `opti` : Evaluate the optimality of pair-differencing compared to maximum-likelihood (single observation)
+  * `run.white.uniform.sh` : all detector _pairs_ have the same white noise level (but not detectors in a pair)
+  * `run.white.variable.sh` : all detectors have different white noise levels
+  * `run.one_over_f.sh` : all detectors have different 1/f noise parameters
+* `syst` : Evaluate the impact of systematic effects on the pair-differencing approach
+  * `run.atm.cache.sh` : simulate and cache the atmosphere simulation
+  * `run.baseline.sh` : run the baseline configuration (ideal case)
+  * `run.gains.constant.sh` : run with gain errors which are the same for all detector pairs
 
 Execution (Jean-Zay: full schedule)
 

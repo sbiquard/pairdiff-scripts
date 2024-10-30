@@ -1,0 +1,4 @@
+#Site            Telescope        Latitude [deg] Longitude [deg]   Elevation [m]
+ ATACAMA         SAT                     -22.958         -67.786          5200.0
+#      Start time UTC        Stop time UTC Rotation Patch name                            Az min   Az max       El  Pass Sub
+  2025-01-01 00:20:00  2025-01-01 01:06:30     0.00 DEC-050..-030_RA+000.000..+011.613    218.10   250.34    50.00     0   0
