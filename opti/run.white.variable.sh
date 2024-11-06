@@ -21,6 +21,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --mappraiser.bandwidth 1 \
     --mappraiser.downscale 3000 \
     --variable_model.use_white \
+    --elevation_model.disable \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -36,5 +37,6 @@ mpirun -np $ntask ./so_mappraiser.py \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
     --variable_model.use_white \
+    --elevation_model.disable \
     --out $outdir/pd \
     >$logfile 2>&1
