@@ -1818,6 +1818,7 @@
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
     bandwidth = 16384 # Half-bandwidth for the noise model
+    binned = false # Make a binned map
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
     det_data = "signal" # Observation detdata key for the timestream data
@@ -1830,16 +1831,15 @@
     enlFac = 1 # Enlargement factor for ECG
     estimate_psd = true # Estimate the noise PSD from the data
     estimate_spin_zero = false # When doing pair-diff, still estimate a spin-zero field (T) alongside Q and U.
-    fill_noise_zero = false # Fill the noise vector with zeros just before calling Mappraiser
     gap_stgy = 0 # Strategy for handling timestream gaps
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     maxiter = 3000 # Maximum number of iterations allowed for the solver
     mcmode = false # If true, Madam will store auxiliary information such as pixel matrices and noise filter
     mem_report = false # Print system memory use while staging/unstaging data
     name = "mappraiser" # The 'name' of this class instance
-    noise_data = "noise" # Observation detdata key for noise data (if None, triggers noiseless mode)
+    noise_data = "noise" # Observation detdata key for noise data
     noise_model = "noise_model" # Observation key containing the noise model
-    noiseless = false # Activate noiseless mode
+    noiseless = false # Make a noiseless map
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
     pair_diff = false # Process differenced timestreams between orthogonal detectors in pairs.
     paramfile = "None" # Read mappraiser parameters from this file
@@ -1857,6 +1857,7 @@
     stokes_weights = "None" # This must be an instance of a Stokes weights operator
     tol = 1e-12 # Convergence threshold for the iterative solver
     z_2lvl = 0 # Size of 2lvl deflation space
+    zero_noise = false # Fill the noise data with zeros
 
 [operators.mem_count]
     class = "toast.ops.memory_counter.MemoryCounter"
