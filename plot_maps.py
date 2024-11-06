@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+import functools
+import multiprocessing
 import pathlib
-import numpy as np
+import time
+
 import healpy as hp
 import matplotlib.pyplot as plt
+import numpy as np
 from astropy.visualization import hist
-import multiprocessing
-import time
-import functools
 
 import utils
 
@@ -172,20 +173,20 @@ def process(ref, dirname):
     return ref, elapsed
 
 
-def main(dirname, refs, verbose):
-    if refs is None:
-        refs = [utils.get_last_ref(dirname)]
-    if verbose:
-        print(f"Process {len(refs)} ref(s) in '{dirname}'")
+def main(args):
+    if args.refs is None:
+        refs = [utils.get_last_ref(args.dirname)]
+    if args.verbose:
+        print(f"Process {len(refs)} ref(s) in '{args.dirname}'")
 
     # Use up to 4 cpus
     ncpu = min(len(refs), 4)
     with multiprocessing.Pool(processes=ncpu) as pool:
-        if verbose:
+        if args.verbose:
             print(f"Using {ncpu} CPU")
-        partial_func = functools.partial(process, dirname=dirname)
+        partial_func = functools.partial(process, dirname=args.dirname)
         for ref, elapsed in pool.imap_unordered(partial_func, refs):
-            if verbose:
+            if args.verbose:
                 print(f"Processed ref '{ref}' in {elapsed:.3f} seconds")
 
 
@@ -193,8 +194,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Plot difference maps and histograms for a given run."
     )
-    parser.add_argument("dirname", type=str, help="name of directory")
-    parser.add_argument("--refs", nargs="*", type=str, help="refs to process")
+    parser.add_argument("dirname", type=utils.dir_path, help="name of directory")
+    parser.add_argument("--refs", nargs="*", help="refs to process")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
     args = parser.parse_args()
-    main(args.dirname, args.refs, args.verbose)
+    main(args)

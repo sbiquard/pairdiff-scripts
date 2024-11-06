@@ -1,5 +1,6 @@
 import functools
 import pathlib
+import os
 import time
 
 import healpy as hp
@@ -26,6 +27,13 @@ def timer(func):
 
 
 SKIP_DIRS = ["plots", "spectra", "atm"]
+
+
+def dir_path(string):
+    if os.path.isdir(string):
+        return string
+    else:
+        raise NotADirectoryError(string)
 
 
 def get_all_runs(root, exclude=SKIP_DIRS):
@@ -100,9 +108,7 @@ def read_maps(dirname, ref=None):
     # read the output maps and put them in a dict
     maps = {}
     if iqu:
-        maps["I"] = 1e6 * hp.fitsfunc.read_map(
-            str(run / f"mapI_{ref}.fits"), field=None
-        )
+        maps["I"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapI_{ref}.fits"), field=None)
     maps["Q"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None)
     maps["U"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None)
 
@@ -116,9 +122,7 @@ def read_hits_cond(dirname, ref=None):
 
     # load hits and condition number maps
     run = pathlib.Path(dirname)
-    hits = hp.fitsfunc.read_map(
-        str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32
-    )
+    hits = hp.fitsfunc.read_map(str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32)
     cond = hp.fitsfunc.read_map(str(run / f"Cond_{ref}.fits"), field=None)
 
     return hits, cond

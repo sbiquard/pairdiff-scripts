@@ -58,6 +58,7 @@ Post-processing
 
 * `utils.py` : Some utility routines
 * `plot_maps.py` : Produce difference maps and histograms for a given run
+* `plot_maps_all.py` : Plot difference maps and histograms for all runs under a given directory
 * `spectrum.py` : Power spectrum routines
 * `get_mask_apo.py` : Create and save a mask (requires [NaMaster](https://namaster.readthedocs.io))
 * `compute_spectra.py` : Compute and save power spectra for all runs

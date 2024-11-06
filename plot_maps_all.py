@@ -11,6 +11,7 @@ import plot_maps
 
 def add_arguments(parser):
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
+    parser.add_argument("-r", "--root", type=utils.dir_path, default="out", help="root directory")
     parser.add_argument(
         "-n",
         "--ncpu",
@@ -57,7 +58,7 @@ def process(run):
 
 
 def main(args):
-    runs = list(utils.get_all_runs("out"))
+    runs = list(utils.get_all_runs(args.root))
 
     if args.ncpu > 0:
         ncpu = args.ncpu
