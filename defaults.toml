@@ -1828,6 +1828,7 @@
     downscale = 1 # Scale down the noise by the sqrt of this number to artifically increase S/N ratio
     enabled = false # If True, this class instance is marked as enabled
     enlFac = 1 # Enlargement factor for ECG
+    estimate_psd = true # Estimate the noise PSD from the data
     estimate_spin_zero = false # When doing pair-diff, still estimate a spin-zero field (T) alongside Q and U.
     fill_noise_zero = false # Fill the noise vector with zeros just before calling Mappraiser
     gap_stgy = 0 # Strategy for handling timestream gaps
@@ -1836,10 +1837,8 @@
     mcmode = false # If true, Madam will store auxiliary information such as pixel matrices and noise filter
     mem_report = false # Print system memory use while staging/unstaging data
     name = "mappraiser" # The 'name' of this class instance
+    noise_data = "noise" # Observation detdata key for noise data (if None, triggers noiseless mode)
     noise_model = "noise_model" # Observation key containing the noise model
-    noise_model_fit = "noise_estim_fit" # Observation key containing a noise model fitted to the data
-    noise_name = "noise" # Observation detdata key for noise data (if None, triggers noiseless mode)
-    noise_scale = "noise_scale" # Observation key with optional scaling factor for noise PSDs
     noiseless = false # Activate noiseless mode
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
     pair_diff = false # Process differenced timestreams between orthogonal detectors in pairs.
@@ -1857,7 +1856,6 @@
     solver = 0 # Choose mapmaking solver (0->PCG, 1->ECG)
     stokes_weights = "None" # This must be an instance of a Stokes weights operator
     tol = 1e-12 # Convergence threshold for the iterative solver
-    use_noise_model = false # Use an existing noise model fitted to the data (`noise_model_fit` trait)
     z_2lvl = 0 # Size of 2lvl deflation space
 
 [operators.mem_count]
