@@ -359,7 +359,7 @@
     boresight = "boresight_radec" # Observation shared key for boresight
     coord_in = "None" # The input boresight coordinate system ('C', 'E', 'G')
     coord_out = "None" # The output coordinate system ('C', 'E', 'G')
-    det_mask = 0 # Bit mask value for per-detector flagging
+    det_mask = 1 # Bit mask value for per-detector flagging
     enabled = true # If True, this class instance is marked as enabled
     hwp_angle = "hwp_angle" # Observation shared key for HWP angle
     hwp_angle_offset = "Quantity('0.00000000000000e+00 deg')" # HWP angle offset to apply when constructing deflection
@@ -367,7 +367,7 @@
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "det_pointing_azel" # The 'name' of this class instance
     quats = "quats_azel" # Observation detdata key for output quaternions
-    shared_flag_mask = 0 # Bit mask value for optional flagging
+    shared_flag_mask = 1 # Bit mask value for optional flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     view = "None" # Use this view of the data in all observations
 
@@ -377,7 +377,7 @@
     boresight = "boresight_radec" # Observation shared key for boresight
     coord_in = "None" # The input boresight coordinate system ('C', 'E', 'G')
     coord_out = "None" # The output coordinate system ('C', 'E', 'G')
-    det_mask = 0 # Bit mask value for per-detector flagging
+    det_mask = 1 # Bit mask value for per-detector flagging
     enabled = true # If True, this class instance is marked as enabled
     hwp_angle = "hwp_angle" # Observation shared key for HWP angle
     hwp_angle_offset = "Quantity('0.00000000000000e+00 deg')" # HWP angle offset to apply when constructing deflection
@@ -385,7 +385,7 @@
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "det_pointing_radec" # The 'name' of this class instance
     quats = "quats_radec" # Observation detdata key for output quaternions
-    shared_flag_mask = 0 # Bit mask value for optional flagging
+    shared_flag_mask = 1 # Bit mask value for optional flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     view = "None" # Use this view of the data in all observations
 
@@ -557,9 +557,9 @@
     debug_tod = false # If True, dump TOD to pickle files
     det_data = "atm" # Observation detdata key for accumulating atmosphere timestreams
     det_data_units = "Unit('K')" # Output units if creating detector data
-    det_flag_mask = 0 # Bit mask value for detector sample flagging
+    det_flag_mask = 1 # Bit mask value for detector sample flagging
     det_flags = "flags" # Observation detdata key for flags to use
-    det_mask = 0 # Bit mask value for per-detector flagging
+    det_mask = 1 # Bit mask value for per-detector flagging
     detector_pointing = "None" # Operator that translates boresight Az/El pointing into detector frame
     detector_weights = "None" # Operator that translates boresight Az/El pointing into detector weights
     enabled = false # If True, this class instance is marked as enabled
@@ -578,7 +578,7 @@
     polarization_fraction = 0.0 # Polarization fraction (only Q polarization).
     realization = 1000000 # If simulating multiple realizations, the realization index
     sample_rate = "None" # Rate at which to sample atmospheric TOD before interpolation.  Default is no interpolation.
-    shared_flag_mask = 0 # Bit mask value for optional flagging
+    shared_flag_mask = 1 # Bit mask value for optional flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     times = "times" # Observation shared key for timestamps
     turnaround_interval = "turnaround" # Interval name for turnarounds
@@ -606,9 +606,9 @@
     debug_tod = false # If True, dump TOD to pickle files
     det_data = "atm" # Observation detdata key for accumulating atmosphere timestreams
     det_data_units = "Unit('K')" # Output units if creating detector data
-    det_flag_mask = 0 # Bit mask value for detector sample flagging
+    det_flag_mask = 1 # Bit mask value for detector sample flagging
     det_flags = "flags" # Observation detdata key for flags to use
-    det_mask = 0 # Bit mask value for per-detector flagging
+    det_mask = 1 # Bit mask value for per-detector flagging
     detector_pointing = "None" # Operator that translates boresight Az/El pointing into detector frame
     detector_weights = "None" # Operator that translates boresight Az/El pointing into detector weights
     enabled = false # If True, this class instance is marked as enabled
@@ -627,7 +627,7 @@
     polarization_fraction = 0.0 # Polarization fraction (only Q polarization).
     realization = 0 # If simulating multiple realizations, the realization index
     sample_rate = "None" # Rate at which to sample atmospheric TOD before interpolation.  Default is no interpolation.
-    shared_flag_mask = 0 # Bit mask value for optional flagging
+    shared_flag_mask = 1 # Bit mask value for optional flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     times = "times" # Observation shared key for timestamps
     turnaround_interval = "turnaround" # Interval name for turnarounds
@@ -1818,12 +1818,13 @@
     API = 0 # Internal interface version for this operator
     apod_window_type = "chebwin" # Type of apodisation window to use during noise PSD estimation
     bandwidth = 16384 # Half-bandwidth for the noise model
+    binned = false # Make a binned map
     bs_red = 0 # Use dynamic search reduction
     copy_groups = 1 # The processes on each node are split into this number of groups to copy data in turns
     det_data = "signal" # Observation detdata key for the timestream data
-    det_flag_mask = 0 # Bit mask value for detector sample flagging
+    det_flag_mask = 7 # Bit mask value for detector sample flagging
     det_flags = "flags" # Observation detdata key for flags to use
-    det_mask = 0 # Bit mask value for per-detector flagging
+    det_mask = 7 # Bit mask value for per-detector flagging
     do_gap_filling = false # Perform gap filling on the data
     downscale = 300 # Scale down the noise by the sqrt of this number to artifically increase S/N ratio
     enabled = true # If True, this class instance is marked as enabled
@@ -1849,7 +1850,7 @@
     purge_det_data = false # If True, clear all observation detector data after copying to mappraiser buffers
     realization = 0 # Noise realization index (for gap filling)
     save_psd = false # Save noise PSD information during inv_tt computation
-    shared_flag_mask = 0 # Bit mask value for optional shared flagging
+    shared_flag_mask = 15 # Bit mask value for optional shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     signal_fraction = 1.0 # Fraction of the sky signal to keep
     solver = 0 # Choose mapmaking solver (0->PCG, 1->ECG)
