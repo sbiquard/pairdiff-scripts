@@ -1845,6 +1845,7 @@
     paramfile = "None" # Read mappraiser parameters from this file
     params = "{}" # Parameters to pass to mappraiser
     pixel_pointing = "None" # This must be an instance of a pixel pointing operator
+    plot_tod = false # Plot the signal+noise TOD after staging
     precond = 0 # Choose preconditioner (0->BJ, 1->2lvl a priori, 2->2lvl a posteriori)
     ptcomm_flag = 6 # Choose collective communication scheme
     purge_det_data = false # If True, clear all observation detector data after copying to mappraiser buffers
