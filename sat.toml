@@ -996,7 +996,7 @@
     name = "sim_noise" # The 'name' of this class instance
     noise_model = "noise_model" # Observation key containing the noise model
     realization = 0 # The noise realization index
-    serial = false # Use legacy serial implementation instead of batched
+    serial = true # Use legacy serial implementation instead of batched
     times = "times" # Observation shared key for timestamps
 
 [operators.sim_hwpss]
