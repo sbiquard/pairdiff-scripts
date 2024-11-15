@@ -3,7 +3,7 @@
 	url = https://github.com/sbiquard/toast
 [submodule "midapack"]
 	path = midapack
-	url = https://github.com/B3Dcmb/midapack
+	url = https://github.com/sbiquard/midapack
 	branch = gaps-maxL
 [submodule "sotodlib"]
 	path = sotodlib
