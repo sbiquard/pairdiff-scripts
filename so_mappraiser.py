@@ -43,7 +43,7 @@ from toast.observation import default_values as defaults
 from sotodlib.toast import ops as so_ops
 from sotodlib.toast import workflows as wrk
 
-from pymappraiser.workflow import setup_mapmaker_mappraiser, mapmaker_mappraiser
+from mappraiser.workflow import setup_mapmaker_mappraiser, mapmaker_mappraiser
 
 # Make sure pixell uses a reliable FFT engine
 import pixell.fft
