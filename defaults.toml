@@ -1840,7 +1840,6 @@
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
     output_dir = "." # Write output data products to this directory
     pair_diff = false # Process differenced timestreams
-    params = "{}" # Parameters to pass to mappraiser
     pixel_pointing = "None" # Operator to generate healpix indices
     plot_tod = false # Plot the signal+noise TOD after staging
     precond = 0 # Preconditiner choice
