@@ -59,6 +59,8 @@ def process(run):
 
 def main(args):
     runs = list(utils.get_all_runs(args.root))
+    if len(runs) == 0:
+        return
 
     if args.ncpu > 0:
         ncpu = args.ncpu
@@ -77,13 +79,10 @@ def main(args):
                 continue
             if args.verbose:
                 print(f"Processed '{run}' in {elapsed:.3f} seconds")
-    return
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Produce plots of output maps for all runs.",
-    )
+    parser = argparse.ArgumentParser(description="Produce plots of output maps for all runs.")
     add_arguments(parser)
     args = parser.parse_args()
     main(args)
