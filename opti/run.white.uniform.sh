@@ -18,7 +18,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --thinfp 64 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.bandwidth 1 \
+    --mappraiser.lagmax 1 \
     --mappraiser.downscale 3000 \
     --variable_model.use_white \
     --variable_model.uniform \
@@ -34,7 +34,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --thinfp 64 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.bandwidth 1 \
+    --mappraiser.lagmax 1 \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
     --variable_model.use_white \

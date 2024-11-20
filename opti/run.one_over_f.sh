@@ -18,7 +18,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --thinfp 64 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.bandwidth 512 \
+    --mappraiser.lagmax 512 \
     --mappraiser.downscale 3000 \
     --elevation_model.disable \
     --out $outdir/ml \
@@ -32,7 +32,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --thinfp 64 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.bandwidth 512 \
+    --mappraiser.lagmax 512 \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
     --elevation_model.disable \
