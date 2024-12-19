@@ -29,38 +29,33 @@ echo "  OMP_NUM_THREADS = ${OMP_NUM_THREADS}"
 echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
-# simulation parameters
-freq=90
-nside=512
-telescope=SAT1
-band=$(printf "SAT_f%03i" $freq)
-
+# schedule file
 schedule="schedule.01.south.txt"
 
-outdir=out/atm
+# output
+outdir=out/atm_cache
 mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"
 
+# in case there is a problem, we'll have more information
+export TOAST_LOGLEVEL=DEBUG
+
 # Time out the program before Slurm does
 timeout 115m \
-    srun ./toast_so_mappraiser.py \
+    srun ./so_mappraiser.py \
+    $(< sat.par) \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \
-    --bands $band \
-    --telescope $telescope \
-    --sample_rate 37 \
     --scan_map.disable \
     --det_pointing_azel.shared_flag_mask 0 \
     --det_pointing_radec.shared_flag_mask 0 \
+    --sim_atmosphere.enable \
     --sim_atmosphere.shared_flag_mask 0 \
     --sim_atmosphere.det_flag_mask 0 \
-    --sim_atmosphere_coarse.shared_flag_mask 0 \
-    --sim_atmosphere_coarse.det_flag_mask 0 \
     --sim_atmosphere.cache_only \
     --sim_atmosphere.field_of_view "Quantity('40 deg')" \
-    --sim_atmosphere_coarse.disable \
     --out $outdir \
     >>$logfile 2>&1
 
