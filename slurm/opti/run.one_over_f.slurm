@@ -38,7 +38,7 @@ mkdir -p $outdir/pd
 # ML run
 logfile=$outdir/ml/run.log
 echo "Writing $logfile"
-mpirun -np $ntask ./so_mappraiser.py \
+srun ./so_mappraiser.py \
     $(< sat.par) \
     --thinfp 4 \
     --schedule $schedule \
@@ -51,7 +51,7 @@ mpirun -np $ntask ./so_mappraiser.py \
 # PD run
 logfile=$outdir/pd/run.log
 echo "Writing $logfile"
-mpirun -np $ntask ./so_mappraiser.py \
+srun ./so_mappraiser.py \
     $(< sat.par) \
     --thinfp 4 \
     --schedule $schedule \
