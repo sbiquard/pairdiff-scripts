@@ -10,9 +10,14 @@ import spectrum
 
 def add_arguments(parser):
     parser.add_argument(
+        "--basedir",
+        default="out/baseline",
+        help="directory where to find the hit map",
+    )
+    parser.add_argument(
         "--min-hits",
         dest="min_hits",
-        default=1000,
+        default=1_000,
         type=int,
         help="hit count threshold (default: 1000)",
     )
@@ -32,12 +37,11 @@ def add_arguments(parser):
 
 def main(args):
     # Read the baseline hits map
-    base_dir = "out/baseline"
-    print(f"Read hit map from '{base_dir}'")
-    hits, _ = utils.read_hits_cond(base_dir)
+    print(f"Read hit map from '{args.basedir}'")
+    hits, _ = utils.read_hits_cond(args.basedir)
 
     # Cut under a minimum hit count and apodize
-    print("Compute apodized mask")
+    print(f"Compute mask with hits > {args.min_hits:_} apodized over {args.aposize} degrees")
     mask = spectrum.get_mask_apo(hits, args.min_hits, args.aposize)
 
     # Save the mask
@@ -48,9 +52,7 @@ def main(args):
     # Plot the mask
     fname_plot = f"out/{args.file_name}.png"
     print(f"Save mask plot under '{fname_plot}'")
-    hp.projview(
-        mask, title=f"Apodized mask (minhits={args.min_hits}, aposize={args.aposize})"
-    )
+    hp.projview(mask, title=f"Apodized mask (minhits={args.min_hits}, aposize={args.aposize})")
     plt.savefig(fname_plot)
 
 

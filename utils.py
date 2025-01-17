@@ -32,8 +32,7 @@ SKIP_DIRS = ["plots", "spectra", "atm"]
 def dir_path(string):
     if os.path.isdir(string):
         return string
-    else:
-        raise NotADirectoryError(string)
+    raise NotADirectoryError(string)
 
 
 def get_all_runs(root, exclude=SKIP_DIRS):
@@ -61,8 +60,15 @@ def contains_log(run: pathlib.Path):
 
 def get_last_ref(dirname):
     run = pathlib.Path(dirname)
-    params = toml.load(run / "mappraiser_args_log.toml")
-    ref = params.get("ref", "run0")  # last ref logged
+    # params = toml.load(run / "mappraiser_args_log.toml")
+    # ref = params.get("ref", "run0")  # last ref logged
+    with open(run / "mappraiser_args_log.toml", "r") as config:
+        for line in config:
+            if line.startswith("ref"):
+                ref = line.split("=")[1].strip().strip('"')
+                break
+        else:
+            ref = "run0"
     return ref
 
 
@@ -145,6 +151,5 @@ def read_mask(fname="mask_apo"):
     if file.exists():
         mask = hp.read_map(str(file))
         return mask
-    else:
-        msg = f"{file} not found -- run `get_mask_apo.py --out {fname}` to generate it"
-        raise FileNotFoundError(msg)
+    msg = f"{file} not found -- run `get_mask_apo.py --out {fname}` to generate it"
+    raise FileNotFoundError(msg)
