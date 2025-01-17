@@ -16,7 +16,7 @@ def main(args):
     out = pathlib.Path("out")
     out.mkdir(exist_ok=True)
 
-    clname = out / "input_cells.npz"
+    clname = out / f"input_cells_{args.mask_apo}.npz"
     if clname.exists():
         # spectrum already computed
         cl = np.load(clname)
@@ -25,7 +25,7 @@ def main(args):
         sky = utils.read_input_sky()
 
         # read mask and get binning scheme
-        mask_apo = utils.read_mask()
+        mask_apo = utils.read_mask(args.mask_apo)
         binning = spectrum.get_binning(args.delta_ell)
 
         # compute the spectra
@@ -52,8 +52,8 @@ if __name__ == "__main__":
         "--delta-ell",
         dest="delta_ell",
         type=int,
-        default=5,
-        help="size of ell bins (default: 5)",
+        default=10,
+        help="size of ell bins",
     )
     args = parser.parse_args()
     main(args)

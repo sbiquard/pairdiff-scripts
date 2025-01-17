@@ -24,8 +24,8 @@ def add_arguments(parser):
         "--delta-ell",
         dest="delta_ell",
         type=int,
-        default=5,
-        help="size of ell bins (default: 5)",
+        default=10,
+        help="size of ell bins",
     )
     parser.add_argument(
         "-n",
