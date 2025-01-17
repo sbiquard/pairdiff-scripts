@@ -38,9 +38,7 @@ def add_arguments(parser):
         "-p", "--plot", action="store_true", help="save a plot of the computed spectra"
     )
     parser.add_argument("--mask", default="mask_apo", help="name of the mask to use")
-    parser.add_argument(
-        "--ref", type=str, default=None, help="ref to add to the saved spectra"
-    )
+    parser.add_argument("--ref", type=str, default=None, help="ref to add to the saved spectra")
 
 
 def process(run, ref: str, mask_name: str, delta_ell: int, overwrite: bool):
@@ -131,9 +129,7 @@ def main(args):
                     print(f"Processed '{run}' in {elapsed:.3f} seconds")
         if args.plot:
             # produce plots if needed
-            for run in pool.imap_unordered(
-                functools.partial(plot, ref=args.ref), runs_complete
-            ):
+            for run in pool.imap_unordered(functools.partial(plot, ref=args.ref), runs_complete):
                 if args.verbose:
                     print(f"Produced plot for '{run}'")
 

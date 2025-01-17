@@ -46,9 +46,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Compute and save spectra of the input sky."
-    )
+    parser = argparse.ArgumentParser(description="Compute and save spectra of the input sky.")
     parser.add_argument(
         "-dl",
         "--delta-ell",

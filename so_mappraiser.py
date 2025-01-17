@@ -125,9 +125,7 @@ def reduce_data(job, otherargs, runargs, data):
         mapmaker_mappraiser(job, otherargs, runargs, data)
     wrk.filtered_statistics(job, otherargs, runargs, data)
 
-    mem = toast.utils.memreport(
-        msg="(whole node)", comm=data.comm.comm_world, silent=True
-    )
+    mem = toast.utils.memreport(msg="(whole node)", comm=data.comm.comm_world, silent=True)
     log.info_rank(f"After reducing data:  {mem}", data.comm.comm_world)
 
 
