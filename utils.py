@@ -26,7 +26,7 @@ def timer(func):
 # Utility routines
 
 
-SKIP_DIRS = ["plots", "spectra", "atm"]
+SKIP_DIRS = ["plots", "spectra", "atm_cache"]
 
 
 def dir_path(string):
