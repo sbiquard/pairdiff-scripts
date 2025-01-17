@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=check-atm-simu-no-hwp
+#SBATCH --job-name=opti-atm-nohwp
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
 #SBATCH --nodes=30
@@ -31,7 +31,7 @@ echo "            ntask = ${ntask}"
 schedule="schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=out/checks/atm_no_hwp
+outdir=out/opti/atm_no_hwp
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
