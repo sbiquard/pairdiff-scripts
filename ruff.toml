@@ -1,1 +1,2 @@
 line-length = 100
+extend-exclude = ["toast", "sotodlib", "midapack", "so_mappraiser.py"]
