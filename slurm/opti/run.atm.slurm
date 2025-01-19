@@ -28,7 +28,7 @@ echo "  OMP_NUM_THREADS = ${OMP_NUM_THREADS}"
 echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
-schedule="schedule.01.south.txt"
+schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/opti/atm

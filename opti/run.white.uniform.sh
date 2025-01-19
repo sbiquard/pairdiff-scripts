@@ -3,7 +3,7 @@
 export OMP_NUM_THREADS=4
 ntask=2
 
-schedule="schedule.opti.txt"
+schedule="schedules/schedule.opti.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/opti/white_uniform

@@ -34,10 +34,13 @@ Setup
 
 * `get_defaults.sh` : Use `so_mappraiser.py` to generate a default parameter file for reference
 * `sat.toml` : Master parameter file for the `so_mappraiser.py` workflow
+* `ffp10_lensed_scl_100_nside0512.fits` : Input map to be observed during simulation
+
+Schedule files
+
 * `schedule.opti.txt` : Schedule file with a single scan
 * `schedule.01.south.txt` : Schedule file
 * `schedule.small.txt` : Truncated schedule file for laptop tests
-* `ffp10_lensed_scl_100_nside0512.fits` : Input map to be observed during simulation
 
 Tests (laptop: truncated schedule, decimated focal plane)
 
