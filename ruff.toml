@@ -1,2 +1,2 @@
 line-length = 100
-extend-exclude = ["toast", "sotodlib", "midapack", "so_mappraiser.py"]
+extend-exclude = ["extern", "so_mappraiser.py"]

@@ -1,11 +1,11 @@
 [submodule "toast"]
-	path = toast
+	path = extern/toast
 	url = https://github.com/sbiquard/toast
 [submodule "midapack"]
-	path = midapack
+	path = extern/midapack
 	url = https://github.com/sbiquard/midapack
 	branch = gaps-maxL
 [submodule "sotodlib"]
-	path = sotodlib
+	path = extern/sotodlib
 	url = https://github.com/sbiquard/sotodlib
 	branch = sb/pairdiff
