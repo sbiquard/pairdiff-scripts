@@ -77,6 +77,19 @@ def simulate_data(job, otherargs, runargs, data):
     wrk.simulate_calibration_error(job, otherargs, runargs, data)
     wrk.simulate_readout_effects(job, otherargs, runargs, data)
 
+    # Handle atmosphere / noise buffers
+    nkey, akey = "noise", "atm"
+    if job.operators.sim_atmosphere.enabled:
+        if job.operators.sim_noise.enabled:
+            # the noise simulation operator is enabled
+            # the noise key should exist
+            toast.ops.Combine(op="add", first=nkey, second=akey, result=nkey).apply(data)
+        else:
+            # the noise key does not exist
+            # copy the atm data into it, then delete it
+            toast.ops.Copy(detdata=[(akey, nkey)]).apply(data)
+            toast.ops.Delete(detdata=[akey]).apply(data)
+
     comm = data.comm.comm_world
 
     mem = toast.utils.memreport(msg="(whole node)", comm=comm, silent=True)
