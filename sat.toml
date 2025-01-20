@@ -1430,7 +1430,7 @@
     least_squares_gtol = "None" # The gtol value passed to the least_squares solver
     least_squares_xtol = "None" # The xtol value passed to the least_squares solver
     name = "noise_estim_fit" # The 'name' of this class instance
-    noise_model = "noise_model" # The observation key containing the input noise model
+    noise_model = "noise_estim" # The observation key containing the input noise model
     out_model = "noise_estim_fit" # Create a new noise model with this name
     white_noise_max = "None" # The maximum frequency to consider for the white noise plateau
     white_noise_min = "None" # The minimum frequency to consider for the white noise plateau

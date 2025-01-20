@@ -40,11 +40,10 @@ logfile=$outdir/ml/run.log
 echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
+    $(< atm.par) \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.lagmax 10000 \
-    --sim_atmosphere.enable \
     --sim_ground.hwp_rpm 0 \
     --out $outdir/ml \
     >$logfile 2>&1
@@ -54,12 +53,11 @@ logfile=$outdir/pd/run.log
 echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
+    $(< atm.par) \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.lagmax 10000 \
     --mappraiser.pair_diff \
-    --sim_atmosphere.enable \
     --sim_ground.hwp_rpm 0 \
     --out $outdir/pd \
     >$logfile 2>&1
