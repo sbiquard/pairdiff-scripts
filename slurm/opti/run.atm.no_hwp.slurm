@@ -1,12 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=opti-atm-nohwp
 #SBATCH --account=nih@cpu
-#SBATCH --qos=qos_cpu-dev
 #SBATCH --nodes=30
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=02:00:00
+#SBATCH --time=10:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
