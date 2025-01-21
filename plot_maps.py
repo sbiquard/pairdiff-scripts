@@ -2,9 +2,8 @@
 
 import argparse
 import functools
-import multiprocessing
-import pathlib
 import time
+from pathlib import Path
 
 import healpy as hp
 import matplotlib.pyplot as plt
@@ -16,10 +15,12 @@ import utils
 LONRA = [-95, 135]
 LATRA = [-70, -10]
 
+cartview = functools.partial(hp.cartview, lonra=LONRA, latra=LATRA)
+
 
 def plot_hits_cond(hits, cond, savedir, cmap="bwr"):
     def plot(m, title):
-        hp.cartview(m, norm="hist", title=title, lonra=LONRA, latra=LATRA, cmap=cmap)
+        cartview(m, norm="hist", title=title, cmap=cmap)
 
     # Plot hits
     plot(hits, "Hits map")
@@ -37,7 +38,7 @@ def plot_res_hist(maps, sky_in, savedir):
     convert = {"I": 0, "Q": 1, "U": 2}
 
     for k, v in maps.items():
-        resid[k] = sky_in[convert[k]] - maps[k]
+        resid[k] = sky_in[convert[k]] - v
 
     fig, ax = plt.subplots(figsize=(7, 7))
 
@@ -45,7 +46,7 @@ def plot_res_hist(maps, sky_in, savedir):
         residual = residual[~np.isnan(residual)]
         hist(
             residual,
-            bins="scott",
+            bins="scott",  # pyright: ignore[reportArgumentType]
             label=f"{stokes} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
             histtype="step",
             ax=ax,
@@ -62,10 +63,12 @@ def plot_res_hist(maps, sky_in, savedir):
 def plot_maps(
     maps,
     sky_in,
-    savedir,
-    cmap="bwr",
-    map_range_T=500,
-    map_range_P=20,
+    savedir: Path,
+    cmap: str = "bwr",
+    map_range_T: int = 500,
+    map_range_P: int = 10,
+    diff_range_T: int | None = None,
+    diff_range_P: int | None = None,
 ):
     nrow, ncol = 3, 3
     fig = plt.figure(figsize=(8 * ncol, 4 * nrow))
@@ -75,13 +78,12 @@ def plot_maps(
 
     for i, stokes in enumerate(convert):
         map_range = map_range_T if i == 0 else map_range_P
+        diff_range = diff_range_T if i == 0 else diff_range_P
 
         # Plot input sky
-        hp.cartview(
+        cartview(
             sky_in[i],
             title=f"Input {stokes}",
-            lonra=LONRA,
-            latra=LATRA,
             sub=[nrow, ncol, 1 + 3 * i],
             notext=False,
             min=-map_range,
@@ -92,11 +94,9 @@ def plot_maps(
 
         if stokes in maps:
             # Plot reconstructed map
-            hp.cartview(
+            cartview(
                 maps[stokes],
                 title=f"Reconstructed {stokes} map",
-                lonra=LONRA,
-                latra=LATRA,
                 sub=[nrow, ncol, 1 + 3 * i + 1],
                 notext=False,
                 min=-map_range,
@@ -110,16 +110,14 @@ def plot_maps(
             offset = np.nanmedian(diff)
             rms = np.nanstd(diff)
             amp = 2 * rms
-            hp.cartview(
+            cartview(
                 diff,
                 title=f"Difference {stokes}",
-                lonra=LONRA,
-                latra=LATRA,
                 sub=[nrow, ncol, 1 + 3 * i + 2],
                 notext=False,
                 cmap="bwr",
-                min=offset - amp,
-                max=offset + amp,
+                min=-(diff_range or -(offset - amp)),
+                max=diff_range or (offset + amp),
                 unit=unit,
             )
 
@@ -143,19 +141,20 @@ def plot_residuals(data, savedir):
     plt.close(fig)
 
 
-def process(ref, dirname):
+def process(args):
     # start timer
     tic = time.perf_counter()
 
     # create folder for the plots
-    run = pathlib.Path(dirname)
-    savedir = run / "plots" / ref
-    savedir.mkdir(parents=True, exist_ok=True)
+    run = Path(args.dirname)
+    plotdir = run / "plots"
+    plotdir.mkdir(parents=True, exist_ok=True)
+    ref = utils.get_last_ref(run)
 
     # read data
-    maps = utils.read_maps(dirname, ref=ref)
-    hits, cond = utils.read_hits_cond(dirname, ref=ref)
-    residuals = utils.read_residuals(dirname, ref=ref)
+    maps = utils.read_maps(args.dirname, ref=ref)
+    hits, cond = utils.read_hits_cond(args.dirname, ref=ref)
+    residuals = utils.read_residuals(args.dirname, ref=ref)
     sky_in = utils.read_input_sky()
 
     # define a mask for pixels outside the solved patch
@@ -164,30 +163,13 @@ def process(ref, dirname):
         m[mask] = np.nan
     cond[mask] = np.nan
 
-    plot_hits_cond(hits, cond, savedir)
-    plot_res_hist(maps, sky_in, savedir)
-    plot_maps(maps, sky_in, savedir, map_range_P=10)
-    plot_residuals(residuals, savedir)
+    plot_hits_cond(hits, cond, plotdir)
+    plot_res_hist(maps, sky_in, plotdir)
+    plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
+    plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
-    return ref, elapsed
-
-
-def main(args):
-    if args.refs is None:
-        refs = [utils.get_last_ref(args.dirname)]
-    if args.verbose:
-        print(f"Process {len(refs)} ref(s) in '{args.dirname}'")
-
-    # Use up to 4 cpus
-    ncpu = min(len(refs), 4)
-    with multiprocessing.Pool(processes=ncpu) as pool:
-        if args.verbose:
-            print(f"Using {ncpu} CPU")
-        partial_func = functools.partial(process, dirname=args.dirname)
-        for ref, elapsed in pool.imap_unordered(partial_func, refs):
-            if args.verbose:
-                print(f"Processed ref '{ref}' in {elapsed:.3f} seconds")
+    print(f"Elapsed time: {elapsed:.2f} s")
 
 
 if __name__ == "__main__":
@@ -195,7 +177,6 @@ if __name__ == "__main__":
         description="Plot difference maps and histograms for a given run."
     )
     parser.add_argument("dirname", type=utils.dir_path, help="name of directory")
-    parser.add_argument("--refs", nargs="*", help="refs to process")
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
+    parser.add_argument("--diff-range-P", type=int)
     args = parser.parse_args()
-    main(args)
+    process(args)
