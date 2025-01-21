@@ -40,6 +40,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    --mappraiser.estimate_psd \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
@@ -53,6 +54,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    --mappraiser.estimate_psd \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \

@@ -1,4 +1,3 @@
 --sim_atmosphere.enable
---mappraiser.estimate_psd
 --mappraiser.tol
 1e-8
