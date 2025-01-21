@@ -30,8 +30,8 @@ echo "            ntask = ${ntask}"
 schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outroot=out/opti/atm-ml-atomic
-mkdir -p $outroot
+outdir=out/opti/atm-ml-atomic
+mkdir -p $outdir
 
 # Loop through the scan lines
 header_lines=3
@@ -46,7 +46,7 @@ while IFS= read -r scan_line; do
 
     # Output subdirectory for the current scan
     scan_counter_padded=$(printf "%04d" "$scan_counter")
-    subdir="$outroot/sub_${scan_counter_padded}"
+    subdir="$outdir/sub_${scan_counter_padded}"
     mkdir -p $subdir
 
     # Write the subschedule
@@ -60,7 +60,7 @@ while IFS= read -r scan_line; do
         $(< atm.par) \
         --mappraiser.estimate_psd \
         --thinfp 4 \
-        --schedule $schedule \
+        --schedule $subschedule \
         --scan_map.file $cmb_input \
         --out $subdir \
         >$subdir/run.log 2>&1
