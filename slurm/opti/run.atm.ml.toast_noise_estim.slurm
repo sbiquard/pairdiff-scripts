@@ -31,6 +31,7 @@ schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=out/opti/atm_toast_noise_estim
+mkdir -p $outdir
 
 # ML run
 logfile=$outdir/run.log
