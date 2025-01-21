@@ -38,17 +38,17 @@ Setup
 
 Schedule files
 
-* `schedule.opti.txt` : Schedule file with a single scan
-* `schedule.01.south.txt` : Schedule file
-* `schedule.small.txt` : Truncated schedule file for laptop tests
+* `schedules/schedule.01.south.txt` : Schedule file
+* `schedules/schedule.small.txt` : Truncated schedule file for laptop tests
+* `schedules/schedule.opti.txt` : Schedule file with a single scan
 
 Tests (laptop: truncated schedule, decimated focal plane)
 
-* `opti` : Evaluate the optimality of pair-differencing compared to maximum-likelihood (single observation)
+* `tests/opti` : Evaluate the optimality of pair-differencing compared to maximum-likelihood (single observation)
   * `run.white.uniform.sh` : all detector _pairs_ have the same white noise level (but not detectors in a pair)
   * `run.white.variable.sh` : all detectors have different white noise levels
   * `run.one_over_f.sh` : all detectors have different 1/f noise parameters
-* `syst` : Evaluate the impact of systematic effects on the pair-differencing approach
+* `tests/syst` : Evaluate the impact of systematic effects on the pair-differencing approach
   * `run.atm.cache.sh` : simulate and cache the atmosphere simulation
   * `run.baseline.sh` : run the baseline configuration (ideal case)
   * `run.gains.constant.sh` : run with gain errors which are the same for all detector pairs

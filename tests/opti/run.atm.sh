@@ -16,6 +16,7 @@ echo "Writing $logfile"
 mpirun -np $ntask ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    --mappraiser.estimate_psd \
     --thinfp 64 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
@@ -28,6 +29,7 @@ echo "Writing $logfile"
 mpirun -np $ntask ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    --mappraiser.estimate_psd \
     --thinfp 64 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
