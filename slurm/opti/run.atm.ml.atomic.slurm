@@ -58,7 +58,6 @@ srun ./so_mappraiser.py \
     --schedule $subschedule \
     --scan_map.file $cmb_input \
     --out $subdir \
-    >$subdir/run.log 2>&1 \
-    </dev/null
+    >$subdir/run.log 2>&1
 
 echo "$(date) : Done!"
