@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=2  # 20% of the node
 #SBATCH --cpus-per-task=4    # should be enough
 #SBATCH --hint=nomultithread
-#SBATCH --time=05:00:00      # each ML run takes several hours
+#SBATCH --time=20:00:00      # each ML run takes several hours
 #SBATCH --output=slurm-output/slurm-%A_%a.out
 #SBATCH --error=slurm-output/slurm-%A_%a.out
 
