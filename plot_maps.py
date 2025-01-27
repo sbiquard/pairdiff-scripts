@@ -37,27 +37,35 @@ def plot_res_hist(maps, sky_in, savedir):
     resid = {}
     convert = {"I": 0, "Q": 1, "U": 2}
 
+    # Compute the residuals
     for k, v in maps.items():
         resid[k] = sky_in[convert[k]] - v
 
-    fig, ax = plt.subplots(figsize=(7, 7))
+    def plot_hist_stoke(stokes: str):
+        fig, ax = plt.subplots(figsize=(7, 7))
 
-    for stokes, residual in resid.items():
-        residual = residual[~np.isnan(residual)]
-        hist(
-            residual,
-            bins="scott",  # pyright: ignore[reportArgumentType]
-            label=f"{stokes} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
-            histtype="step",
-            ax=ax,
-        )
+        for stoke in stokes:
+            residual = resid[stoke]
+            residual = residual[~np.isnan(residual)]
+            hist(
+                residual,
+                bins="scott",  # pyright: ignore[reportArgumentType]
+                label=f"{stoke} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
+                histtype="step",
+                ax=ax,
+            )
 
-    fig.suptitle("Histograms of residuals")
-    ax.set_xlabel("$\\mu K_{CMB}$")
-    ax.grid(True)
-    ax.legend()
-    fig.savefig(savedir / "diff_histograms.png")
-    plt.close(fig)
+        fig.suptitle(f"Histograms of {stokes!r} residuals")
+        ax.set_xlabel("$\\mu K_{CMB}$")
+        ax.grid(True)
+        ax.legend()
+        fig.savefig(savedir / f"diff_histograms_{stokes}.png")
+        plt.close(fig)
+
+    # plot I separately
+    if "I" in maps:
+        plot_hist_stoke("I")
+    plot_hist_stoke("QU")
 
 
 def plot_maps(
