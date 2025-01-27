@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
-import numpy as np
 import multiprocessing
 import time
+from functools import partial
 
-import utils
+import numpy as np
+
 import plot_maps
+import utils
 
 
 def add_arguments(parser):
@@ -19,9 +21,10 @@ def add_arguments(parser):
         default=4,
         help="number of CPUs to use (default: 4)",
     )
+    parser.add_argument("--diff-range-P", type=int)
 
 
-def process(run):
+def process(run, diff_range_P: int):
     # start timer
     tic = time.perf_counter()
 
@@ -50,7 +53,7 @@ def process(run):
 
     plot_maps.plot_hits_cond(hits, cond, plotdir)
     plot_maps.plot_res_hist(maps, sky_in, plotdir)
-    plot_maps.plot_maps(maps, sky_in, plotdir)
+    plot_maps.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
     plot_maps.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
@@ -73,7 +76,9 @@ def main(args):
     with multiprocessing.Pool(processes=ncpu) as pool:
         if args.verbose:
             print(f"Using {ncpu} CPU")
-        for run, elapsed in pool.imap_unordered(process, runs):
+        for run, elapsed in pool.imap_unordered(
+            partial(process, diff_range_P=args.diff_range_P), runs
+        ):
             if elapsed is None:
                 print(f"Could not plot maps for '{run}' (missing files)")
                 continue
