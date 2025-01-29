@@ -15,7 +15,7 @@ import plot_spectra
 def add_arguments(parser):
     parser.add_argument(
         "--root",
-        pathlib.Path,
+        type=pathlib.Path,
         default="out",
         help="root working directory",
     )
