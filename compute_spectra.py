@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import multiprocessing
 import functools
+import pathlib
 import time
 
 import utils
@@ -12,6 +13,12 @@ import plot_spectra
 
 
 def add_arguments(parser):
+    parser.add_argument(
+        "--root",
+        pathlib.Path,
+        default="out",
+        help="root working directory",
+    )
     parser.add_argument(
         "-o",
         "--overwrite",
@@ -94,7 +101,7 @@ def plot(run, ref: str):
 
 
 def main(args):
-    runs = list(utils.get_all_runs("out"))
+    runs = list(utils.get_all_runs(args.root))
     # hp.projview(mask_apo)
     # plt.show()
 
