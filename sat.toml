@@ -1847,6 +1847,7 @@
     purge_det_data = true # Clear all observation detector data after staging
     realization = 0 # Noise realization index (for gap filling)
     ref = "run0" # Reference that is added to the name of the output maps
+    save_fit_info = true # Save fit information when estimating noise PSD
     shared_flag_mask = 0 # Bit mask value for shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     solver = 0 # Solver choice
