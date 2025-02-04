@@ -45,17 +45,21 @@ export TOAST_LOGLEVEL=DEBUG
 timeout 115m \
     srun ./so_mappraiser.py \
     $(< sat.par) \
+    $(< atm.par) \
     --thinfp 64 \
     --config sat.toml \
     --schedule $schedule \
     --scan_map.disable \
     --det_pointing_azel.shared_flag_mask 0 \
     --det_pointing_radec.shared_flag_mask 0 \
-    --sim_atmosphere.enable \
     --sim_atmosphere.shared_flag_mask 0 \
     --sim_atmosphere.det_flag_mask 0 \
     --sim_atmosphere.cache_only \
     --sim_atmosphere.field_of_view "Quantity('40 deg')" \
+    --sim_atmosphere_coarse.shared_flag_mask 0 \
+    --sim_atmosphere_coarse.det_flag_mask 0 \
+    --sim_atmosphere_coarse.cache_only \
+    --sim_atmosphere_coarse.field_of_view "Quantity('40 deg')" \
     --out $outdir \
     >>$logfile 2>&1
 
