@@ -1,11 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=get-sample-obs-data
 #SBATCH --account=nih@cpu
+#SBATCH --qos=qos_cpu-dev
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=2
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=01:00:00
+#SBATCH --time=00:05:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -40,16 +41,15 @@ obs_line=$(sed -n "$((obs_id + header_lines))p" "$full_schedule")
 
 # write the subschedule
 subschedule="$outdir/schedule.$obs_id.txt"
-echo "$header" > $subschedule
-printf "%s" "$obs_line" >> $subschedule
+echo "$header" >$subschedule
+printf "%s" "$obs_line" >>$subschedule
 
-# ML run
 srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
+    --simulate-only \
     --sim_atmosphere_coarse.det_data "atm_coarse" \
     --save_hdf5.enable \
-    --mappraiser.disable \
+    $(<sat.par) \
+    $(<atm.par) \
     --thinfp 64 \
     --schedule $subschedule \
     --scan_map.file $cmb_input \
