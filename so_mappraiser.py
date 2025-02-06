@@ -77,19 +77,6 @@ def simulate_data(job, otherargs, runargs, data):
     wrk.simulate_calibration_error(job, otherargs, runargs, data)
     wrk.simulate_readout_effects(job, otherargs, runargs, data)
 
-    # Handle atmosphere / noise buffers
-    nkey, akey = "noise", "atm"
-    if job.operators.sim_atmosphere.enabled:
-        if job.operators.sim_noise.enabled:
-            # the noise simulation operator is enabled
-            # the noise key should exist
-            toast.ops.Combine(op="add", first=nkey, second=akey, result=nkey).apply(data)
-        else:
-            # the noise key does not exist
-            # copy the atm data into it, then delete it
-            toast.ops.Copy(detdata=[(akey, nkey)]).apply(data)
-            toast.ops.Delete(detdata=[akey]).apply(data)
-
     comm = data.comm.comm_world
 
     mem = toast.utils.memreport(msg="(whole node)", comm=comm, silent=True)
@@ -101,8 +88,43 @@ def simulate_data(job, otherargs, runargs, data):
     log.info_rank(f"After saving data:  {mem}", comm)
 
 
+def synthesize_noise_and_atm_for_mappraiser(job, data):
+    """Add atmosphere and noise buffers together in the mappraiser noise buffer."""
+    if not (mappraiser := job.operators.mappraiser).enabled:
+        # mappraiser disabled, nothing to do
+        return
+
+    # first check if mappraiser's noise data key should exist
+    nkey = mappraiser.noise_data
+    if (noise_op := job.operators.sim_noise).enabled:
+        # the noise simulation operator is enabled, key should exist
+        _nkey_exists = True
+        if noise_op.det_data != nkey:
+            msg = f"Mappraiser noise data key {nkey} does not match noise simulation key {noise_op.det_data}"
+            raise RuntimeError(msg)
+    else:
+        # key should not exist yet
+        # Toast will log a warning when we try to copy to an existing key
+        _nkey_exists = False
+
+    # Add atmosphere and noise buffers together in the mappraiser noise buffer
+    for atm_op in [job.operators.sim_atmosphere, job.operators.sim_atmosphere_coarse]:
+        if not atm_op.enabled:
+            continue
+        akey = atm_op.det_data
+        if _nkey_exists:
+            toast.ops.Combine(op="add", first=nkey, second=akey, result=nkey).apply(data)
+        else:
+            toast.ops.Copy(detdata=[(akey, nkey)]).apply(data)
+            # noise key was created by the line above
+            _nkey_exists = True
+            toast.ops.Delete(detdata=[akey]).apply(data)
+
+
 def reduce_data(job, otherargs, runargs, data):
     log = toast.utils.Logger.get()
+
+    synthesize_noise_and_atm_for_mappraiser(job, data)
 
     wrk.simple_jumpcorrect(job, otherargs, runargs, data)
     wrk.simple_deglitch(job, otherargs, runargs, data)
@@ -207,6 +229,13 @@ def main():
         action="store_true",
         help="Zero out detector data loaded from disk",
     )
+    parser.add_argument(
+        "--simulate-only",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Only simulate the data, do not reduce it",
+    )
 
     # The operators and templates we want to configure from the command line
     # or a parameter file.
@@ -288,7 +317,7 @@ def main():
 
     simulate_data(job, otherargs, runargs, data)
 
-    if not job.operators.sim_atmosphere.cache_only:
+    if not job.operators.sim_atmosphere.cache_only and not otherargs.simulate_only:
         # Reduce the data
         reduce_data(job, otherargs, runargs, data)
 
