@@ -318,7 +318,7 @@
     class = "toast.ops.elevation_noise.ElevationNoise"
     API = 0 # Internal interface version for this operator
     detector_pointing = "None" # Operator that translates boresight Az / El pointing into detector frame
-    enabled = true # If True, this class instance is marked as enabled
+    enabled = false # If True, this class instance is marked as enabled
     extra_factor = "None" # Extra multiplier to the NET scaling
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     modulate_pwv = false # If True, modulate the NET based on PWV
