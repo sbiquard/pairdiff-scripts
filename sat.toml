@@ -1830,7 +1830,7 @@
     fill_gaps = false # Perform gap filling on the data
     gap_stgy = 0 # Strategy for handling timestream gaps
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
-    lagmax = 16384 # Maximum lag of the correlation function
+    lagmax = 4096 # Maximum lag of the correlation function
     maxiter = 3000 # Maximum number of iterations allowed for the solver
     mem_report = true # Print memory reports
     name = "mappraiser" # The 'name' of this class instance
@@ -1852,7 +1852,7 @@
     shared_flags = "flags" # Observation shared key for telescope flags to use
     solver = 0 # Solver choice
     stokes_weights = "None" # Operator to generate I/Q/U weights
-    tol = 1e-12 # Convergence threshold for the iterative solver
+    tol = 1e-8 # Convergence threshold for the iterative solver
     z_2lvl = 0 # Size of 2lvl deflation space
     zero_noise = false # Fill the noise buffer with zero
     zero_signal = false # Fill the signal buffer with zero

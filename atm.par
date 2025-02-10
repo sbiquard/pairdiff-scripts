@@ -1,4 +1,2 @@
 --sim_atmosphere.enable
 --sim_atmosphere_coarse.enable
---mappraiser.tol
-1e-8

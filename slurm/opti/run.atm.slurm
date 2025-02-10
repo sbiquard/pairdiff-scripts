@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=opti-atm
 #SBATCH --account=nih@cpu
-#SBATCH --nodes=30
+#SBATCH --nodes=50
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=10:00:00
+#SBATCH --time=20:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -30,7 +30,7 @@ echo "            ntask = ${ntask}"
 schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=out/opti/atm
+outdir=$SCRATCH/pairdiff_runs/atm
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
