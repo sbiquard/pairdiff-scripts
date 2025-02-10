@@ -59,25 +59,24 @@ def contains_log(run: pathlib.Path):
     return False
 
 
-def get_last_ref(dirname, logfile_suffix=".json"):
+def get_last_ref(dirname):
     run = pathlib.Path(dirname)
-    logfile = (run / "mappraiser_args_log").with_suffix(logfile_suffix)
-    with logfile.open() as config:
-        params = json.load(config)
-        ref = params.get("ref", "run0")  # last ref logged
-    return ref
+
+    try:
+        # try json first
+        logfile = (run / "mappraiser_args_log").with_suffix(".json")
+        with logfile.open() as config:
+            params = json.load(config)
+    except FileNotFoundError:
+        # fallback to toml
+        logfile = (run / "config_log").with_suffix(".toml")
+        with logfile.open() as config:
+            params = toml.load(config)
+    return params.get("ref", "run0")
 
 
 def is_complete(run: pathlib.Path):
-    try:
-        ref = get_last_ref(run)
-    except FileNotFoundError:
-        try:
-            # try with .toml extension
-            ref = get_last_ref(run, ".toml")
-        except FileNotFoundError:
-            return False
-
+    ref = get_last_ref(run)
     fnames = (
         f"Cond_{ref}.fits",
         f"Hits_{ref}.fits",
