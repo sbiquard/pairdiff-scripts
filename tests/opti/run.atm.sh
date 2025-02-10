@@ -10,12 +10,16 @@ outdir=out/opti/atm
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
+export TOAST_LOGLEVEL=DEBUG
+
 # ML run
 logfile=$outdir/ml/run.log
 echo "Writing $logfile"
 mpirun -np $ntask ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    --sim_atmosphere_coarse.det_data "atm_coarse" \
+    --save_hdf5.enable \
     --mappraiser.estimate_psd \
     --thinfp 64 \
     --schedule $schedule \
@@ -23,12 +27,14 @@ mpirun -np $ntask ./so_mappraiser.py \
     --out $outdir/ml \
     >$logfile 2>&1
 
-PD run
+# PD run
 logfile=$outdir/pd/run.log
 echo "Writing $logfile"
 mpirun -np $ntask ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    --sim_atmosphere_coarse.det_data "atm_coarse" \
+    --save_hdf5.enable \
     --mappraiser.estimate_psd \
     --thinfp 64 \
     --schedule $schedule \
