@@ -1,8 +1,8 @@
 import functools
 import json
 import os
-import pathlib
 import time
+from pathlib import Path
 
 import healpy as hp
 import numpy as np
@@ -37,7 +37,7 @@ def dir_path(string):
 
 
 def get_all_runs(root, exclude=SKIP_DIRS):
-    root = pathlib.Path(root)
+    root = Path(root)
     for item in root.iterdir():
         if not item.is_dir():
             # skip files
@@ -53,14 +53,14 @@ def get_all_runs(root, exclude=SKIP_DIRS):
         yield from get_all_runs(item)
 
 
-def contains_log(run: pathlib.Path):
+def contains_log(run: Path):
     for _ in run.glob("*.log"):
         return True
     return False
 
 
 def get_last_ref(dirname):
-    run = pathlib.Path(dirname)
+    run = Path(dirname)
 
     try:
         # try json first
@@ -75,7 +75,7 @@ def get_last_ref(dirname):
     return params.get("ref", "run0")
 
 
-def is_complete(run: pathlib.Path):
+def is_complete(run: Path):
     ref = get_last_ref(run)
     fnames = (
         f"Cond_{ref}.fits",
@@ -93,8 +93,8 @@ def is_complete(run: pathlib.Path):
 
 
 def read_input_sky(field=None):
-    sky = 1e6 * hp.fitsfunc.read_map("ffp10_lensed_scl_100_nside0512.fits", field=field)
-    return sky
+    filename = Path(__file__).parents[1] / "ffp10_lensed_scl_100_nside0512.fits"
+    return 1e6 * hp.fitsfunc.read_map(filename, field=field)
 
 
 def read_maps(dirname, ref=None):
@@ -103,7 +103,7 @@ def read_maps(dirname, ref=None):
         ref = get_last_ref(dirname)
 
     # read logged param file
-    run = pathlib.Path(dirname)
+    run = Path(dirname)
     params = toml.load(run / "config_log.toml")
     params = params["operators"]["mappraiser"]
 
@@ -126,7 +126,7 @@ def read_hits_cond(dirname, ref=None):
         ref = get_last_ref(dirname)
 
     # load hits and condition number maps
-    run = pathlib.Path(dirname)
+    run = Path(dirname)
     hits = hp.fitsfunc.read_map(str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32)
     cond = hp.fitsfunc.read_map(str(run / f"Cond_{ref}.fits"), field=None)
 
@@ -139,14 +139,14 @@ def read_residuals(dirname, ref=None):
         ref = get_last_ref(dirname)
 
     # read residuals file
-    run = pathlib.Path(dirname)
+    run = Path(dirname)
     fname = f"residuals_{ref}.dat"
     data = np.loadtxt(run / fname, skiprows=1, usecols=1)
     return data
 
 
 def read_mask(fname="mask_apo"):
-    file = pathlib.Path.cwd().parent / "out" / f"{fname}.fits"
+    file = Path(__file__).parents[1] / "out" / f"{fname}.fits"
     if file.exists():
         mask = hp.read_map(str(file))
         return mask
