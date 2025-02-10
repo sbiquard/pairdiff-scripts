@@ -1,6 +1,7 @@
 import functools
-import pathlib
+import json
 import os
+import pathlib
 import time
 
 import healpy as hp
@@ -58,17 +59,14 @@ def contains_log(run: pathlib.Path):
     return False
 
 
-def get_last_ref(dirname):
+def get_last_ref(dirname, logfile_suffix=".json"):
     run = pathlib.Path(dirname)
-    # params = toml.load(run / "mappraiser_args_log.toml")
-    # ref = params.get("ref", "run0")  # last ref logged
-    with open(run / "mappraiser_args_log.toml", "r") as config:
-        for line in config:
-            if line.startswith("ref"):
-                ref = line.split("=")[1].strip().strip('"')
-                break
-        else:
-            ref = "run0"
+    logfile = (run / "mappraiser_args_log").with_suffix(logfile_suffix)
+    if not logfile.exists():
+        raise FileNotFoundError(f"Could not find {logfile}")
+    with logfile.open() as config:
+        params = json.load(config)
+        ref = params.get("ref", "run0")  # last ref logged
     return ref
 
 
@@ -76,7 +74,11 @@ def is_complete(run: pathlib.Path):
     try:
         ref = get_last_ref(run)
     except FileNotFoundError:
-        return False
+        try:
+            # try with .toml extension
+            ref = get_last_ref(run, ".toml")
+        except FileNotFoundError:
+            return False
 
     fnames = (
         f"Cond_{ref}.fits",
