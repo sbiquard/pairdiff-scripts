@@ -62,8 +62,6 @@ def contains_log(run: pathlib.Path):
 def get_last_ref(dirname, logfile_suffix=".json"):
     run = pathlib.Path(dirname)
     logfile = (run / "mappraiser_args_log").with_suffix(logfile_suffix)
-    if not logfile.exists():
-        raise FileNotFoundError(f"Could not find {logfile}")
     with logfile.open() as config:
         params = json.load(config)
         ref = params.get("ref", "run0")  # last ref logged
