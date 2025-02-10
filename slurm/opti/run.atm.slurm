@@ -41,6 +41,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     --mappraiser.estimate_psd \
+    --mappraiser.save_fit_info \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
@@ -54,6 +55,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     --mappraiser.estimate_psd \
+    --mappraiser.save_fit_info \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
