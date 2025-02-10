@@ -146,7 +146,7 @@ def read_residuals(dirname, ref=None):
 
 
 def read_mask(fname="mask_apo"):
-    file = pathlib.Path("out") / f"{fname}.fits"
+    file = pathlib.Path.cwd().parent / "out" / f"{fname}.fits"
     if file.exists():
         mask = hp.read_map(str(file))
         return mask
