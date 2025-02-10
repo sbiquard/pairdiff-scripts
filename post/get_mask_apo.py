@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+
 import healpy as hp
 import matplotlib.pyplot as plt
-
-import utils
 import spectrum
+import utils
 
 
-def add_arguments(parser):
+def main():
+    # Parse arguments
+    parser = argparse.ArgumentParser(
+        description="create and save an apodized mask (for power spectrum computations)",
+    )
     parser.add_argument(
         "--basedir",
         default="out/baseline",
@@ -33,9 +37,8 @@ def add_arguments(parser):
         default="mask_apo",
         help="file name under which to save the mask (must not already exist)",
     )
+    args = parser.parse_args()
 
-
-def main(args):
     # Read the baseline hits map
     print(f"Read hit map from '{args.basedir}'")
     hits, _ = utils.read_hits_cond(args.basedir)
@@ -57,9 +60,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="create and save an apodized mask (for power spectrum computations)",
-    )
-    add_arguments(parser)
-    args = parser.parse_args()
-    main(args)
+    main()

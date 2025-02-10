@@ -1,51 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
-import numpy as np
-import multiprocessing
 import functools
+import multiprocessing
 import pathlib
 import time
 
-import utils
-import spectrum
+import numpy as np
 import plot_spectra
-
-
-def add_arguments(parser):
-    parser.add_argument(
-        "--root",
-        type=pathlib.Path,
-        default="out",
-        help="root working directory",
-    )
-    parser.add_argument(
-        "-o",
-        "--overwrite",
-        action="store_true",
-        help="overwrite previously computed spectra",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
-    parser.add_argument(
-        "-dl",
-        "--delta-ell",
-        dest="delta_ell",
-        type=int,
-        default=10,
-        help="size of ell bins",
-    )
-    parser.add_argument(
-        "-n",
-        "--ncpu",
-        type=int,
-        default=4,
-        help="number of CPUs to use (default: 4)",
-    )
-    parser.add_argument(
-        "-p", "--plot", action="store_true", help="save a plot of the computed spectra"
-    )
-    parser.add_argument("--mask", default="mask_apo", help="name of the mask to use")
-    parser.add_argument("--ref", type=str, default=None, help="ref to add to the saved spectra")
+import spectrum
+import utils
 
 
 def process(run, ref: str, mask_name: str, delta_ell: int, overwrite: bool):
@@ -100,7 +64,45 @@ def plot(run, ref: str):
     return run
 
 
-def main(args):
+def main():
+    parser = argparse.ArgumentParser(
+        description="Compute and save power spectra for all runs.",
+    )
+    parser.add_argument(
+        "-r",
+        "--root",
+        type=pathlib.Path,
+        default="out",
+        help="root working directory",
+    )
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        action="store_true",
+        help="overwrite previously computed spectra",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
+    parser.add_argument(
+        "-dl",
+        "--delta-ell",
+        dest="delta_ell",
+        type=int,
+        default=10,
+        help="size of ell bins",
+    )
+    parser.add_argument(
+        "-n",
+        "--ncpu",
+        type=int,
+        default=4,
+        help="number of CPUs to use (default: 4)",
+    )
+    parser.add_argument(
+        "-p", "--plot", action="store_true", help="save a plot of the computed spectra"
+    )
+    parser.add_argument("--mask", default="mask_apo", help="name of the mask to use")
+    parser.add_argument("--ref", type=str, default=None, help="ref to add to the saved spectra")
+    args = parser.parse_args()
     runs = list(utils.get_all_runs(args.root))
     # hp.projview(mask_apo)
     # plt.show()
@@ -140,13 +142,6 @@ def main(args):
                 if args.verbose:
                     print(f"Produced plot for '{run}'")
 
-    return
-
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Compute and save power spectra for all runs.",
-    )
-    add_arguments(parser)
-    args = parser.parse_args()
-    main(args)
+    main()

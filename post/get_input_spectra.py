@@ -2,16 +2,25 @@
 
 import argparse
 import pathlib
-import numpy as np
+
 import matplotlib.pyplot as plt
-
-import utils
-import spectrum
+import numpy as np
 import plot_spectra
+import spectrum
+import utils
 
 
-@utils.timer
-def main(args):
+def main():
+    parser = argparse.ArgumentParser(description="Compute and save spectra of the input sky.")
+    parser.add_argument(
+        "-dl",
+        "--delta-ell",
+        dest="delta_ell",
+        type=int,
+        default=10,
+        help="size of ell bins",
+    )
+    args = parser.parse_args()
     # create directory if needed
     out = pathlib.Path("out")
     out.mkdir(exist_ok=True)
@@ -46,14 +55,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Compute and save spectra of the input sky.")
-    parser.add_argument(
-        "-dl",
-        "--delta-ell",
-        dest="delta_ell",
-        type=int,
-        default=10,
-        help="size of ell bins",
-    )
-    args = parser.parse_args()
-    main(args)
+    main()

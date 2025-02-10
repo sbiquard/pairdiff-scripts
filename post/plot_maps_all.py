@@ -6,22 +6,8 @@ import time
 from functools import partial
 
 import numpy as np
-
 import plot_maps
 import utils
-
-
-def add_arguments(parser):
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
-    parser.add_argument("-r", "--root", type=utils.dir_path, default="out", help="root directory")
-    parser.add_argument(
-        "-n",
-        "--ncpu",
-        type=int,
-        default=4,
-        help="number of CPUs to use (default: 4)",
-    )
-    parser.add_argument("--diff-range-P", type=int)
 
 
 def process(run, diff_range_P: int):
@@ -53,14 +39,26 @@ def process(run, diff_range_P: int):
 
     plot_maps.plot_hits_cond(hits, cond, plotdir)
     plot_maps.plot_res_hist(maps, sky_in, plotdir)
-    plot_maps.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
+    plot_maps.plot_maps(maps, sky_in, plotdir, diff_range_P=diff_range_P)
     plot_maps.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
     return run, elapsed
 
 
-def main(args):
+def main():
+    parser = argparse.ArgumentParser(description="Produce plots of output maps for all runs.")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
+    parser.add_argument("-r", "--root", type=utils.dir_path, default="out", help="root directory")
+    parser.add_argument(
+        "-n",
+        "--ncpu",
+        type=int,
+        default=4,
+        help="number of CPUs to use (default: 4)",
+    )
+    parser.add_argument("--diff-range-P", type=int)
+    args = parser.parse_args()
     runs = list(utils.get_all_runs(args.root))
     if len(runs) == 0:
         return
@@ -87,7 +85,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Produce plots of output maps for all runs.")
-    add_arguments(parser)
-    args = parser.parse_args()
-    main(args)
+    main()

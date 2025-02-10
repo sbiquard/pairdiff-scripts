@@ -2,10 +2,10 @@
 
 import argparse
 import pathlib
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.lines import Line2D
 
 CUSTOM_LINES = [
     Line2D([0], [0], color="r"),
@@ -88,10 +88,13 @@ def process(dirname, ref: str = ""):
     plt.savefig(plotdir / f"spectra{ref}.png")
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Compute and save power spectra for one run.",
     )
     parser.add_argument("dirname", type=str, help="name of directory")
     args = parser.parse_args()
     process(args.dirname)
+
+if __name__ == "__main__":
+    main()

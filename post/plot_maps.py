@@ -8,9 +8,8 @@ from pathlib import Path
 import healpy as hp
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.visualization import hist
-
 import utils
+from astropy.visualization import hist
 
 LONRA = [-95, 135]
 LATRA = [-70, -10]
@@ -179,8 +178,7 @@ def process(args):
     elapsed = time.perf_counter() - tic
     print(f"Elapsed time: {elapsed:.2f} s")
 
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Plot difference maps and histograms for a given run."
     )
@@ -188,3 +186,6 @@ if __name__ == "__main__":
     parser.add_argument("--diff-range-P", type=int)
     args = parser.parse_args()
     process(args)
+
+if __name__ == "__main__":
+    main()
