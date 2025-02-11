@@ -2,7 +2,7 @@
 #SBATCH --job-name=opti-one-over-f
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
-#SBATCH --nodes=20
+#SBATCH --nodes=50
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
