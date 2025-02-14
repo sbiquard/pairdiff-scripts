@@ -45,7 +45,6 @@ srun ./so_mappraiser.py \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.use_white \
-    --elevation_model.disable \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -60,7 +59,6 @@ srun ./so_mappraiser.py \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.use_white \
-    --elevation_model.disable \
     --out $outdir/pd \
     >$logfile 2>&1
 

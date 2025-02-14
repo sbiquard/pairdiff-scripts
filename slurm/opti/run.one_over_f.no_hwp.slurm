@@ -45,7 +45,6 @@ srun ./so_mappraiser.py \
     --schedule $schedule \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 512 \
-    --elevation_model.disable \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -60,7 +59,6 @@ srun ./so_mappraiser.py \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 512 \
     --mappraiser.pair_diff \
-    --elevation_model.disable \
     --out $outdir/pd \
     >$logfile 2>&1
 

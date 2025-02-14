@@ -46,7 +46,6 @@ srun ./so_mappraiser.py \
     --mappraiser.lagmax 1 \
     --variable_model.use_white \
     --variable_model.uniform \
-    --elevation_model.disable \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -62,7 +61,6 @@ srun ./so_mappraiser.py \
     --mappraiser.pair_diff \
     --variable_model.use_white \
     --variable_model.uniform \
-    --elevation_model.disable \
     --out $outdir/pd \
     >$logfile 2>&1
 

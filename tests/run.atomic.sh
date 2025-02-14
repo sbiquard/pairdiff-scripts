@@ -41,7 +41,6 @@ while IFS= read -r scan_line; do
         --mappraiser.downscale 3000 \
         --variable_model.use_white \
         --variable_model.uniform \
-        --elevation_model.disable \
         --out $subdir \
         >$logfile 2>&1 \
         </dev/null  # mpirun reads from stdin, but we don't want to read the whole schedule

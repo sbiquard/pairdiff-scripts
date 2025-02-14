@@ -20,7 +20,6 @@ mpirun -np $ntask ./so_mappraiser.py \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 512 \
     --mappraiser.downscale 3000 \
-    --elevation_model.disable \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -35,6 +34,5 @@ mpirun -np $ntask ./so_mappraiser.py \
     --mappraiser.lagmax 512 \
     --mappraiser.downscale 3000 \
     --mappraiser.pair_diff \
-    --elevation_model.disable \
     --out $outdir/pd \
     >$logfile 2>&1
