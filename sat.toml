@@ -304,15 +304,15 @@
 [operators.variable_model]
     class = "toast.ops.variable_noise_model.VariableNoiseModel"
     API = 0 # Internal interface version for this operator
+    biased = false # Introduce a systematic mismatch between A and B detectors
     enabled = true # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "variable_model" # The 'name' of this class instance
     noise_model = "noise_model" # The observation key for storing the noise model
-    pairs = true # Process detectors by pairs instead of individually
+    pairs = false # Process detectors by pairs instead of individually
     realization = 0 # The model realization index
     scatter = 0.1 # Fractional scatter in the noise parameters
-    uniform = false # Do not vary the noise parameters from detector to detector
-    use_white = false # Use white noise instead of 1/f
+    white = false # Generate a white noise model
 
 [operators.elevation_model]
     class = "toast.ops.elevation_noise.ElevationNoise"

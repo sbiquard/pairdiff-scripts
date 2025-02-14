@@ -39,7 +39,7 @@ while IFS= read -r scan_line; do
         --scan_map.file $cmb_input \
         --mappraiser.lagmax 1 \
         --mappraiser.downscale 3000 \
-        --variable_model.use_white \
+        --variable_model.white \
         --variable_model.uniform \
         --out $subdir \
         >$logfile 2>&1 \

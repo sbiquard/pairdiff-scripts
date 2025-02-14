@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=opti-white-uniform-no-hwp
+#SBATCH --job-name=opti-instr-no-hwp
 #SBATCH --account=nih@cpu
 #SBATCH --qos=qos_cpu-dev
 #SBATCH --nodes=50
@@ -31,7 +31,7 @@ echo "            ntask = ${ntask}"
 schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=out/opti/white_uniform_no_hwp
+outdir=out/opti/instr_no_hwp
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -39,14 +39,12 @@ mkdir -p $outdir/pd
 logfile=$outdir/ml/run.log
 echo "Writing $logfile"
 srun ./so_mappraiser.py \
-    $(<sat.par) \
-    $(<no_hwp.par) \
+    $(< sat.par) \
+    $(< no_hwp.par) \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.lagmax 1 \
-    --variable_model.use_white \
-    --variable_model.uniform \
+    --mappraiser.lagmax 512 \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -54,15 +52,13 @@ srun ./so_mappraiser.py \
 logfile=$outdir/pd/run.log
 echo "Writing $logfile"
 srun ./so_mappraiser.py \
-    $(<sat.par) \
-    $(<no_hwp.par) \
+    $(< sat.par) \
+    $(< no_hwp.par) \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
-    --mappraiser.lagmax 1 \
+    --mappraiser.lagmax 512 \
     --mappraiser.pair_diff \
-    --variable_model.use_white \
-    --variable_model.uniform \
     --out $outdir/pd \
     >$logfile 2>&1
 
