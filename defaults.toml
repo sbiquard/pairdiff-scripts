@@ -311,6 +311,8 @@
     noise_model = "var_noise_model" # The observation key for storing the noise model
     pairs = false # Process detectors by pairs instead of individually
     realization = 0 # The model realization index
+    save = false # Save the noise model to disk
+    save_volume = "variable_noise_model_out" # Output directory
     scatter = 0.1 # Fractional scatter in the noise parameters
     white = false # Generate a white noise model
 
@@ -1005,7 +1007,7 @@
     det_data = "signal" # Observation detdata key for simulated signal
     drift_rate = "None" # If non-zero, the width of the Gaussian distribution to draw drift rate [1/hour] from.  All detectors will observe the same drift rate.
     enabled = false # If True, this class instance is marked as enabled
-    fname_hwpss = "/home/sbiquard/work/pairdiff/simu-sat/sotodlib/sotodlib/toast/ops/data/hwpss_per_chi.pck" # File containing measured or estimated HWPSS profiles
+    fname_hwpss = "/home/sbiquard/work/pairdiff/simu-sat/extern/sotodlib/sotodlib/toast/ops/data/hwpss_per_chi.pck" # File containing measured or estimated HWPSS profiles
     hwp_angle = "hwp_angle" # Observation shared key for HWP angle
     hwpss_drift_alpha = 1.0 # The power law exponent of the HWPSS random drift.
     hwpss_drift_coupling_center = 1.0 # Mean coupling strength between the detectors and the HWPSS random drift mode.

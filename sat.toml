@@ -311,6 +311,8 @@
     noise_model = "noise_model" # The observation key for storing the noise model
     pairs = false # Process detectors by pairs instead of individually
     realization = 0 # The model realization index
+    save = true # Save the noise model to disk
+    save_volume = "variable_noise_model_out" # Output directory
     scatter = 0.1 # Fractional scatter in the noise parameters
     white = false # Generate a white noise model
 
@@ -336,15 +338,15 @@
 [operators.common_mode_noise]
     class = "toast.ops.common_mode_noise.CommonModeNoise"
     API = 0 # Internal interface version for this operator
-    NET = "None" # 
-    alpha = "None" # 
+    NET = "None" #
+    alpha = "None" #
     component = 0 # The noise component index
     coupling_strength_center = 1.0 # Mean coupling strength between the detectors and the common mode
     coupling_strength_width = 0.0 # Width of the coupling strength distribution about `coupling_strength_center`
     detset = "[]" # List of detectors to add the common mode to.  Only used if `focalplane_key` is None
     enabled = false # If True, this class instance is marked as enabled
-    fknee = "None" # 
-    fmin = "None" # 
+    fknee = "None" #
+    fmin = "None" #
     focalplane_key = "None" # Detectors sharing the focalplane key will have the same common mode
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     name = "common_mode_noise" # The 'name' of this class instance
@@ -779,7 +781,7 @@
     shared_flags = "flags" # Observation shared key for telescope flags to use
     sky_file = "None" # File containing the sky a_lm expansion.  Tag {detector} will be replaced with the detector name
     sky_file_dict = "{}" # Dictionary of files containing the sky a_lm expansions. An entry for each detector name must be present. If provided, supersedes `sky_file`.
-    verbosity = 0 # 
+    verbosity = 0 #
     view = "None" # Use this view of the data in all observations
 
 [operators.conviqt_teb]
@@ -814,7 +816,7 @@
     shared_flags = "flags" # Observation shared key for telescope flags to use
     sky_file = "None" # File containing the sky a_lm expansion.  Tag {detector} will be replaced with the detector name
     sky_file_dict = "{}" # Dictionary of files containing the sky a_lm expansions. An entry for each detector name must be present. If provided, supersedes `sky_file`.
-    verbosity = 0 # 
+    verbosity = 0 #
     view = "None" # Use this view of the data in all observations
 
 [operators.sim_sss]
