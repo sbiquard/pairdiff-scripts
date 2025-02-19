@@ -34,7 +34,7 @@ schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 # Output (sub)directory
-outdir="out/opti/atm-ml-atomic"
+outdir="$SCRATCH/pairdiff_runs/atm-ml-atomic"
 scan_counter_padded=$(printf "%04d" "$SLURM_ARRAY_TASK_ID")
 subdir="$outdir/sub_${scan_counter_padded}"
 mkdir -p $subdir

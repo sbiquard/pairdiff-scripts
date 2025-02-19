@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=02:00:00
+#SBATCH --time=01:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -31,11 +31,13 @@ echo "            ntask = ${ntask}"
 schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
+rootdir=$SCRATCH/pairdiff_runs/opti/white_no_hwp
+
 # -----------#
 # NO SCATTER #
 # -----------#
 
-outdir=out/opti/white_no_hwp/no_scatter
+outdir=$rootdir/no_scatter
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -50,7 +52,7 @@ srun ./so_mappraiser.py \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
-    --variable_model.scatter 0 \
+    $(<no_scatter.par) \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -66,7 +68,7 @@ srun ./so_mappraiser.py \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \
-    --variable_model.scatter 0 \
+    $(<no_scatter.par) \
     --out $outdir/pd \
     >$logfile 2>&1
 
@@ -74,7 +76,7 @@ srun ./so_mappraiser.py \
 # SAME SCATTER #
 # -------------#
 
-outdir=out/opti/white_no_hwp/same_scatter
+outdir=$rootdir/same_scatter
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -89,7 +91,7 @@ srun ./so_mappraiser.py \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
-    --variable_model.pairs \
+    $(<same_scatter.par) \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -105,7 +107,7 @@ srun ./so_mappraiser.py \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \
-    --variable_model.pairs \
+    $(<same_scatter.par) \
     --out $outdir/pd \
     >$logfile 2>&1
 
@@ -113,7 +115,7 @@ srun ./so_mappraiser.py \
 # OPPOSITE SCATTER #
 # -----------------#
 
-outdir=out/opti/white_no_hwp/opposite_scatter
+outdir=$rootdir/opposite_scatter
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -128,7 +130,7 @@ srun ./so_mappraiser.py \
     --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
-    --variable_model.biased \
+    $(<opposite_scatter.par) \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -144,7 +146,7 @@ srun ./so_mappraiser.py \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \
-    --variable_model.biased \
+    $(<opposite_scatter.par) \
     --out $outdir/pd \
     >$logfile 2>&1
 
@@ -152,7 +154,7 @@ srun ./so_mappraiser.py \
 # RANDOM SCATTER #
 # ---------------#
 
-outdir=out/opti/white_no_hwp/random_scatter
+outdir=$rootdir/random_scatter
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -184,5 +186,8 @@ srun ./so_mappraiser.py \
     --variable_model.white \
     --out $outdir/pd \
     >$logfile 2>&1
+
+echo "Copying maps to WORK"
+./rsync_scratch.sh
 
 echo "$(date) : Done!"

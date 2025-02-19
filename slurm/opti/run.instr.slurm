@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=00:30:00
+#SBATCH --time=01:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -31,7 +31,7 @@ echo "            ntask = ${ntask}"
 schedule="schedules/schedule.01.south.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=out/opti/instr
+outdir=$SCRATCH/pairdiff_runs/opti/instr
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -59,5 +59,8 @@ srun ./so_mappraiser.py \
     --mappraiser.pair_diff \
     --out $outdir/pd \
     >$logfile 2>&1
+
+echo "Copying maps to WORK"
+./rsync_scratch.sh
 
 echo "$(date) : Done!"
