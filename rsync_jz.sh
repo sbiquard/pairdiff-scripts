@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Pull plots and spectra from Jean-Zay
 rsync -ravuLPh \
     --include 'opti/atm/ml/Hits_*.fits' \
