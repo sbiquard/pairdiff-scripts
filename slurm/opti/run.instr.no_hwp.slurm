@@ -62,7 +62,4 @@ srun ./so_mappraiser.py \
     --out $outdir/pd \
     >$logfile 2>&1
 
-echo "Copying maps to WORK"
-./rsync_scratch.sh
-
 echo "$(date) : Done!"
