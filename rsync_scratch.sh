@@ -5,5 +5,6 @@ rsync -ravuLPh \
     --exclude 'noise_psd_fit' \
     --exclude 'var_noise_model_data' \
     --exclude 'before_psd_fix' \
+    --exclude 'atm_without_31' \
     /lustre/fsn1/projects/rech/nih/usl22vm/pairdiff_runs/ \
     /lustre/fswork/projects/rech/nih/usl22vm/repos/pairdiff-scripts/out
