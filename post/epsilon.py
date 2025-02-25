@@ -38,11 +38,12 @@ def transfer(src_root: Path, dest_root: Path):
     for run in get_all_runs(src_root):
         data_dir = run / "var_noise_model_data"
         if not data_dir.exists():
-            print(f"Skipping {run}")
+            print(f"Skipping {run} (no var_noise_model_data)")
             continue
         dist = load_epsilon_dist(data_dir)
         dest = dest_root / run.relative_to(src_root)
         dest.mkdir(parents=True, exist_ok=True)
+        print(f"Saving epsilon dist to {dest}")
         np.save(dest / "epsilon_dist", dist)
 
 
