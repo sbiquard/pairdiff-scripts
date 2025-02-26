@@ -3,23 +3,18 @@
 from functools import partial
 from pathlib import Path
 
+import healpy as hp
 import jax
 import jax.numpy as jnp
-import healpy as hp
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import toml
-from scipy.stats import norm
-
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
 
-from furax_preconditioner import BJPreconditioner
-from timer import Timer
-from utils import get_last_ref
-
+from .furax_preconditioner import BJPreconditioner
+from .timer import Timer
+from .utils import get_last_ref
 
 OPTI = Path("..") / "out" / "opti"
 SAVE_PLOTS_DIR = Path("..") / "out" / "analysis" / "optimality"
@@ -40,10 +35,22 @@ def read_hits(run: Path):
 runs_white = {
     k_ml_or_pd: {
         k_hwp: {
-            "none": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "no_scatter" / k_ml_or_pd,
-            "same": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "same_scatter" / k_ml_or_pd,
-            "opposite": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "opposite_scatter" / k_ml_or_pd,
-            "random": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "random_scatter" / k_ml_or_pd,
+            "none": OPTI
+            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+            / "no_scatter"
+            / k_ml_or_pd,
+            "same": OPTI
+            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+            / "same_scatter"
+            / k_ml_or_pd,
+            "opposite": OPTI
+            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+            / "opposite_scatter"
+            / k_ml_or_pd,
+            "random": OPTI
+            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+            / "random_scatter"
+            / k_ml_or_pd,
         }
         for k_hwp in ["hwp", "no_hwp"]
     }
@@ -53,26 +60,20 @@ runs_white = {
 with Timer(thread="read-hits"):
     hitmaps = {k: read_hits(v["hwp"]["none"]) for k, v in runs_white.items()}
 
-THRESH_LO = 1_000
-THRESH_HI = 10_000
+# THRESH = 1_000
+THRESH = 10_000
 
 with Timer("create-masks"):
-    MASKS = {
-        k: {
-            "lo": hitmaps[k] * (2 if k == "pd" else 1) > THRESH_LO,
-            "hi": hitmaps[k] * (2 if k == "pd" else 1) > THRESH_HI,
-        }
-        for k in hitmaps
-    }
+    MASKS = {k: hitmaps[k] * (2 if k == "pd" else 1) > THRESH for k in hitmaps}
 
 
-def mask_outside(maps_, fill_value=jnp.nan, thresh: str = "lo"):
+def mask_outside(maps_, fill_value=jnp.nan):
     ml_or_pd = "ml" if isinstance(maps_, StokesIQU) else "pd"
-    mask = MASKS[ml_or_pd][thresh]
+    mask = MASKS[ml_or_pd]
     return jax.tree.map(lambda leaf: jnp.where(mask, leaf, fill_value), maps_)
 
 
-def read_maps(run: Path, mask_thresh: str = "lo"):
+def read_maps(run: Path):
     # ref of the run
     ref = get_last_ref(run)
 
@@ -92,21 +93,20 @@ def read_maps(run: Path, mask_thresh: str = "lo"):
     else:
         stokes_maps = StokesQU(mapQ, mapU)
 
-    return mask_outside(stokes_maps, thresh=mask_thresh)
+    return mask_outside(stokes_maps)
 
 
-def read_cond(run: Path, mask_thresh: str = "lo"):
+def read_cond(run: Path):
     ref = get_last_ref(run)
     cond = jnp.array(hp.fitsfunc.read_map(run / f"Cond_{ref}.fits", field=None))
-    return mask_outside(cond, thresh=mask_thresh)
+    return mask_outside(cond)
 
 
 def read_epsilon(run: Path):
-    ref = get_last_ref(run)
-    return np.load(run / f"epsilon_dist.npy")
+    return np.load(run / "epsilon_dist.npy")
 
 
-def read_prec(run: Path, mask_thresh: str = "lo", stokes: str | None = None):
+def read_prec(run: Path, stokes: str | None = None):
     # ref of the run
     ref = get_last_ref(run)
 
@@ -139,11 +139,11 @@ def read_prec(run: Path, mask_thresh: str = "lo", stokes: str | None = None):
             StokesQU(precQU, precUU),
         )
 
-    masked_tree = mask_outside(tree, thresh=mask_thresh)
+    masked_tree = mask_outside(tree)
     return BJPreconditioner(masked_tree, in_structure=klass.structure_for(shape, jnp.float32))
 
 
-def read_input_sky(iqu=True, mask_thresh: str = "lo"):
+def read_input_sky(iqu=True):
     filename = Path.cwd().parent / "ffp10_lensed_scl_100_nside0512.fits"
     if iqu:
         # read all fields
@@ -160,7 +160,7 @@ def read_input_sky(iqu=True, mask_thresh: str = "lo"):
             q=jnp.array(sky[0]),
             u=jnp.array(sky[1]),
         )
-    return mask_outside(1e6 * sky_in, thresh=mask_thresh)
+    return mask_outside(1e6 * sky_in)
 
 
 with Timer(thread="read-maps"):
@@ -272,15 +272,15 @@ def plot_stokes_tree_operator(
 
 
 title_helper_ml_pd = {
-    'ml': "full IQU",
-    'pd': "pair diff",
+    "ml": "full IQU",
+    "pd": "pair diff",
 }
 
 title_helper_run = {
-    'none': "no scatter",
-    'same': "same scatter",
-    'opposite': "opposite scatter",
-    'random': "random scatter",
+    "none": "no scatter",
+    "same": "same scatter",
+    "opposite": "opposite scatter",
+    "random": "random scatter",
 }
 
 with Timer(thread="plot-cov-matrices"):
@@ -300,25 +300,41 @@ with Timer(thread="plot-cov-matrices"):
                     precs_scaled_by_hits[k_ml_pd][k_hwp][k_run],
                     title=f"Cov scaled by hits ({helper_ml_pd}, {k_hwp}, {helper_run})",
                 )
-                my_savefig(fig, f"noise_cov_scaled_{k_ml_pd}_{k_hwp}_{helper_run.replace(' ', '_')}")
+                my_savefig(
+                    fig, f"noise_cov_scaled_{k_ml_pd}_{k_hwp}_{helper_run.replace(' ', '_')}"
+                )
 
 
 # Compute ratios of covariance
 with Timer(thread="compute-ratio-over-ideal"):
-    precs_pd = precs_white["pd"]
     pd_over_ideal = jax.tree.map(
-        lambda ideal, pd: (pd @ ideal.I).reduce(),
+        lambda pd, ideal: (pd @ ideal.I).reduce(),
+        precs_white["pd"],
         precs_ideal_qu,
-        precs_pd,
         is_leaf=lambda x: isinstance(x, TreeOperator),
     )
 
-for k_hwp, val_hwp in pd_over_ideal.items():
-    for k_run, val_run in val_hwp.items():
-        qq = val_run.tree.q.q
-        uu = val_run.tree.u.u
-        print(f"pd over ideal: {k_hwp} {k_run} [QQ] -> {jnp.nanmean(qq):.4e} +/- {jnp.nanstd(qq):.1e}")
-        print(f"pd over ideal: {k_hwp} {k_run} [UU] -> {jnp.nanmean(uu):.4e} +/- {jnp.nanstd(uu):.1e}")
-        dist = epsilons_white['pd'][k_hwp][k_run]
-        print(f"epsilon    : {dist.mean():.2e} +/- {dist.std():.2e}")
-        print(f"1/(1-eps^2): {1 / (1 - dist**2).mean():.4e} +/- {1 / (1 - dist**2).std():.1e}")
+with Timer(thread="plot-variance-increase"):
+    for k_hwp, val_hwp in pd_over_ideal.items():
+        for k_run, val_run in val_hwp.items():
+            fig, ax = plt.subplots()
+            qq = val_run.tree.q.q
+            uu = val_run.tree.u.u
+            ax.hist(qq[~jnp.isnan(qq)], bins="auto", histtype="step", label="QQ", density=False)
+            ax.hist(uu[~jnp.isnan(uu)], bins="auto", histtype="step", label="UU", density=False)
+            dist = epsilons_white["pd"][k_hwp][k_run]
+            ax.axvline(
+                (1 / (1 - dist**2)).mean(),
+                color="k",
+                ls="--",
+                label=r"$\langle 1 / (1 - \epsilon^2) \rangle$",
+            )
+            ax.legend()
+            run_title = title_helper_run[k_run]
+            hwp_title = k_hwp.replace(" ", "_")
+            ax.set(
+                xlabel="Variance increase in pixel",
+                ylabel="Number of pixels",
+                title=f"Histogram of variance increase ({hwp_title}, {run_title})",
+            )
+            my_savefig(fig, title=f"variance_increase_{k_hwp}_{run_title.replace(' ', '_')}")
