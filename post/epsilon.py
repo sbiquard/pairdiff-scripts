@@ -7,7 +7,9 @@ from typing import Iterable
 import numpy as np
 import toast
 from toast.ops import LoadHDF5
+
 from utils import get_all_runs
+from timer import function_timer
 
 
 def rel_diff_sqr(a: float, b: float):
@@ -20,6 +22,7 @@ def pairwise(s: Iterable):
     return zip(a, a)
 
 
+@function_timer(thread="load-epsilon")
 def load_epsilon_dist(src: Path):
     data = toast.Data()
     LoadHDF5(volume=str(src)).apply(data)
@@ -35,16 +38,19 @@ def load_epsilon_dist(src: Path):
 
 
 def transfer(src_root: Path, dest_root: Path):
-    for run in get_all_runs(src_root):
+    def func(run):
         data_dir = run / "var_noise_model_data"
         if not data_dir.exists():
-            print(f"Skipping {run} (no var_noise_model_data)")
-            continue
+            return None
         dist = load_epsilon_dist(data_dir)
         dest = dest_root / run.relative_to(src_root)
         dest.mkdir(parents=True, exist_ok=True)
-        print(f"Saving epsilon dist to {dest}")
         np.save(dest / "epsilon_dist", dist)
+        return run
+
+    for result in map(func, get_all_runs(src_root)):
+        if result is not None:
+            print(f"Finished {result.relative_to(src_root)}", flush=True)
 
 
 def main():
