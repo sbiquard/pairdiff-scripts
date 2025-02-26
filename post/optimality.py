@@ -206,7 +206,6 @@ with Timer(thread="compute-residuals"):
 LONRA = [-95, 135]
 LATRA = [-70, -10]
 CMAP = "bwr"
-# ROT = [15, -40]
 
 my_cartview = partial(hp.cartview, lonra=LONRA, latra=LATRA, cmap=CMAP)
 my_mollview = partial(hp.mollview, cmap=CMAP)
