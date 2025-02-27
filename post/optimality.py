@@ -12,9 +12,9 @@ import toml
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
 
-from .furax_preconditioner import BJPreconditioner
-from .timer import Timer
-from .utils import get_last_ref
+from furax_preconditioner import BJPreconditioner
+from timer import Timer
+from utils import get_last_ref
 
 OPTI = Path("..") / "out" / "opti"
 SAVE_PLOTS_DIR = Path("..") / "out" / "analysis" / "optimality"
@@ -35,27 +35,15 @@ def read_hits(run: Path):
 runs_white = {
     k_ml_or_pd: {
         k_hwp: {
-            "none": OPTI
-            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-            / "no_scatter"
-            / k_ml_or_pd,
-            "same": OPTI
-            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-            / "same_scatter"
-            / k_ml_or_pd,
-            "opposite": OPTI
-            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-            / "opposite_scatter"
-            / k_ml_or_pd,
-            "random": OPTI
-            / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-            / "random_scatter"
-            / k_ml_or_pd,
+            "none": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "no_scatter" / k_ml_or_pd,
+            "same": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "same_scatter" / k_ml_or_pd,
+            "opposite": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "opposite_scatter" / k_ml_or_pd,
+            "random": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "random_scatter" / k_ml_or_pd,
         }
         for k_hwp in ["hwp", "no_hwp"]
     }
     for k_ml_or_pd in ["ml", "pd"]
-}
+}  # fmt: skip
 
 with Timer(thread="read-hits"):
     hitmaps = {k: read_hits(v["hwp"]["none"]) for k, v in runs_white.items()}
@@ -234,39 +222,21 @@ def plot_stokes_tree_operator(
         my_cartview if proj == "cart" else my_mollview,
         unit="$\\mu K_{CMB}^2$",
         cmap=CMAP,
-        # return_projected_map=True,
     )
 
-    # hf, ha = plt.subplots(ns, ns, figsize=get_figsize_for(stokes, proj))
     f = plt.figure(figsize=get_figsize_for(stokes, proj))
     if title is not None:
         f.suptitle(title)
 
     for i, stoke_in in enumerate(stokes):
         for j, stoke_out in enumerate(stokes):
-            # for j, stoke_out in enumerate(stokes[i:]):
-            # ax = ha[i, j]
             if j < i:
                 # Only plot upper triangle
-                # ax.set_axis_off()
                 continue
 
             # Index in the flat list of leaves
             n = ns * i + j
-
-            # Use healpy plotting function to get the projected map, and close the figure right away
-
-            # amp = get_amp(leaves[n]) if stoke_out != stoke_in else None
-            # min_ = -amp if amp is not None else None
-            # max_ = amp or None
             plot_func(leaves[n], sub=[ns, ns, n + 1])
-            # plt.close()
-
-            # # Re-plot the projected map on our figure
-            # pos = plot_projected_map(pj, ax=ax, title=f"{stoke_in}{stoke_out}")
-
-            # # Draw the color bar
-            # hf.colorbar(pos, ax=ax, location='bottom', shrink=0.6, pad=0.05, label="$\\mu K_{CMB}^2$")
     return f
 
 
