@@ -11,6 +11,7 @@ import numpy as np
 import toml
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
+from matplotlib import ticker
 
 from furax_preconditioner import BJPreconditioner
 from timer import Timer
@@ -20,6 +21,8 @@ OPTI = Path("..") / "out" / "opti"
 SAVE_PLOTS_DIR = Path("..") / "out" / "analysis" / "optimality"
 SAVE_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
+SCATTERS = [0.001, 0.01, 0.1, 0.2]  # 0.3 is crap
+
 
 def my_savefig(fig, title: str, close: bool = True):
     fig.savefig(SAVE_PLOTS_DIR / title, bbox_inches="tight")
@@ -27,38 +30,47 @@ def my_savefig(fig, title: str, close: bool = True):
         plt.close(fig)
 
 
+runs = {
+    "white": {
+        k_ml_or_pd: {
+            k_hwp: {
+                "none": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "no_scatter" / k_ml_or_pd,
+                "same": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "same_scatter" / k_ml_or_pd,
+                "opposite": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "opposite_scatter" / k_ml_or_pd,
+                "random": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "random_scatter" / k_ml_or_pd,
+            }
+            for k_hwp in ["hwp", "no_hwp"]
+        }
+        for k_ml_or_pd in ["ml", "pd"]
+    },
+    "var_increase": {
+        k_ml_or_pd: {
+            k_hwp: {
+                scatter: OPTI / ("var_increase" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / f"scatter_{scatter}" / k_ml_or_pd
+                for scatter in SCATTERS
+            }
+            for k_hwp in ["hwp", "no_hwp"]
+        }
+        for k_ml_or_pd in ["ml", "pd"]
+    }
+}  # fmt: skip
+
+
 def read_hits(run: Path):
     ref = get_last_ref(run)
     return jnp.array(hp.fitsfunc.read_map(run / f"Hits_{ref}.fits", field=None, dtype=jnp.int32))
 
 
-runs_white = {
-    k_ml_or_pd: {
-        k_hwp: {
-            "none": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "no_scatter" / k_ml_or_pd,
-            "same": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "same_scatter" / k_ml_or_pd,
-            "opposite": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "opposite_scatter" / k_ml_or_pd,
-            "random": OPTI / ("white" + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")) / "random_scatter" / k_ml_or_pd,
-        }
-        for k_hwp in ["hwp", "no_hwp"]
-    }
-    for k_ml_or_pd in ["ml", "pd"]
-}  # fmt: skip
-
 with Timer(thread="read-hits"):
-    hitmaps = {k: read_hits(v["hwp"]["none"]) for k, v in runs_white.items()}
+    hitmaps = {k: read_hits(runs["white"][k]["hwp"]["none"]) for k in ["ml", "pd"]}
 
-# THRESH = 1_000
+# THRESH = {"ml": 1_000, "pd": 500}
 THRESH = 10_000
-
-with Timer("create-masks"):
-    MASKS = {k: hitmaps[k] * (2 if k == "pd" else 1) > THRESH for k in hitmaps}
+MASK = hitmaps["ml"] > THRESH
 
 
 def mask_outside(maps_, fill_value=jnp.nan):
-    ml_or_pd = "ml" if isinstance(maps_, StokesIQU) else "pd"
-    mask = MASKS[ml_or_pd]
-    return jax.tree.map(lambda leaf: jnp.where(mask, leaf, fill_value), maps_)
+    return jax.tree.map(lambda leaf: jnp.where(MASK, leaf, fill_value), maps_)
 
 
 def read_maps(run: Path):
@@ -152,41 +164,33 @@ def read_input_sky(iqu=True):
 
 
 with Timer(thread="read-maps"):
-    maps_white = {
-        k: {kk: {k3: read_maps(v3) for k3, v3 in vv.items()} for kk, vv in v.items()}
-        for k, v in runs_white.items()
-    }
+    maps = jax.tree.map(read_maps, runs)
 
 with Timer(thread="read-precs"):
-    precs_white = {
-        k: {kk: {k3: read_prec(v3) for k3, v3 in vv.items()} for kk, vv in v.items()}
-        for k, v in runs_white.items()
-    }
+    precs = jax.tree.map(read_prec, runs)
 
 with Timer(thread="read-precs-ideal-qu"):
-    precs_ideal_qu = {
-        k: {kk: read_prec(vv, stokes="QU") for kk, vv in v.items()}
-        for k, v in runs_white["ml"].items()
-    }
+    precs_ideal_qu = jax.tree.map(
+        partial(read_prec, stokes="QU"),
+        {k: v["ml"] for k, v in runs.items()},
+    )
 
 with Timer(thread="read-epsilon"):
-    epsilons_white = {
-        k: {kk: {k3: read_epsilon(v3) for k3, v3 in vv.items()} for kk, vv in v.items()}
-        for k, v in runs_white.items()
-    }
+    epsilons = jax.tree.map(read_epsilon, runs)
 
 with Timer(thread="scale-precs-by-hits"):
-    precs_scaled_by_hits = {
-        k: jax.tree.map(lambda leaf: leaf * hitmaps[k], v) for k, v in precs_white.items()
+    precs_scaled = {
+        k: {kk: jax.tree.map(lambda leaf: leaf * hitmaps[kk], vv) for kk, vv in v.items()}
+        for k, v in precs.items()
     }
 
 with Timer(thread="read-sky"):
     input_sky = read_input_sky()
 
 with Timer(thread="compute-residuals"):
-    residuals_white = jax.tree.map(
+    residuals = jax.tree.map(
         lambda x: x - type(x).from_iquv(input_sky.i, input_sky.q, input_sky.u, None),
-        maps_white,
+        maps,
         is_leaf=lambda x: isinstance(x, Stokes),
     )
 
@@ -253,7 +257,7 @@ title_helper_run = {
 }
 
 with Timer(thread="plot-cov-matrices"):
-    for k_ml_pd, val_ml_pd in precs_white.items():
+    for k_ml_pd, val_ml_pd in precs["white"].items():
         for k_hwp, val_hwp in val_ml_pd.items():
             for k_run, val_run in val_hwp.items():
                 helper_ml_pd = title_helper_ml_pd[k_ml_pd]
@@ -266,7 +270,7 @@ with Timer(thread="plot-cov-matrices"):
                 my_savefig(fig, f"noise_cov_{k_ml_pd}_{k_hwp}_{helper_run.replace(' ', '_')}")
                 # Noise covariance scaled by hits
                 fig = plot_stokes_tree_operator(
-                    precs_scaled_by_hits[k_ml_pd][k_hwp][k_run],
+                    precs_scaled["white"][k_ml_pd][k_hwp][k_run],
                     title=f"Cov scaled by hits ({helper_ml_pd}, {k_hwp}, {helper_run})",
                 )
                 my_savefig(
@@ -275,23 +279,23 @@ with Timer(thread="plot-cov-matrices"):
 
 
 # Compute ratios of covariance
-with Timer(thread="compute-ratio-over-ideal"):
+with Timer(thread="compute-pd-over-ideal"):
     pd_over_ideal = jax.tree.map(
         lambda pd, ideal: (pd @ ideal.I).reduce(),
-        precs_white["pd"],
+        {k: v["pd"] for k, v in precs.items()},
         precs_ideal_qu,
         is_leaf=lambda x: isinstance(x, TreeOperator),
     )
 
-with Timer(thread="plot-variance-increase"):
-    for k_hwp, val_hwp in pd_over_ideal.items():
+with Timer(thread="plot-variance-increase-white"):
+    for k_hwp, val_hwp in pd_over_ideal["white"].items():
         for k_run, val_run in val_hwp.items():
             fig, ax = plt.subplots()
             qq = val_run.tree.q.q
             uu = val_run.tree.u.u
             ax.hist(qq[~jnp.isnan(qq)], bins="auto", histtype="step", label="QQ", density=False)
             ax.hist(uu[~jnp.isnan(uu)], bins="auto", histtype="step", label="UU", density=False)
-            dist = epsilons_white["pd"][k_hwp][k_run]
+            dist = epsilons["white"]["pd"][k_hwp][k_run]
             ax.axvline(
                 (1 / (1 - dist**2)).mean(),
                 color="k",
@@ -307,3 +311,80 @@ with Timer(thread="plot-variance-increase"):
                 title=f"Histogram of variance increase ({hwp_title}, {run_title})",
             )
             my_savefig(fig, title=f"variance_increase_{k_hwp}_{run_title.replace(' ', '_')}")
+
+with Timer(thread="plot-variance-increase-scatter"):
+    # plotting expected variance increase as a function of scatter
+
+    def rel_diff_sqr(a, b):
+        return (a**2 - b**2) / (a**2 + b**2)
+
+    ns = 500
+    SAMPLES = 50_000
+
+    rng = np.random.default_rng()
+    scatters = np.geomspace(SCATTERS[0], 1.1 * SCATTERS[-1], ns)
+    rngdata = rng.normal(loc=1, scale=scatters[:, None], size=(2, ns, SAMPLES))
+    rngdata[rngdata < 0] = np.nan
+    para, perp = rngdata
+    epsilon = rel_diff_sqr(para, perp)
+    alpha = 1 / (1 - epsilon**2)
+    expect = np.nanmean(alpha, axis=-1)
+
+    fig, ax = plt.subplots()
+    ax.axhline(0, color="black", linestyle="--", label="no increase")
+    scatters_pct = scatters * 100
+    increase_pct = (expect - 1) * 100
+    ax.semilogx(scatters_pct, increase_pct, label="expected increase")
+    ax.xaxis.set_major_formatter(ticker.PercentFormatter())
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter())
+    ax.set(
+        xlabel="Scatter around nominal NET",
+        ylabel="Variance increase",
+    )
+
+    ax.set_ylim(top=increase_pct.max())
+    ax.set_xlim(left=0.9e-1)
+
+    means_qq = []
+    means_uu = []
+
+    for scatter in SCATTERS:
+        scatter_pct = scatter * 100
+
+        qq = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.q.q - 1) * 100
+        uu = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.u.u - 1) * 100
+
+        parts_qq = ax.violinplot(
+            qq[~jnp.isnan(qq)],
+            positions=[scatter_pct],
+            widths=5,
+            showextrema=False,
+            showmeans=False,
+            showmedians=False,
+            side="low",
+        )
+
+        parts_uu = ax.violinplot(
+            uu[~jnp.isnan(uu)],
+            positions=[scatter_pct],
+            widths=5,
+            showextrema=False,
+            showmeans=False,
+            showmedians=False,
+            side="high",
+        )
+
+        for pc in parts_qq["bodies"]:
+            pc.set_facecolor("orange")
+
+        for pc in parts_uu["bodies"]:
+            pc.set_facecolor("green")
+
+        means_qq.append(jnp.nanmean(qq))
+        means_uu.append(jnp.nanmean(uu))
+
+    ax.scatter(np.array(SCATTERS) * 100, means_qq, marker=5, color="orange", label="QQ average")
+    ax.scatter(np.array(SCATTERS) * 100, means_uu, marker=4, color="green", label="UU average")
+    ax.legend()
+
+    my_savefig(fig, "variance_increase_scatter_hwp")
