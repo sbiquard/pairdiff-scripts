@@ -24,8 +24,8 @@ SAVE_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 SCATTERS = [0.001, 0.01, 0.1, 0.2]  # 0.3 is crap
 
 
-def my_savefig(fig, title: str, close: bool = True):
-    fig.savefig(SAVE_PLOTS_DIR / title, bbox_inches="tight")
+def my_savefig(fig, title: str, close: bool = True, dpi=200):
+    fig.savefig(SAVE_PLOTS_DIR / title, bbox_inches="tight", dpi=dpi)
     if close:
         plt.close(fig)
 
@@ -331,16 +331,17 @@ with Timer(thread="plot-variance-increase-scatter"):
     expect = np.nanmean(alpha, axis=-1)
 
     fig, ax = plt.subplots()
+    ax.set(
+        xlabel="Scatter around nominal NET",
+        ylabel="Variance increase",
+        title="Variance increase per pixel",
+    )
     ax.axhline(0, color="black", linestyle="--", label="no increase")
     scatters_pct = scatters * 100
     increase_pct = (expect - 1) * 100
     ax.semilogx(scatters_pct, increase_pct, label="expected increase")
     ax.xaxis.set_major_formatter(ticker.PercentFormatter())
     ax.yaxis.set_major_formatter(ticker.PercentFormatter())
-    ax.set(
-        xlabel="Scatter around nominal NET",
-        ylabel="Variance increase",
-    )
 
     ax.set_ylim(top=increase_pct.max())
     ax.set_xlim(left=0.9e-1)
