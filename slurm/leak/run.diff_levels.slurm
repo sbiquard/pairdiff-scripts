@@ -67,4 +67,44 @@ srun ./so_mappraiser.py \
     --out $outdir/pd \
     >$logfile 2>&1
 
+
+outdir=$SCRATCH/pairdiff_runs/leak/diff_levels_no_hwp
+mkdir -p $outdir/ml
+mkdir -p $outdir/pd
+
+# ML run
+logfile=$outdir/ml/run.log
+echo "Writing $logfile"
+srun ./so_mappraiser.py \
+    $(< sat.par) \
+    $(< atm.par) \
+    $(< no_hwp.par) \
+    --variable_model.white \
+    --variable_model.scatter 0.01 \
+    --mappraiser.lagmax 1 \
+    --sim_noise.disable \
+    --thinfp 4 \
+    --schedule $schedule \
+    --scan_map.file $cmb_input \
+    --out $outdir/ml \
+    >$logfile 2>&1
+
+# PD run
+logfile=$outdir/pd/run.log
+echo "Writing $logfile"
+srun ./so_mappraiser.py \
+    $(< sat.par) \
+    $(< atm.par) \
+    $(< no_hwp.par) \
+    --variable_model.white \
+    --variable_model.scatter 0.01 \
+    --mappraiser.lagmax 1 \
+    --sim_noise.disable \
+    --thinfp 4 \
+    --schedule $schedule \
+    --scan_map.file $cmb_input \
+    --mappraiser.pair_diff \
+    --out $outdir/pd \
+    >$logfile 2>&1
+
 echo "$(date) : Done!"

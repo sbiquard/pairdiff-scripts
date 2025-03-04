@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=leak-atm-binned
+#SBATCH --job-name=leak-atm-p(f)-nohwp
 #SBATCH --account=nih@cpu
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=00:30:00
+#SBATCH --time=20:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -30,40 +30,7 @@ echo "            ntask = ${ntask}"
 schedule="schedules/schedule.small.txt"
 cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
-outdir=$SCRATCH/pairdiff_runs/leak/binned
-mkdir -p $outdir/ml
-mkdir -p $outdir/pd
-
-# ML run
-logfile=$outdir/ml/run.log
-echo "Writing $logfile"
-srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
-    --sim_noise.disable \
-    --mappraiser.binned \
-    --thinfp 4 \
-    --schedule $schedule \
-    --scan_map.file $cmb_input \
-    --out $outdir/ml \
-    >$logfile 2>&1
-
-# PD run
-logfile=$outdir/pd/run.log
-echo "Writing $logfile"
-srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
-    --sim_noise.disable \
-    --mappraiser.binned \
-    --thinfp 4 \
-    --schedule $schedule \
-    --scan_map.file $cmb_input \
-    --mappraiser.pair_diff \
-    --out $outdir/pd \
-    >$logfile 2>&1
-
-outdir=$SCRATCH/pairdiff_runs/leak/binned_no_hwp
+outdir=$SCRATCH/pairdiff_runs/leak/correlated_no_hwp
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -74,8 +41,9 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     $(< no_hwp.par) \
+    --mappraiser.estimate_psd \
+    --variable_model.disable \
     --sim_noise.disable \
-    --mappraiser.binned \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
@@ -89,8 +57,9 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     $(< no_hwp.par) \
-    --sim_noise.disable \
     --mappraiser.binned \
+    --variable_model.disable \
+    --sim_noise.disable \
     --thinfp 4 \
     --schedule $schedule \
     --scan_map.file $cmb_input \
