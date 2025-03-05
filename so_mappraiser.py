@@ -236,6 +236,13 @@ def main():
         action="store_true",
         help="Only simulate the data, do not reduce it",
     )
+    parser.add_argument(
+        "--single-det",
+        required=False,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="Only use the first detector of each pair",
+    )
 
     # The operators and templates we want to configure from the command line
     # or a parameter file.
