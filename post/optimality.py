@@ -6,13 +6,12 @@ from pathlib import Path
 import healpy as hp
 import jax
 import jax.numpy as jnp
+import jax.random as jr
 import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
-from matplotlib import ticker
-
 from furax_preconditioner import BJPreconditioner
 from timer import Timer
 from utils import get_last_ref
@@ -318,72 +317,78 @@ with Timer(thread="plot-variance-increase-scatter"):
     def rel_diff_sqr(a, b):
         return (a**2 - b**2) / (a**2 + b**2)
 
-    ns = 500
-    SAMPLES = 50_000
+    DISCRETIZATION = 100
+    SAMPLES = 10_000
+    TRUNC = 0.9
 
-    rng = np.random.default_rng()
-    scatters = np.geomspace(SCATTERS[0], 1.1 * SCATTERS[-1], ns)
-    rngdata = rng.normal(loc=1, scale=scatters[:, None], size=(2, ns, SAMPLES))
-    rngdata[rngdata < 0] = np.nan
+    # sample scatter values
+    scatters = jnp.geomspace(SCATTERS[0], 1.1 * SCATTERS[-1], DISCRETIZATION)
+    scale = scatters[None, :, None]
+    rngdata = 1 + scale * jr.truncated_normal(
+        jr.key(123),
+        -TRUNC / scale,  # lower bound
+        TRUNC / scale,  # upper bound
+        shape=(2, *scatters.shape, SAMPLES),
+    )
+
     para, perp = rngdata
     epsilon = rel_diff_sqr(para, perp)
     alpha = 1 / (1 - epsilon**2)
-    expect = np.nanmean(alpha, axis=-1)
 
     fig, ax = plt.subplots()
     ax.set(
-        xlabel="Scatter around nominal NET",
-        ylabel="Variance increase",
+        xlabel="Scatter around nominal NET [%]",
+        ylabel="Variance increase [%]",
         title="Variance increase per pixel",
     )
-    ax.axhline(0, color="black", linestyle="--", label="no increase")
-    scatters_pct = scatters * 100
-    increase_pct = (expect - 1) * 100
-    ax.semilogx(scatters_pct, increase_pct, label="expected increase")
-    ax.xaxis.set_major_formatter(ticker.PercentFormatter())
-    ax.yaxis.set_major_formatter(ticker.PercentFormatter())
 
-    ax.set_ylim(top=increase_pct.max())
-    ax.set_xlim(left=0.9e-1)
+    x = scatters * 100
+    expect = jnp.mean(alpha, axis=-1)
+    y = (expect - 1) * 100
+    q = jnp.array([90, 99])
 
-    means_qq = []
-    means_uu = []
+    ax.loglog(x, y, "k", label="expected increase")
+    # ax.axhline(0, color="black", linestyle="--", label="no increase")
+
+    percentiles_qq = []
+    percentiles_uu = []
 
     for scatter in SCATTERS:
-        scatter_pct = scatter * 100
+        # scatter_pct = scatter * 100
 
-        qq = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.q.q - 1) * 100
-        uu = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.u.u - 1) * 100
+        alpha_qq = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.q.q - 1) * 100
+        alpha_uu = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.u.u - 1) * 100
 
-        parts_qq = ax.violinplot(
-            qq[~jnp.isnan(qq)],
-            positions=[scatter_pct],
-            widths=5,
-            showextrema=False,
-            showmeans=False,
-            showmedians=False,
-            side="low",
-        )
+        # parts_qq = ax.violinplot(
+        #     alpha_qq[~jnp.isnan(alpha_qq)],
+        #     positions=[scatter_pct],
+        #     widths=5,
+        #     showextrema=False,
+        #     showmeans=False,
+        #     showmedians=False,
+        #     side="low",
+        # )
 
-        parts_uu = ax.violinplot(
-            uu[~jnp.isnan(uu)],
-            positions=[scatter_pct],
-            widths=5,
-            showextrema=False,
-            showmeans=False,
-            showmedians=False,
-            side="high",
-        )
+        # parts_uu = ax.violinplot(
+        #     alpha_uu[~jnp.isnan(alpha_uu)],
+        #     positions=[scatter_pct],
+        #     widths=5,
+        #     showextrema=False,
+        #     showmeans=False,
+        #     showmedians=False,
+        #     side="high",
+        # )
 
-        for pc in parts_qq["bodies"]:
-            pc.set_facecolor("orange")
+        # for pc in parts_qq["bodies"]:
+        #     pc.set_facecolor("orange")
 
-        for pc in parts_uu["bodies"]:
-            pc.set_facecolor("green")
+        # for pc in parts_uu["bodies"]:
+        #     pc.set_facecolor("green")
 
-        means_qq.append(jnp.nanmean(qq))
-        means_uu.append(jnp.nanmean(uu))
+        percentiles_qq.append(jnp.percentile(alpha_qq, q))
+        percentiles_uu.append(jnp.percentile(alpha_uu, q))
 
+    # TODO: finish this
     ax.scatter(np.array(SCATTERS) * 100, means_qq, marker=5, color="orange", label="QQ average")
     ax.scatter(np.array(SCATTERS) * 100, means_uu, marker=4, color="green", label="UU average")
     ax.legend()
