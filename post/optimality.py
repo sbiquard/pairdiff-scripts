@@ -6,13 +6,13 @@ from pathlib import Path
 import healpy as hp
 import jax
 import jax.numpy as jnp
-import jax.random as jr
 import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
 from furax_preconditioner import BJPreconditioner
+from sigma_to_epsilon import get_epsilon_samples, get_scatters
 from timer import Timer
 from utils import get_last_ref
 
@@ -314,26 +314,10 @@ with Timer(thread="plot-variance-increase-white"):
 with Timer(thread="plot-variance-increase-scatter"):
     # plotting expected variance increase as a function of scatter
 
-    def rel_diff_sqr(a, b):
-        return (a**2 - b**2) / (a**2 + b**2)
-
-    DISCRETIZATION = 100
-    SAMPLES = 10_000
-    TRUNC = 0.9
-
     # sample scatter values
-    scatters = jnp.geomspace(SCATTERS[0], 1.1 * SCATTERS[-1], DISCRETIZATION)
-    scale = scatters[None, :, None]
-    rngdata = 1 + scale * jr.truncated_normal(
-        jr.key(123),
-        -TRUNC / scale,  # lower bound
-        TRUNC / scale,  # upper bound
-        shape=(2, *scatters.shape, SAMPLES),
-    )
-
-    para, perp = rngdata
-    epsilon = rel_diff_sqr(para, perp)
-    alpha = 1 / (1 - epsilon**2)
+    scatters = get_scatters((SCATTERS[0], 1.1 * SCATTERS[-1]))
+    eps = get_epsilon_samples(jax.random.key(1426), scatters)
+    alpha = 1 / (1 - eps**2)
 
     fig, ax = plt.subplots()
     ax.set(
@@ -342,22 +326,23 @@ with Timer(thread="plot-variance-increase-scatter"):
         title="Variance increase per pixel",
     )
 
+    # Expected variance increase as a function of scatter
     x = scatters * 100
     expect = jnp.mean(alpha, axis=-1)
     y = (expect - 1) * 100
-    q = jnp.array([90, 99])
-
     ax.loglog(x, y, "k", label="expected increase")
-    # ax.axhline(0, color="black", linestyle="--", label="no increase")
 
-    percentiles_qq = []
-    percentiles_uu = []
+    q = jnp.array([90, 99])
+    p_qq = []
+    p_uu = []
+    means_qq = []
+    means_uu = []
 
     for scatter in SCATTERS:
-        # scatter_pct = scatter * 100
-
         alpha_qq = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.q.q - 1) * 100
         alpha_uu = (pd_over_ideal["var_increase"]["hwp"][scatter].tree.u.u - 1) * 100
+
+        # scatter_pct = scatter * 100
 
         # parts_qq = ax.violinplot(
         #     alpha_qq[~jnp.isnan(alpha_qq)],
@@ -385,12 +370,31 @@ with Timer(thread="plot-variance-increase-scatter"):
         # for pc in parts_uu["bodies"]:
         #     pc.set_facecolor("green")
 
-        percentiles_qq.append(jnp.percentile(alpha_qq, q))
-        percentiles_uu.append(jnp.percentile(alpha_uu, q))
+        means_qq.append(jnp.nanmean(alpha_qq))
+        means_uu.append(jnp.nanmean(alpha_uu))
 
-    # TODO: finish this
-    ax.scatter(np.array(SCATTERS) * 100, means_qq, marker=5, color="orange", label="QQ average")
-    ax.scatter(np.array(SCATTERS) * 100, means_uu, marker=4, color="green", label="UU average")
+        p_qq.append(jnp.nanpercentile(alpha_qq, q))
+        p_uu.append(jnp.nanpercentile(alpha_uu, q))
+
+    # ax.scatter(np.array(SCATTERS) * 100, means_qq, marker=5, color="orange", label="QQ average")
+    # ax.scatter(np.array(SCATTERS) * 100, means_uu, marker=4, color="green", label="UU average")
+
+    x_m = jnp.array(SCATTERS) * 100
+
+    # interpolate measured percentiles in log space
+    y_90 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[0] for _p in p_qq])))
+    y_99 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[1] for _p in p_qq])))
+
+    ax.fill_between(x, y, jnp.exp(y_90), alpha=0.5, color="g", label="90th percentile")
+    ax.fill_between(x, y, jnp.exp(y_99), alpha=0.5, color="orange", label="99th percentile")
+
+    # for i, q_ in enumerate(q):
+    #     ax.plot(x_m, [_p[i] for _p in p_qq], color="orange", label=f"QQ {q_}th percentile")
+    #     ax.plot(x_m, [_p[i] for _p in p_qq], color="green", label=f"UU {q_}th percentile")
+
+    ax.scatter(x_m, means_qq, marker=5, color="r", label="QQ average")
+    ax.scatter(x_m, means_uu, marker=4, color="r", label="UU average")
+
     ax.legend()
 
     my_savefig(fig, "variance_increase_scatter_hwp")
