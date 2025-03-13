@@ -69,7 +69,8 @@ def decorate(ax, has_T: bool = False, dl: bool = False):
     )
 
 
-def process(dirname, ref: str = ""):
+def process(dirname, ref: str | None = ""):
+
     # Create 'plots' directory if needed
     run = pathlib.Path(dirname)
     plotdir = run / "plots"
@@ -77,6 +78,7 @@ def process(dirname, ref: str = ""):
 
     # Read spectra
     cldir = run / "spectra"
+    ref = "" if ref is None else f"_{ref}"
     full_cl = np.load(cldir / f"full_cl{ref}.npz")
     noise_cl = np.load(cldir / f"noise_cl{ref}.npz")
 
@@ -95,6 +97,7 @@ def main():
     parser.add_argument("dirname", type=str, help="name of directory")
     args = parser.parse_args()
     process(args.dirname)
+
 
 if __name__ == "__main__":
     main()

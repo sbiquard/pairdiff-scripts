@@ -12,7 +12,7 @@ import spectrum
 import utils
 
 
-def process(run, ref: str, mask_name: str, delta_ell: int, overwrite: bool):
+def process(run, ref: str | None, mask_name: str, delta_ell: int, overwrite: bool):
     # start timer
     tic = time.perf_counter()
 
@@ -26,7 +26,7 @@ def process(run, ref: str, mask_name: str, delta_ell: int, overwrite: bool):
 
     # check if there is something to do
     # TODO: handle several refs
-    ref: str = "" if ref is None else f"_{ref}"
+    ref = "" if ref is None else f"_{ref}"
     full_cl_name = cldir / f"full_cl{ref}.npz"
     noise_cl_name = cldir / f"noise_cl{ref}.npz"
     if full_cl_name.exists() and noise_cl_name.exists() and not overwrite:
@@ -58,8 +58,7 @@ def process(run, ref: str, mask_name: str, delta_ell: int, overwrite: bool):
     return run, elapsed
 
 
-def plot(run, ref: str):
-    ref: str = "" if ref is None else f"_{ref}"
+def plot(run, ref: str | None):
     plot_spectra.process(run, ref)
     return run
 
