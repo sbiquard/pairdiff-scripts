@@ -8,3 +8,4 @@ __pycache__
 slurm*.out
 .vscode/
 .helix/
+__marimo__
