@@ -1,12 +1,11 @@
 import pymaster as nmt
-
-from utils import timer
+from timer import function_timer
 
 NSIDE = 512
 NPIX = 12 * NSIDE * NSIDE
 
 
-@timer
+@function_timer(thread="get_mask_apo")
 def get_mask_apo(hits_map, min_hits: int, aposize: float):
     # Define the mask by cutting above a hit threshold
     mask = hits_map > min_hits

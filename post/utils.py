@@ -1,7 +1,5 @@
-import functools
 import json
 import os
-import time
 from pathlib import Path
 
 import healpy as hp
@@ -9,31 +7,13 @@ import numpy as np
 import toml
 
 
-def timer(func):
-    """Simple timer decorator"""
-
-    @functools.wraps(func)
-    def wrapper_timer(*args, **kwargs):
-        tic = time.perf_counter()
-        value = func(*args, **kwargs)
-        toc = time.perf_counter()
-        elapsed_time = toc - tic
-        print(f"Elapsed time: {elapsed_time:0.4f} seconds", flush=True)
-        return value
-
-    return wrapper_timer
-
-
-# Utility routines
-
-
-SKIP_DIRS = ["plots", "spectra", "atm_cache"]
-
-
 def dir_path(string):
     if os.path.isdir(string):
         return string
     raise NotADirectoryError(string)
+
+
+SKIP_DIRS = ["plots", "spectra", "atm_cache"]
 
 
 def get_all_runs(root, exclude=SKIP_DIRS):
