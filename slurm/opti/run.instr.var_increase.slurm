@@ -58,7 +58,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
         --thinfp 4 \
         --schedule $schedule \
         --scan_map.file $cmb_input \
-        --mappraiser.lagmax 1 \
+        --mappraiser.lagmax 512 \
         --variable_model.scatter $scatter \
         --out $outdir/ml \
         >$logfile 2>&1
@@ -71,7 +71,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
         --thinfp 4 \
         --schedule $schedule \
         --scan_map.file $cmb_input \
-        --mappraiser.lagmax 1 \
+        --mappraiser.lagmax 512 \
         --mappraiser.pair_diff \
         --variable_model.scatter $scatter \
         --out $outdir/pd \
@@ -94,7 +94,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
         --thinfp 4 \
         --schedule $schedule \
         --scan_map.file $cmb_input \
-        --mappraiser.lagmax 1 \
+        --mappraiser.lagmax 512 \
         --variable_model.scatter $scatter \
         --out $outdir/ml \
         >$logfile 2>&1
@@ -108,7 +108,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
         --thinfp 4 \
         --schedule $schedule \
         --scan_map.file $cmb_input \
-        --mappraiser.lagmax 1 \
+        --mappraiser.lagmax 512 \
         --mappraiser.pair_diff \
         --variable_model.scatter $scatter \
         --out $outdir/pd \
