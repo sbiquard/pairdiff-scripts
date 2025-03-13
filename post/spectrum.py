@@ -11,15 +11,12 @@ def get_mask_apo(hits_map, min_hits: int, aposize: float):
     mask = hits_map > min_hits
 
     # Apodize the mask
-    mask = nmt.mask_apodization(mask, aposize, apotype="C1")
-
-    return mask
+    return nmt.mask_apodization(mask, aposize, apotype="C1")
 
 
 def get_binning(delta_ell: int):
     # Initialize binning scheme
-    b = nmt.NmtBin.from_nside_linear(NSIDE, delta_ell)
-    return b
+    return nmt.NmtBin.from_nside_linear(NSIDE, delta_ell)
 
 
 def compute_spectra(m, mask_apo, binning):
