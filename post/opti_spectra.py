@@ -20,10 +20,13 @@ def _():
     import matplotlib.pyplot as plt
     import numpy as np
     import pymaster as nmt
+    import seaborn as sns
+    from matplotlib.collections import LineCollection
 
     from theory_spectra import get_theory_powers
     from utils import read_input_sky, read_mask
     return (
+        LineCollection,
         Path,
         get_theory_powers,
         hp,
@@ -34,23 +37,60 @@ def _():
         plt,
         read_input_sky,
         read_mask,
+        sns,
     )
 
 
 @app.cell
-def _(SCATTERS, full_cl, ls, mpl, plt, theory):
-    _cl_hwp = full_cl["hwp"]
-    _fig, _axs = plt.subplots(1, 2, figsize=(12, 4))
-    _cmap = mpl.colormaps["Dark2"]
-    _lines = []
-    for _i, _scatter in enumerate(SCATTERS):
-        _iqu = _cl_hwp[_scatter]["ml"]
-        _pd = _cl_hwp[_scatter]["pd"]
-        _axs[0].plot(_pd["ells"], _pd["cl_22"][0], color=_cmap(_i), label=str(_scatter))
-        _axs[1].plot(_pd["ells"], _pd["cl_22"][3], color=_cmap(_i))
-    _axs[0].plot(ls, theory["EE"], "k:", label="theory EE")
-    _axs[1].plot(ls, theory["BB"], "k:", label="theory BB")
-    _axs[0].legend()
+def _(LineCollection, SCATTERS, ls, mpl, noise_cl, np, plt, sns, theory_cl):
+    _cl = noise_cl["no_hwp"]
+    _fig, _axs = plt.subplots(1, 2, figsize=(15, 4), sharex=True)
+    _fig.suptitle("Increase of noise in pair diff maps wrt ideal IQU (HWP OFF)")
+    # _cmap = mpl.colormaps["copper"]
+    _cmap = sns.color_palette("flare", as_cmap=True)
+    _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+
+    # Set appropriate axis limits
+    for _ax in _axs:
+        _ax.set_xlim(2, 1000)
+        _ax.grid(True)
+        _ax.set_xlabel("Multipole $\ell$")
+        _ax.set_ylabel("Power $C_\ell$")
+
+    _axs[0].set_title("EE")
+    _axs[1].set_title("BB")
+
+    for _ax, _idx in zip(_axs, (0, 3)):
+        _diff = [
+            np.column_stack(
+                [
+                    (_iqu := _cl[_scatter]["ml"])["ells"][2:],
+                    _cl[_scatter]["pd"]["cl_22"][_idx][2:] - _iqu["cl_22"][_idx][2:],
+                ]
+            )
+            for _scatter in SCATTERS
+        ]
+        _lines = LineCollection(_diff, colors=_colors)
+        _ax.add_collection(_lines)
+
+    # Add colorbar with scatter values
+    _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
+    _cbar = _fig.colorbar(_sm, ax=_axs, pad=0.01)
+    _cbar.set_ticks(SCATTERS)
+    _cbar.set_ticklabels([str(s) for s in SCATTERS])
+    _cbar.set_label("Scatter")
+
+    # Autoscale axes after adding collections
+    _axs[0].autoscale()
+    _axs[1].autoscale()
+
+    # _axs[0].plot(ls[2:], theory_cl["EE"][2:], "k:", label="theory EE")
+    _axs[1].plot(ls[2:], theory_cl["BB"][2:], "k:", label="theory lensing BB")
+    _axs[1].legend()
+
+    # _axs[0].set_ylim(-1e-6, 1e-4)
+    _axs[1].set_ylim(top=3e-6)
+
     plt.show()
     return
 
@@ -63,7 +103,7 @@ def _(mo):
 
 @app.cell
 def _(Path):
-    JZ = Path("..") / "jz_out"
+    JZ = Path("..").absolute() / "jz_out"
     OPTI = JZ / "opti"
     SCATTERS = [0.001, 0.01, 0.1, 0.2]
     REF = "hits_10000"
@@ -102,20 +142,26 @@ def _(np):
 
 @app.cell
 def _(cl2dl, load_npz):
-    def load_spectra(path, lmax=1000):
+    def load_spectra(path, lmax=1000, dl=False):
         cl = load_npz(path)
         l = cl.pop("ell_arr")
         good = l <= lmax
-        return {"ells": l[good], **{k: cl2dl(l[good], cl[k][..., good]) for k in cl}}
+        if dl:
+            return {"ells": l[good], **{k: cl2dl(l[good], cl[k][..., good]) for k in cl}}
+        else:
+            return {"ells": l[good], **{k: cl[k][..., good] for k in cl}}
     return (load_spectra,)
 
 
 @app.cell
 def _(JZ, REF, jax, load_spectra, runs):
     input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
+    input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", dl=True)
     full_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{REF}.npz"), runs)
+    full_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{REF}.npz", dl=True), runs)
     noise_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{REF}.npz"), runs)
-    return full_cl, input_cl, noise_cl
+    noise_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{REF}.npz", dl=True), runs)
+    return full_cl, full_dl, input_cl, input_dl, noise_cl, noise_dl
 
 
 @app.cell(hide_code=True)
@@ -125,22 +171,23 @@ def _(mo):
 
 
 @app.cell
-def _(get_theory_powers, np):
-    theory = get_theory_powers()
-    ls = np.arange(theory["BB"].size)
-    return ls, theory
+def _(cl2dl, get_theory_powers, jax, np):
+    theory_cl = get_theory_powers()
+    ls = np.arange(theory_cl["BB"].size)
+    theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
+    return ls, theory_cl, theory_dl
 
 
 @app.cell
-def _(input_cl, ls, plt, theory):
-    _l = input_cl["ells"]
+def _(input_dl, ls, plt, theory_dl):
+    _l = input_dl["ells"]
     _fig, _axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
-    _axs[0].plot(ls[2:], theory["EE"][2:], "k:", label="EE theory")
-    _axs[0].plot(_l, input_cl["cl_22"][0], label="Input EE")
-    _axs[1].plot(ls, theory["BB"], "k:", label="BB theory")
-    _axs[1].plot(_l, input_cl["cl_22"][3], label="Input BB")
-    _axs[2].plot(_l, input_cl["cl_22"][0] / theory["EE"][_l.astype(int)], label="EE ratio")
-    _axs[2].plot(_l, input_cl["cl_22"][3] / theory["BB"][_l.astype(int)], label="BB ratio")
+    _axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
+    _axs[0].plot(_l, input_dl["cl_22"][0], label="Input EE")
+    _axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
+    _axs[1].plot(_l, input_dl["cl_22"][3], label="Input BB")
+    _axs[2].plot(_l, input_dl["cl_22"][0] / theory_dl["EE"][_l.astype(int)], label="EE ratio")
+    _axs[2].plot(_l, input_dl["cl_22"][3] / theory_dl["BB"][_l.astype(int)], label="BB ratio")
     _axs[2].set_ylim(0, 1.1)
     for _i, _ax in enumerate(_axs):
         _ax.set_xlabel(r"$\ell$")
