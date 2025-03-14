@@ -396,5 +396,6 @@ with Timer(thread="plot-variance-increase-scatter"):
     ax.scatter(x_m, means_uu, marker=4, color="r", label="UU average")
 
     ax.legend()
+    ax.grid(True)
 
     my_savefig(fig, "variance_increase_scatter_hwp")
