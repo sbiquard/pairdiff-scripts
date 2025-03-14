@@ -22,7 +22,7 @@ def get_theory_powers(pars: CAMBparams = DEFAULT_PARS, lmax: int = 1_000):
     results = camb.get_results(pars)
 
     # get total CMB power spectra
-    totCL = results.get_total_cls(lmax=lmax, CMB_unit="muK")
+    totCL = results.get_total_cls(lmax=lmax, CMB_unit="muK", raw_cl=True)
     return {
         "TT": totCL[:, 0],
         "EE": totCL[:, 1],
