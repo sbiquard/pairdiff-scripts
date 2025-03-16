@@ -34,8 +34,8 @@ cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 opti="${SCRATCH}/pairdiff_runs/opti"
 real=$(printf "%03d" "$SLURM_ARRAY_TASK_ID")
 
-rootdir_hwp="${opti}/var_increase_instr_${real}"
-rootdir_no_hwp="${opti}/var_increase_instr_no_hwp_${real}"
+rootdir_hwp="${opti}/var_increase_instr/${real}"
+rootdir_no_hwp="${opti}/var_increase_instr_no_hwp/${real}"
 
 # looping over scatter values
 
