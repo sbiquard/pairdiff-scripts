@@ -1,5 +1,5 @@
 import camb
-from camb import CAMBparams
+from camb import CAMBparams, InitialPowerLaw
 
 # Planck FFP10 simulations
 DEFAULT_PARS = camb.set_params(
@@ -17,7 +17,10 @@ DEFAULT_PARS = camb.set_params(
 )
 
 
-def get_theory_powers(pars: CAMBparams = DEFAULT_PARS, lmax: int = 1_000):
+def get_theory_powers(pars: CAMBparams = DEFAULT_PARS, lmax: int = 1_000, r: float = 1e-2):
+    # initial power spectrum
+    pars.set_initial_power(InitialPowerLaw(r=r))
+
     # calculate results for these parameters
     results = camb.get_results(pars)
 

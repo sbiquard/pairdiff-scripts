@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.11.20"
+__generated_with = "0.11.19"
 app = marimo.App(width="full")
 
 
@@ -42,58 +42,67 @@ def _():
 
 
 @app.cell
-def _(SCATTERS, ls, mpl, plt, sns, stack_noise_cl, theory_cl):
-    _cl = stack_noise_cl["no_hwp"]
-    _fig, _axs = plt.subplots(1, 2, figsize=(15, 4), sharex=True)
-    _fig.suptitle("Increase of noise in pair diff maps wrt ideal IQU (HWP OFF)")
-    # _cmap = mpl.colormaps["copper"]
+def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
+    _fig = plt.figure(layout="constrained", figsize=(12, 8))
+    _fig.suptitle("Increase of noise in pair diff maps wrt ideal IQU")
+
+    _subfigs = _fig.subfigures(2, 1)
+    _subfigs[0].suptitle("HWP on")
+    _subfigs[1].suptitle("HWP off")
+
     _cmap = sns.color_palette("flare", as_cmap=True)
     _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
 
-    # Set appropriate axis limits
-    for _ax in _axs:
-        _ax.set_xlim(2, 1000)
-        _ax.grid(True)
-        _ax.set_xlabel("Multipole $\ell$")
-        _ax.set_ylabel("Power $C_\ell$")
+    for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
+        _cl = stack_noise_cl[_khwp]
+        _axs = _subfig.subplots(1, 2, sharex=True)
+        _axs[0].set_title("EE")
+        _axs[1].set_title("BB")
 
-    _axs[0].set_title("EE")
-    _axs[1].set_title("BB")
+        # Set appropriate axis limits
+        for _ax in _axs:
+            _ax.set_xlim(2, 1000)
+            _ax.grid(True)
+            _ax.set_xlabel("Multipole $\ell$")
+            _ax.set_ylabel("Power $C_\ell$")
 
-    for _is, _scatter in enumerate(SCATTERS):
-        _iqu = _cl[_scatter]["ml"]
-        _pd = _cl[_scatter]["pd"]
-        _ells = _iqu["ells"][0]  # identical for all realizations
-        _diff = _pd["cl_22"] - _iqu["cl_22"]
-        for _ax, _idx in zip(_axs, (0, 3)):
-            # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
-            # _lines = LineCollection(_line_data, colors=_colors)
-            # _ax.add_collection(_lines)
-            _y = _diff.mean(axis=0)[_idx]
-            _yerr = _diff.std(axis=0)[_idx]
-            _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+            _ax.set_ylabel("Power $[\mu K^2]$")
+            # _ax.set_xscale("asinh", linear_width=10)
 
-    # Add colorbar with scatter values
-    _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
-    _cbar = _fig.colorbar(_sm, ax=_axs, pad=0.01)
-    _cbar.set_ticks(SCATTERS)
-    _cbar.set_ticklabels([str(s) for s in SCATTERS])
-    _cbar.set_label("Scatter")
+        for _is, _scatter in enumerate(SCATTERS):
+            _iqu = _cl[_scatter]["ml"]
+            _pd = _cl[_scatter]["pd"]
+            _ells = _iqu["ells"][0]  # identical for all realizations
+            _diff = _pd["cl_22"] - _iqu["cl_22"]
+            for _ax, _idx in zip(_axs, (0, 3)):
+                # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
+                # _lines = LineCollection(_line_data, colors=_colors)
+                # _ax.add_collection(_lines)
+                _y = _diff.mean(axis=0)[_idx]
+                _yerr = _diff.std(axis=0)[_idx]
+                _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
 
-    # Autoscale axes after adding collections
-    _axs[0].autoscale()
-    _axs[1].autoscale()
+        # Add colorbar with scatter values
+        _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
+        _cbar = _fig.colorbar(_sm, ax=_axs, pad=0.01)
+        _cbar.set_ticks(SCATTERS)
+        _cbar.set_ticklabels([f"{s:.1%}" for s in SCATTERS])
+        _cbar.set_label("Scatter")
 
-    # _axs[0].plot(ls[2:], theory_cl["EE"][2:], "k:", label="theory EE")
-    _axs[1].plot(ls[2:], theory_cl["BB"][2:], "k:", label="theory lensing BB")
-    _axs[1].legend()
+        # Autoscale axes after adding collections
+        _axs[0].autoscale()
+        _axs[1].autoscale()
 
-    # _axs[0].set_ylim(-1e-6, 1e-4)
-    _axs[1].set_ylim(top=3e-6)
+        # _axs[1].plot(ls[2:], 3 * prim_BB[2:], "k:", label="primordial BB (r=0.03)")
+        # _axs[1].legend()
 
-    for _ax in _axs:
-        _ax.set_xlim(right=600)
+        # _axs[0].set_ylim(-1e-6, 1e-4)
+        # _axs[1].set_ylim(top=3e-6)
 
+        for _ax in _axs:
+            _ax.set_xlim(right=600)
+
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_noise_no_hwp", dpi=200)
     plt.show()
     return
 
@@ -196,7 +205,9 @@ def _(cl2dl, get_theory_powers, jax, np):
     theory_cl = get_theory_powers()
     ls = np.arange(theory_cl["BB"].size)
     theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
-    return ls, theory_cl, theory_dl
+    prim_BB = theory_cl["BB"] - get_theory_powers(r=0)["BB"]
+    prim_BB_dl = cl2dl(ls, prim_BB)
+    return ls, prim_BB, prim_BB_dl, theory_cl, theory_dl
 
 
 @app.cell
