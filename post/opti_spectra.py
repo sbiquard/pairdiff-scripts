@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.11.19"
+__generated_with = "0.11.20"
 app = marimo.App(width="full")
 
 
@@ -42,8 +42,8 @@ def _():
 
 
 @app.cell
-def _(LineCollection, SCATTERS, ls, mpl, noise_cl, np, plt, sns, theory_cl):
-    _cl = noise_cl["no_hwp"]
+def _(SCATTERS, ls, mpl, plt, sns, stack_noise_cl, theory_cl):
+    _cl = stack_noise_cl["no_hwp"]
     _fig, _axs = plt.subplots(1, 2, figsize=(15, 4), sharex=True)
     _fig.suptitle("Increase of noise in pair diff maps wrt ideal IQU (HWP OFF)")
     # _cmap = mpl.colormaps["copper"]
@@ -60,18 +60,18 @@ def _(LineCollection, SCATTERS, ls, mpl, noise_cl, np, plt, sns, theory_cl):
     _axs[0].set_title("EE")
     _axs[1].set_title("BB")
 
-    for _ax, _idx in zip(_axs, (0, 3)):
-        _diff = [
-            np.column_stack(
-                [
-                    (_iqu := _cl[_scatter]["ml"])["ells"][2:],
-                    _cl[_scatter]["pd"]["cl_22"][_idx][2:] - _iqu["cl_22"][_idx][2:],
-                ]
-            )
-            for _scatter in SCATTERS
-        ]
-        _lines = LineCollection(_diff, colors=_colors)
-        _ax.add_collection(_lines)
+    for _is, _scatter in enumerate(SCATTERS):
+        _iqu = _cl[_scatter]["ml"]
+        _pd = _cl[_scatter]["pd"]
+        _ells = _iqu["ells"][0]  # identical for all realizations
+        _diff = _pd["cl_22"] - _iqu["cl_22"]
+        for _ax, _idx in zip(_axs, (0, 3)):
+            # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
+            # _lines = LineCollection(_line_data, colors=_colors)
+            # _ax.add_collection(_lines)
+            _y = _diff.mean(axis=0)[_idx]
+            _yerr = _diff.std(axis=0)[_idx]
+            _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
 
     # Add colorbar with scatter values
     _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
@@ -91,6 +91,9 @@ def _(LineCollection, SCATTERS, ls, mpl, noise_cl, np, plt, sns, theory_cl):
     # _axs[0].set_ylim(-1e-6, 1e-4)
     _axs[1].set_ylim(top=3e-6)
 
+    for _ax in _axs:
+        _ax.set_xlim(right=600)
+
     plt.show()
     return
 
@@ -102,26 +105,30 @@ def _(mo):
 
 
 @app.cell
-def _(Path):
-    JZ = Path("..").absolute() / "jz_out"
+def _(Path, __file__):
+    JZ = Path(__file__).parents[1].absolute() / "jz_out"
     OPTI = JZ / "opti"
     SCATTERS = [0.001, 0.01, 0.1, 0.2]
-    REF = "hits_10000"
+    MASK_REF = "hits_10000"
 
     runs = {
         k_hwp: {
             scatter: {
-                k_ml_pd: OPTI
-                / ("var_increase_instr" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-                / f"scatter_{scatter}"
-                / k_ml_pd
+                k_ml_pd: [
+                    OPTI
+                    / ("var_increase_instr" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+                    / f"{real + 1:03d}"
+                    / f"scatter_{scatter}"
+                    / k_ml_pd
+                    for real in range(25)
+                ]
                 for k_ml_pd in ["ml", "pd"]
             }
             for scatter in SCATTERS
         }
         for k_hwp in ["hwp", "no_hwp"]
     }
-    return JZ, OPTI, REF, SCATTERS, runs
+    return JZ, MASK_REF, OPTI, SCATTERS, runs
 
 
 @app.cell
@@ -141,8 +148,8 @@ def _(np):
 
 
 @app.cell
-def _(cl2dl, load_npz):
-    def load_spectra(path, lmax=1000, dl=False):
+def _(Path, cl2dl, load_npz):
+    def load_spectra(path: Path | list[Path], lmax=1000, dl=False):
         cl = load_npz(path)
         l = cl.pop("ell_arr")
         good = l <= lmax
@@ -154,14 +161,28 @@ def _(cl2dl, load_npz):
 
 
 @app.cell
-def _(JZ, REF, jax, load_spectra, runs):
+def _(JZ, MASK_REF, jax, load_spectra, runs):
     input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
     input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", dl=True)
-    full_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{REF}.npz"), runs)
-    full_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{REF}.npz", dl=True), runs)
-    noise_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{REF}.npz"), runs)
-    noise_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{REF}.npz", dl=True), runs)
+    full_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz"), runs)
+    full_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz", dl=True), runs)
+    noise_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz"), runs)
+    noise_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz", dl=True), runs)
     return full_cl, full_dl, input_cl, input_dl, noise_cl, noise_dl
+
+
+@app.cell
+def _(full_cl, full_dl, jax, noise_cl, noise_dl, np):
+    def _stack(cl):
+        # assuming homogeneous shapes
+        return {k: np.stack(tuple(cl[i][k] for i in range(len(cl)))) for k in cl[0]}
+
+
+    stack_full_cl = jax.tree.map(_stack, full_cl, is_leaf=lambda x: isinstance(x, list))
+    stack_full_dl = jax.tree.map(_stack, full_dl, is_leaf=lambda x: isinstance(x, list))
+    stack_noise_cl = jax.tree.map(_stack, noise_cl, is_leaf=lambda x: isinstance(x, list))
+    stack_noise_dl = jax.tree.map(_stack, noise_dl, is_leaf=lambda x: isinstance(x, list))
+    return stack_full_cl, stack_full_dl, stack_noise_cl, stack_noise_dl
 
 
 @app.cell(hide_code=True)
