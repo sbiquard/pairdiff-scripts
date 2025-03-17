@@ -88,6 +88,7 @@ def process(dirname, ref: str | None = ""):
     plot(noise_cl, ax, ls="dashed")
     decorate(ax, has_tt)
     plt.savefig(plotdir / f"spectra{ref}.png")
+    plt.close()
 
 
 def main():
