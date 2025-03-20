@@ -165,27 +165,36 @@ def process(args):
     sky_in = utils.read_input_sky()
 
     # define a mask for pixels outside the solved patch
-    mask = hits < 1
+    thresh = np.percentile(hits[hits > 0], args.hits_percentile)
+    mask = hits < thresh
     for m in maps.values():
         m[mask] = np.nan
     cond[mask] = np.nan
 
     plot_hits_cond(hits, cond, plotdir)
     plot_res_hist(maps, sky_in, plotdir)
-    plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
+    plot_maps(maps, sky_in, plotdir, diff_range_P=args.range_pol)
     plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
     print(f"Elapsed time: {elapsed:.2f} s")
+
 
 def main():
     parser = argparse.ArgumentParser(
         description="Plot difference maps and histograms for a given run."
     )
     parser.add_argument("dirname", type=utils.dir_path, help="name of directory")
-    parser.add_argument("--diff-range-P", type=int)
+    parser.add_argument("--range-pol", type=int, help="colorbar range for residual Q/U maps")
+    parser.add_argument(
+        "--hits-percentile",
+        type=float,
+        default=1,
+        help="exclude pixels with less hits than this percentile of the hit map",
+    )
     args = parser.parse_args()
     process(args)
+
 
 if __name__ == "__main__":
     main()
