@@ -4,7 +4,7 @@
 [operators.load_hdf5]
     class = "toast.ops.load_hdf5.LoadHDF5"
     API = 0 # Internal interface version for this operator
-    detdata = "[]" # Only load this list of detdata objects
+    detdata = "['signal','flags',]" # Only load this list of detdata objects
     enabled = false # If True, this class instance is marked as enabled
     files = "[]" # Override `volume` and load a list of files
     force_serial = false # Use serial HDF5 operations, even if parallel support available
@@ -1007,7 +1007,7 @@
     det_data = "signal" # Observation detdata key for simulated signal
     drift_rate = "None" # If non-zero, the width of the Gaussian distribution to draw drift rate [1/hour] from.  All detectors will observe the same drift rate.
     enabled = false # If True, this class instance is marked as enabled
-    fname_hwpss = "/home/sbiquard/.pyenv/versions/3.10.13/envs/pair-diff/lib/python3.10/site-packages/sotodlib/toast/ops/data/hwpss_per_chi.pck" # File containing measured or estimated HWPSS profiles
+    fname_hwpss = "/home/sbiquard/work/pairdiff/simu-sat/.venv/lib/python3.11/site-packages/sotodlib/toast/ops/data/hwpss_per_chi.pck" # File containing measured or estimated HWPSS profiles
     hwp_angle = "hwp_angle" # Observation shared key for HWP angle
     hwpss_drift_alpha = 1.0 # The power law exponent of the HWPSS random drift.
     hwpss_drift_coupling_center = 1.0 # Mean coupling strength between the detectors and the HWPSS random drift mode.
@@ -1039,16 +1039,16 @@
     API = 0 # Internal interface version for this operator
     component = 0 # Component index for this simulation
     constant = false # If True, scramble all detector pairs in the same way
-    det_data_names = "['signal',]" # Observation detdata key(s) to apply the gain error to
-    dist = "gaussian" # Gain distribution density
+    det_data_names = "['signal','atm']" # Observation detdata key(s) to apply the gain error to
+    dist = 0 # Gain distribution density
     enabled = false # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     location = 1.0 # Distribution location parameter
     name = "gainscrambler" # The 'name' of this class instance
-    pattern = ".*" # Regex pattern to match against detector names. Only detectors that match the pattern are scrambled.
-    process_pairs = false # Process detectors in pairs
+    pattern = ".*" # Regex pattern to match against detector names
+    process_pairs = true # Process detectors in pairs
     realization = 0 # Realization index
-    scale = 0.001 # Distribution scale parameter
+    scale = 0.01 # Distribution scale parameter
     store = false # Store the scrambled values
 
 [operators.sim_readout]
@@ -1095,7 +1095,7 @@
     compress_detdata = false # If True, use FLAC to compress detector signal
     compress_precision = "None" # Number of significant digits to retain in detdata compression
     config = "{}" # Write this job config to the file
-    detdata = "[]" # Only save this list of detdata objects
+    detdata = "['signal','flags',]" # Only save this list of detdata objects
     detdata_float32 = false # If True, convert any float64 detector data to float32 on write.
     detdata_in_place = false # If True, all compressed detector data will be decompressed and written over the input data.
     enabled = false # If True, this class instance is marked as enabled
