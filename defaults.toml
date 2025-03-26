@@ -1818,6 +1818,7 @@
 [operators.mappraiser]
     class = "mappraiser.toast_op.operator.MapMaker"
     API = 0 # Internal interface version for this operator
+    bin_psd = false # Bin the noise PSD for fitting
     binned = false # Make a binned map
     bs_red = 0 # Use dynamic search reduction
     det_data = "signal" # Observation detdata key for the timestream data
