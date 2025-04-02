@@ -1845,12 +1845,13 @@
     pair_diff = false # Process differenced timestreams
     pixel_pointing = "None" # Operator to generate healpix indices
     plot_tod = false # Plot the signal+noise TOD after staging
-    precond = 0 # Preconditiner choice
+    precond = 0 # Preconditioner choice
     ptcomm_flag = 6 # Choose collective communication scheme
     purge_det_data = true # Clear all observation detector data after staging
     realization = 0 # Noise realization index (for gap filling)
     ref = "run0" # Reference that is added to the name of the output maps
     save_fit_info = false # Save fit information when estimating noise PSD
+    scrambling = "None" # GainScrambler to perturb the data after noise estimation
     shared_flag_mask = 15 # Bit mask value for shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     solver = 0 # Solver choice
