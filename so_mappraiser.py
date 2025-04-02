@@ -243,6 +243,13 @@ def main():
         action=argparse.BooleanOptionalAction,
         help="Only use the first detector of each pair",
     )
+    parser.add_argument(
+        "--scramble-after",
+        required=False,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="Pass the gainscrambler to mappraiser to be applied after noise estimation"
+    )
 
     # The operators and templates we want to configure from the command line
     # or a parameter file.
