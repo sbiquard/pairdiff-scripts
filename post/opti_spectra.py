@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.11.19"
+__generated_with = "0.12.7"
 app = marimo.App(width="full")
 
 
@@ -17,6 +17,7 @@ def _():
     import healpy as hp
     import jax
     import matplotlib as mpl
+    import matplotlib.ticker as mtick
     import matplotlib.pyplot as plt
     import numpy as np
     import pymaster as nmt
@@ -32,6 +33,7 @@ def _():
         hp,
         jax,
         mpl,
+        mtick,
         nmt,
         np,
         plt,
@@ -42,9 +44,9 @@ def _():
 
 
 @app.cell
-def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
-    _fig = plt.figure(layout="constrained", figsize=(12, 8))
-    _fig.suptitle("Increase of noise in pair diff maps wrt ideal IQU")
+def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl):
+    _fig = plt.figure(layout="constrained", figsize=(12, 10))
+    _fig.suptitle("Increased noise power in pair differencing maps with instrumental noise")
 
     _subfigs = _fig.subfigures(2, 1)
     _subfigs[0].suptitle("HWP on")
@@ -55,7 +57,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
 
     for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
         _cl = stack_noise_cl[_khwp]
-        _axs = _subfig.subplots(1, 2, sharex=True)
+        _axs = _subfig.subplots(1, 2, sharex=True, sharey=True)
         _axs[0].set_title("EE")
         _axs[1].set_title("BB")
 
@@ -64,10 +66,82 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
             _ax.set_xlim(2, 1000)
             _ax.grid(True)
             _ax.set_xlabel("Multipole $\ell$")
-            _ax.set_ylabel("Power $C_\ell$")
+            _ax.set_ylabel("Relative power increase")
+            _ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+            _ax.label_outer()
 
+        for _is, _scatter in enumerate(SCATTERS):
+            _iqu = _cl[_scatter]["ml"]
+            _pd = _cl[_scatter]["pd"]
+            _ells = _iqu["ells"][0]  # identical for all realizations
+            _diff = _pd["cl_22"] / _iqu["cl_22"] - 1
+            for _ax, _idx in zip(_axs, (0, 3)):
+                # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
+                # _lines = LineCollection(_line_data, colors=_colors)
+                # _ax.add_collection(_lines)
+                _y = _diff.mean(axis=0)[_idx]
+                _yerr = _diff.std(axis=0)[_idx]
+                _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+
+                # print increase in white noise domain
+                print(_khwp, _scatter, "EE" if _idx == 0 else "BB", f"{_y.mean():.2%}")
+
+        # Add colorbar with scatter values
+        _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
+        _cbar = _fig.colorbar(_sm, ax=_axs, pad=0.01)
+        _cbar.set_ticks(SCATTERS)
+        _cbar.set_ticklabels([f"{s:.1%}" for s in SCATTERS])
+        _cbar.set_label("Scatter")
+
+        # Autoscale axes after adding collections
+        _axs[0].autoscale()
+        _axs[1].autoscale()
+
+        if _khwp == "hwp":
+            _ax.set_ylim(top=0.2)
+        else:
+            _ax.set_ylim(-0.1, 0.4)
+
+        # _axs[1].plot(ls[2:], 3 * prim_BB[2:], "k:", label="primordial BB (r=0.03)")
+        # _axs[1].legend()
+
+        # _axs[0].set_ylim(-1e-6, 1e-4)
+        # _axs[1].set_ylim(top=3e-6)
+
+        for _ax in _axs:
+            _ax.set_xlim(right=600)
+
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_relative", dpi=200)
+    plt.show()
+    return
+
+
+@app.cell
+def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
+    _fig = plt.figure(layout="constrained", figsize=(12, 10))
+    _fig.suptitle("Increased noise power in pair differencing maps with instrumental noise")
+
+    _subfigs = _fig.subfigures(2, 1)
+    _subfigs[0].suptitle("HWP on")
+    _subfigs[1].suptitle("HWP off")
+
+    _cmap = sns.color_palette("flare", as_cmap=True)
+    _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+
+    for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
+        _cl = stack_noise_cl[_khwp]
+        _axs = _subfig.subplots(1, 2, sharex=True, sharey=True)
+        _axs[0].set_title("EE")
+        _axs[1].set_title("BB")
+
+        # Set appropriate axis limits
+        for _ax in _axs:
+            _ax.set_xlim(2, 1000)
+            _ax.grid(True)
+            _ax.set_xlabel("Multipole $\ell$")
             _ax.set_ylabel("Power $[\mu K^2]$")
             # _ax.set_xscale("asinh", linear_width=10)
+            _ax.label_outer()
 
         for _is, _scatter in enumerate(SCATTERS):
             _iqu = _cl[_scatter]["ml"]
@@ -81,6 +155,8 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
                 _y = _diff.mean(axis=0)[_idx]
                 _yerr = _diff.std(axis=0)[_idx]
                 _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+                # _ax.plot(_ells, _iqu["cl_22"][_idx].mean(axis=0), marker='.', color=_colors[_is])
+                # _ax.plot(_ells, _pd["cl_22"][_idx].mean(axis=0), marker='d', color=_colors[_is])
 
         # Add colorbar with scatter values
         _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
@@ -93,6 +169,9 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
         _axs[0].autoscale()
         _axs[1].autoscale()
 
+        if _khwp == "no_hwp":
+            _ax.set_ylim(-0.5e-5, 1e-5)
+
         # _axs[1].plot(ls[2:], 3 * prim_BB[2:], "k:", label="primordial BB (r=0.03)")
         # _axs[1].legend()
 
@@ -102,7 +181,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_noise_no_hwp", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_noise", dpi=200)
     plt.show()
     return
 
@@ -128,7 +207,7 @@ def _(Path, __file__):
                     / ("var_increase_instr" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
                     / f"{real + 1:03d}"
                     / f"scatter_{scatter}"
-                    / k_ml_pd
+                    / (k_ml_pd if k_ml_pd == "ml" else "pd_new")
                     for real in range(25)
                 ]
                 for k_ml_pd in ["ml", "pd"]
