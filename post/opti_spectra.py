@@ -44,9 +44,15 @@ def _():
 
 
 @app.cell
-def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl):
+def _(mo):
+    mo.md(r"""### Relative increase -- white noise""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_white):
     _fig = plt.figure(layout="constrained", figsize=(12, 10))
-    _fig.suptitle("Increased noise power in pair differencing maps with instrumental noise")
+    _fig.suptitle("Relative noise power increase in pair differencing maps with white noise")
 
     _subfigs = _fig.subfigures(2, 1)
     _subfigs[0].suptitle("HWP on")
@@ -56,7 +62,143 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl):
     _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
 
     for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
-        _cl = stack_noise_cl[_khwp]
+        _cl = stack_noise_cl_white[_khwp]
+        _axs = _subfig.subplots(1, 2, sharex=True, sharey=True)
+        _axs[0].set_title("EE")
+        _axs[1].set_title("BB")
+
+        # Set appropriate axis limits
+        for _ax in _axs:
+            _ax.set_xlim(2, 1000)
+            _ax.grid(True)
+            _ax.set_xlabel("Multipole $\ell$")
+            _ax.set_ylabel("Relative power increase")
+            _ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+            _ax.label_outer()
+
+        for _is, _scatter in enumerate(SCATTERS):
+            _iqu = _cl[_scatter]["ml"]
+            _pd = _cl[_scatter]["pd"]
+            _ells = _iqu["ells"][0]  # identical for all realizations
+            _diff = _pd["cl_22"] / _iqu["cl_22"] - 1
+            for _ax, _idx in zip(_axs, (0, 3)):
+                # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
+                # _lines = LineCollection(_line_data, colors=_colors)
+                # _ax.add_collection(_lines)
+                _y = _diff.mean(axis=0)[_idx]
+                _yerr = _diff.std(axis=0)[_idx]
+                _ax.errorbar(_ells[1:], _y[1:], yerr=_yerr[1:], fmt=".", color=_colors[_is], linewidth=0.5)
+
+                # print increase averaged over bins
+                print(_khwp, _scatter, "EE" if _idx == 0 else "BB", f"{_y.mean():.2%}")
+
+        # Add colorbar with scatter values
+        _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
+        _cbar = _fig.colorbar(_sm, ax=_axs, pad=0.01)
+        _cbar.set_ticks(SCATTERS)
+        _cbar.set_ticklabels([f"{s:.1%}" for s in SCATTERS])
+        _cbar.set_label("Scatter")
+
+        # Autoscale axes after adding collections
+        _axs[0].autoscale()
+        _axs[1].autoscale()
+
+        # _axs[1].plot(ls[2:], 3 * prim_BB[2:], "k:", label="primordial BB (r=0.03)")
+        # _axs[1].legend()
+
+        # _axs[0].set_ylim(-1e-6, 1e-4)
+        # _axs[1].set_ylim(top=3e-6)
+
+        for _ax in _axs:
+            _ax.set_xlim(right=600)
+
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_white_relative", dpi=200)
+    plt.show()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""### Absolute increase -- white noise""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_white):
+    _fig = plt.figure(layout="constrained", figsize=(12, 10))
+    _fig.suptitle("Absolute noise power increase in pair differencing maps with white noise")
+
+    _subfigs = _fig.subfigures(2, 1)
+    _subfigs[0].suptitle("HWP on")
+    _subfigs[1].suptitle("HWP off")
+
+    _cmap = sns.color_palette("flare", as_cmap=True)
+    _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+
+    for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
+        _cl = stack_noise_cl_white[_khwp]
+        _axs = _subfig.subplots(1, 2, sharex=True, sharey=True)
+        _axs[0].set_title("EE")
+        _axs[1].set_title("BB")
+
+        # Set appropriate axis limits
+        for _ax in _axs:
+            _ax.set_xlim(2, 1000)
+            _ax.grid(True)
+            _ax.set_xlabel("Multipole $\ell$")
+            _ax.set_ylabel("Power $[\mu K^2]$")
+            # _ax.set_xscale("asinh", linear_width=10)
+            _ax.label_outer()
+
+        for _is, _scatter in enumerate(SCATTERS):
+            _iqu = _cl[_scatter]["ml"]
+            _pd = _cl[_scatter]["pd"]
+            _ells = _iqu["ells"][0]  # identical for all realizations
+            _diff = _pd["cl_22"] - _iqu["cl_22"]
+            for _ax, _idx in zip(_axs, (0, 3)):
+                _y = _diff.mean(axis=0)[_idx]
+                _yerr = _diff.std(axis=0)[_idx]
+                _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+
+        # Add colorbar with scatter values
+        _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
+        _cbar = _fig.colorbar(_sm, ax=_axs, pad=0.01)
+        _cbar.set_ticks(SCATTERS)
+        _cbar.set_ticklabels([f"{s:.1%}" for s in SCATTERS])
+        _cbar.set_label("Scatter")
+
+        # Autoscale axes after adding collections
+        _axs[0].autoscale()
+        _axs[1].autoscale()
+
+        for _ax in _axs:
+            _ax.set_xlim(right=600)
+
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_white_absolute", dpi=200)
+    plt.show()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""### Relative increase -- instrumental noise""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_instr):
+    _fig = plt.figure(layout="constrained", figsize=(12, 10))
+    _fig.suptitle("Relative noise power increase in pair differencing maps with 1/f noise")
+
+    _subfigs = _fig.subfigures(2, 1)
+    _subfigs[0].suptitle("HWP on")
+    _subfigs[1].suptitle("HWP off")
+
+    _cmap = sns.color_palette("flare", as_cmap=True)
+    _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+
+    for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
+        _cl = stack_noise_cl_instr[_khwp]
         _axs = _subfig.subplots(1, 2, sharex=True, sharey=True)
         _axs[0].set_title("EE")
         _axs[1].set_title("BB")
@@ -111,15 +253,21 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_relative", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_relative", dpi=200)
     plt.show()
     return
 
 
 @app.cell
-def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
+def _(mo):
+    mo.md(r"""### Absolute increase -- instrumental noise""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_instr):
     _fig = plt.figure(layout="constrained", figsize=(12, 10))
-    _fig.suptitle("Increased noise power in pair differencing maps with instrumental noise")
+    _fig.suptitle("Absolute noise power increase in pair differencing maps with 1/f noise")
 
     _subfigs = _fig.subfigures(2, 1)
     _subfigs[0].suptitle("HWP on")
@@ -129,7 +277,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
     _colors = [_cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
 
     for _khwp, _subfig in zip(["hwp", "no_hwp"], _subfigs):
-        _cl = stack_noise_cl[_khwp]
+        _cl = stack_noise_cl_instr[_khwp]
         _axs = _subfig.subplots(1, 2, sharex=True, sharey=True)
         _axs[0].set_title("EE")
         _axs[1].set_title("BB")
@@ -170,7 +318,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
         _axs[1].autoscale()
 
         if _khwp == "no_hwp":
-            _ax.set_ylim(-0.5e-5, 1e-5)
+            _ax.set_ylim(-5e-7, 8e-6)
 
         # _axs[1].plot(ls[2:], 3 * prim_BB[2:], "k:", label="primordial BB (r=0.03)")
         # _axs[1].legend()
@@ -181,7 +329,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_noise", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_absolute", dpi=200)
     plt.show()
     return
 
@@ -192,29 +340,39 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(Path, __file__):
     JZ = Path(__file__).parents[1].absolute() / "jz_out"
     OPTI = JZ / "opti"
     SCATTERS = [0.001, 0.01, 0.1, 0.2]
-    MASK_REF = "hits_10000"
+    # SCATTERS = [0.001, 0.01]
+    # MASK_REF = "hits_10000"
+    MASK_REF = "hits_10000_apo_20"
 
     runs = {
-        k_hwp: {
-            scatter: {
-                k_ml_pd: [
-                    OPTI
-                    / ("var_increase_instr" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-                    / f"{real + 1:03d}"
-                    / f"scatter_{scatter}"
-                    / (k_ml_pd if k_ml_pd == "ml" else "pd_new")
-                    for real in range(25)
-                ]
-                for k_ml_pd in ["ml", "pd"]
+        k_white: {
+            k_hwp: {
+                scatter: {
+                    k_ml_pd: [
+                        OPTI
+                        / (
+                            "var_increase"
+                            + ("_instr" if k_white != "white" else "")
+                            + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")
+                        )
+                        / f"{real + 1:03d}"
+                        / f"scatter_{scatter}"
+                        # / (k_ml_pd if k_ml_pd == "ml" else "pd_new")
+                        / k_ml_pd
+                        for real in range(25)
+                    ]
+                    for k_ml_pd in ["ml", "pd"]
+                }
+                for scatter in SCATTERS
             }
-            for scatter in SCATTERS
+            for k_hwp in ["hwp", "no_hwp"]
         }
-        for k_hwp in ["hwp", "no_hwp"]
+        for k_white in ["white", "instr"]
     }
     return JZ, MASK_REF, OPTI, SCATTERS, runs
 
@@ -252,25 +410,68 @@ def _(Path, cl2dl, load_npz):
 def _(JZ, MASK_REF, jax, load_spectra, runs):
     input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
     input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", dl=True)
-    full_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz"), runs)
-    full_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz", dl=True), runs)
-    noise_cl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz"), runs)
-    noise_dl = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz", dl=True), runs)
-    return full_cl, full_dl, input_cl, input_dl, noise_cl, noise_dl
+    full_cl_white = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz"), runs["white"])
+    full_cl_instr = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz"), runs["instr"])
+    full_dl_white = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz", dl=True), runs["white"])
+    full_dl_instr = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz", dl=True), runs["instr"])
+    noise_cl_white = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz"), runs["white"])
+    noise_cl_instr = jax.tree.map(lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz"), runs["instr"])
+    noise_dl_white = jax.tree.map(
+        lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz", dl=True), runs["white"]
+    )
+    noise_dl_instr = jax.tree.map(
+        lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz", dl=True), runs["instr"]
+    )
+    return (
+        full_cl_instr,
+        full_cl_white,
+        full_dl_instr,
+        full_dl_white,
+        input_cl,
+        input_dl,
+        noise_cl_instr,
+        noise_cl_white,
+        noise_dl_instr,
+        noise_dl_white,
+    )
 
 
 @app.cell
-def _(full_cl, full_dl, jax, noise_cl, noise_dl, np):
+def _(
+    full_cl_instr,
+    full_cl_white,
+    full_dl_instr,
+    full_dl_white,
+    jax,
+    noise_cl_instr,
+    noise_cl_white,
+    noise_dl_instr,
+    noise_dl_white,
+    np,
+):
     def _stack(cl):
         # assuming homogeneous shapes
         return {k: np.stack(tuple(cl[i][k] for i in range(len(cl)))) for k in cl[0]}
 
 
-    stack_full_cl = jax.tree.map(_stack, full_cl, is_leaf=lambda x: isinstance(x, list))
-    stack_full_dl = jax.tree.map(_stack, full_dl, is_leaf=lambda x: isinstance(x, list))
-    stack_noise_cl = jax.tree.map(_stack, noise_cl, is_leaf=lambda x: isinstance(x, list))
-    stack_noise_dl = jax.tree.map(_stack, noise_dl, is_leaf=lambda x: isinstance(x, list))
-    return stack_full_cl, stack_full_dl, stack_noise_cl, stack_noise_dl
+    stack_full_cl_white = jax.tree.map(_stack, full_cl_white, is_leaf=lambda x: isinstance(x, list))
+    stack_full_cl_instr = jax.tree.map(_stack, full_cl_instr, is_leaf=lambda x: isinstance(x, list))
+    stack_full_dl_white = jax.tree.map(_stack, full_dl_white, is_leaf=lambda x: isinstance(x, list))
+    stack_full_dl_instr = jax.tree.map(_stack, full_dl_instr, is_leaf=lambda x: isinstance(x, list))
+    stack_noise_cl_white = jax.tree.map(_stack, noise_cl_white, is_leaf=lambda x: isinstance(x, list))
+    stack_noise_cl_instr = jax.tree.map(_stack, noise_cl_instr, is_leaf=lambda x: isinstance(x, list))
+    stack_noise_dl_white = jax.tree.map(_stack, noise_dl_white, is_leaf=lambda x: isinstance(x, list))
+    stack_noise_dl_instr = jax.tree.map(_stack, noise_dl_instr, is_leaf=lambda x: isinstance(x, list))
+    return (
+        stack_full_cl_instr,
+        stack_full_cl_white,
+        stack_full_dl_instr,
+        stack_full_dl_white,
+        stack_noise_cl_instr,
+        stack_noise_cl_white,
+        stack_noise_dl_instr,
+        stack_noise_dl_white,
+    )
 
 
 @app.cell(hide_code=True)
