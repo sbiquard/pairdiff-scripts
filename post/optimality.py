@@ -339,7 +339,7 @@ with Timer(thread="compute-variance-increase-scatter"):
         x_m = jnp.array(SCATTERS)
 
         np.savez(
-            SAVE_PLOTS_DIR / "data" / f"data_variance_increase_white_{k_hwp}",
+            SAVE_PLOTS_DIR / "data" / f"variance_increase_white_{k_hwp}",
             avg_q=means_qq,
             avg_u=means_uu,
             std_q=std_qq,
