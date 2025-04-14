@@ -12,15 +12,16 @@ import toml
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
 from furax_preconditioner import BJPreconditioner
-from sigma_to_epsilon import get_epsilon_samples, get_scatters
 from timer import Timer
 from utils import get_last_ref
+
+jax.config.update("jax_enable_x64", True)
 
 OPTI = Path("..") / "out" / "opti"
 SAVE_PLOTS_DIR = Path("..") / "out" / "analysis" / "optimality"
 SAVE_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
-SCATTERS = [0.001, 0.01, 0.1, 0.2]  # 0.3 is crap
+SCATTERS = [0.001, 0.01, 0.1, 0.2]
 
 
 def my_savefig(fig, title: str, close: bool = True, dpi=200):
@@ -311,93 +312,38 @@ with Timer(thread="plot-variance-increase-white"):
             )
             my_savefig(fig, title=f"variance_increase_{k_hwp}_{run_title.replace(' ', '_')}")
 
-with Timer(thread="plot-variance-increase-scatter"):
-    # plotting expected variance increase as a function of scatter
-
-    # sample scatter values
-    scatters = get_scatters((SCATTERS[0], 1.1 * SCATTERS[-1]))
-    eps = get_epsilon_samples(jax.random.key(1426), scatters)
-    alpha = 1 / (1 - eps**2)
-
+with Timer(thread="compute-variance-increase-scatter"):
     # loop over hwp and no_hwp cases
     for k_hwp, val in pd_over_ideal["var_increase"].items():
-        fig, ax = plt.subplots()
-        hwp_title = k_hwp.replace("_", " ")
-        ax.set(
-            xlabel="Scatter around nominal NET [%]",
-            ylabel="Variance increase [%]",
-            title=f"Variance increase per pixel ({hwp_title})",
-        )
-
-        # Expected variance increase as a function of scatter
-        x = scatters * 100
-        y = (alpha.mean(axis=-1) - 1) * 100
-        ax.loglog(x, y, "k", label="expected increase")
-
-        q = jnp.array([90, 99])
+        q = jnp.array([10, 90, 1, 99])
         p_qq = []
         p_uu = []
         means_qq = []
         means_uu = []
+        std_qq = []
+        std_uu = []
 
         for scatter in SCATTERS:
-            alpha_qq = (val[scatter].tree.q.q - 1) * 100
-            alpha_uu = (val[scatter].tree.u.u - 1) * 100
-
-            # scatter_pct = scatter * 100
-
-            # parts_qq = ax.violinplot(
-            #     alpha_qq[~jnp.isnan(alpha_qq)],
-            #     positions=[scatter_pct],
-            #     widths=5,
-            #     showextrema=False,
-            #     showmeans=False,
-            #     showmedians=False,
-            #     side="low",
-            # )
-
-            # parts_uu = ax.violinplot(
-            #     alpha_uu[~jnp.isnan(alpha_uu)],
-            #     positions=[scatter_pct],
-            #     widths=5,
-            #     showextrema=False,
-            #     showmeans=False,
-            #     showmedians=False,
-            #     side="high",
-            # )
-
-            # for pc in parts_qq["bodies"]:
-            #     pc.set_facecolor("orange")
-
-            # for pc in parts_uu["bodies"]:
-            #     pc.set_facecolor("green")
+            alpha_qq = val[scatter].tree.q.q - 1
+            alpha_uu = val[scatter].tree.u.u - 1
 
             means_qq.append(jnp.nanmean(alpha_qq))
             means_uu.append(jnp.nanmean(alpha_uu))
 
+            std_qq.append(jnp.nanstd(alpha_qq))
+            std_uu.append(jnp.nanstd(alpha_uu))
+
             p_qq.append(jnp.nanpercentile(alpha_qq, q))
             p_uu.append(jnp.nanpercentile(alpha_uu, q))
 
-        # ax.scatter(np.array(SCATTERS) * 100, means_qq, marker=5, color="orange", label="QQ average")
-        # ax.scatter(np.array(SCATTERS) * 100, means_uu, marker=4, color="green", label="UU average")
+        x_m = jnp.array(SCATTERS)
 
-        x_m = jnp.array(SCATTERS) * 100
-
-        # interpolate measured percentiles in log space
-        y_90 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[0] for _p in p_qq])))
-        y_99 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[1] for _p in p_qq])))
-
-        ax.fill_between(x, y, jnp.exp(y_90), alpha=0.5, color="g", label="90th percentile")
-        ax.fill_between(x, y, jnp.exp(y_99), alpha=0.5, color="orange", label="99th percentile")
-
-        # for i, q_ in enumerate(q):
-        #     ax.plot(x_m, [_p[i] for _p in p_qq], color="orange", label=f"QQ {q_}th percentile")
-        #     ax.plot(x_m, [_p[i] for _p in p_qq], color="green", label=f"UU {q_}th percentile")
-
-        ax.scatter(x_m, means_qq, marker=5, color="r", label="QQ average")
-        ax.scatter(x_m, means_uu, marker=4, color="r", label="UU average")
-
-        ax.legend()
-        ax.grid(True)
-
-        my_savefig(fig, f"variance_increase_scatter_{k_hwp}")
+        np.savez(
+            SAVE_PLOTS_DIR / "data" / f"data_variance_increase_white_{k_hwp}",
+            avg_q=means_qq,
+            avg_u=means_uu,
+            std_q=std_qq,
+            std_u=std_uu,
+            pct_q=p_qq,
+            pct_u=p_uu,
+        )
