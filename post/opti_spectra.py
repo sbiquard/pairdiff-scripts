@@ -340,15 +340,19 @@ def _(mo):
     return
 
 
-@app.cell(hide_code=True)
+@app.cell
 def _(Path, __file__):
     JZ = Path(__file__).parents[1].absolute() / "jz_out"
     OPTI = JZ / "opti"
     SCATTERS = [0.001, 0.01, 0.1, 0.2]
     # SCATTERS = [0.001, 0.01]
     # MASK_REF = "hits_10000"
-    MASK_REF = "hits_10000_apo_20"
+    MASK_REF = "hits_1000"
+    return JZ, MASK_REF, OPTI, SCATTERS
 
+
+@app.cell(hide_code=True)
+def _(OPTI, SCATTERS):
     runs = {
         k_white: {
             k_hwp: {
@@ -374,10 +378,10 @@ def _(Path, __file__):
         }
         for k_white in ["white", "instr"]
     }
-    return JZ, MASK_REF, OPTI, SCATTERS, runs
+    return (runs,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(np):
     def load_npz(path):
         data = np.load(path)
@@ -386,14 +390,14 @@ def _(np):
     return (load_npz,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(np):
     def cl2dl(ell, cl):
         return ell * (ell + 1) / 2 / np.pi * cl
     return (cl2dl,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(Path, cl2dl, load_npz):
     def load_spectra(path: Path | list[Path], lmax=1000, dl=False):
         cl = load_npz(path)
@@ -406,7 +410,7 @@ def _(Path, cl2dl, load_npz):
     return (load_spectra,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(JZ, MASK_REF, jax, load_spectra, runs):
     input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
     input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", dl=True)
@@ -436,7 +440,7 @@ def _(JZ, MASK_REF, jax, load_spectra, runs):
     )
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(
     full_cl_instr,
     full_cl_white,
