@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.12.7"
+__generated_with = "0.12.8"
 app = marimo.App(width="full")
 
 
@@ -80,6 +80,7 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_white):
             _iqu = _cl[_scatter]["ml"]
             _pd = _cl[_scatter]["pd"]
             _ells = _iqu["ells"][0]  # identical for all realizations
+            _good = _ells > 30
             _diff = _pd["cl_22"] / _iqu["cl_22"] - 1
             for _ax, _idx in zip(_axs, (0, 3)):
                 # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
@@ -87,7 +88,14 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_white):
                 # _ax.add_collection(_lines)
                 _y = _diff.mean(axis=0)[_idx]
                 _yerr = _diff.std(axis=0)[_idx]
-                _ax.errorbar(_ells[1:], _y[1:], yerr=_yerr[1:], fmt=".", color=_colors[_is], linewidth=0.5)
+                _ax.errorbar(
+                    _ells[_good] + (_is + 0.5 - len(SCATTERS) / 2) * 2,
+                    _y[_good],
+                    yerr=_yerr[_good],
+                    fmt=".",
+                    color=_colors[_is],
+                    linewidth=0.5,
+                )
 
                 # print increase averaged over bins
                 print(_khwp, _scatter, "EE" if _idx == 0 else "BB", f"{_y.mean():.2%}")
@@ -112,7 +120,7 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_white):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_white_relative", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_white_relative.pdf")
     plt.show()
     return
 
@@ -154,11 +162,19 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_white):
             _iqu = _cl[_scatter]["ml"]
             _pd = _cl[_scatter]["pd"]
             _ells = _iqu["ells"][0]  # identical for all realizations
+            _good = _ells > 30
             _diff = _pd["cl_22"] - _iqu["cl_22"]
             for _ax, _idx in zip(_axs, (0, 3)):
                 _y = _diff.mean(axis=0)[_idx]
                 _yerr = _diff.std(axis=0)[_idx]
-                _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+                _ax.errorbar(
+                    _ells[_good] + (_is + 0.5 - len(SCATTERS) / 2) * 2,
+                    _y[_good],
+                    yerr=_yerr[_good],
+                    fmt=".",
+                    color=_colors[_is],
+                    linewidth=0.5,
+                )
 
         # Add colorbar with scatter values
         _sm = plt.cm.ScalarMappable(cmap=_cmap, norm=mpl.colors.LogNorm(vmin=min(SCATTERS), vmax=max(SCATTERS)))
@@ -174,7 +190,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_white):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_white_absolute", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_white_absolute.pdf")
     plt.show()
     return
 
@@ -216,6 +232,7 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_instr):
             _iqu = _cl[_scatter]["ml"]
             _pd = _cl[_scatter]["pd"]
             _ells = _iqu["ells"][0]  # identical for all realizations
+            _good = _ells > 30
             _diff = _pd["cl_22"] / _iqu["cl_22"] - 1
             for _ax, _idx in zip(_axs, (0, 3)):
                 # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
@@ -223,7 +240,14 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_instr):
                 # _ax.add_collection(_lines)
                 _y = _diff.mean(axis=0)[_idx]
                 _yerr = _diff.std(axis=0)[_idx]
-                _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+                _ax.errorbar(
+                    _ells[_good] + (_is + 0.5 - len(SCATTERS) / 2) * 2,
+                    _y[_good],
+                    yerr=_yerr[_good],
+                    fmt=".",
+                    color=_colors[_is],
+                    linewidth=0.5,
+                )
 
                 # print increase in white noise domain
                 print(_khwp, _scatter, "EE" if _idx == 0 else "BB", f"{_y.mean():.2%}")
@@ -253,7 +277,7 @@ def _(JZ, SCATTERS, mpl, mtick, plt, sns, stack_noise_cl_instr):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_relative", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_relative.pdf")
     plt.show()
     return
 
@@ -295,6 +319,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_instr):
             _iqu = _cl[_scatter]["ml"]
             _pd = _cl[_scatter]["pd"]
             _ells = _iqu["ells"][0]  # identical for all realizations
+            _good = _ells > 30
             _diff = _pd["cl_22"] - _iqu["cl_22"]
             for _ax, _idx in zip(_axs, (0, 3)):
                 # _line_data = [np.column_stack([_ells[2:], _diff.mean(axis=0)[_idx][2:]]) for _scatter in SCATTERS]
@@ -302,7 +327,14 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_instr):
                 # _ax.add_collection(_lines)
                 _y = _diff.mean(axis=0)[_idx]
                 _yerr = _diff.std(axis=0)[_idx]
-                _ax.errorbar(_ells[2:], _y[2:], yerr=_yerr[2:], fmt=".", color=_colors[_is], linewidth=0.5)
+                _ax.errorbar(
+                    _ells[_good] + (_is + 0.5 - len(SCATTERS) / 2) * 2,
+                    _y[_good],
+                    yerr=_yerr[_good],
+                    fmt=".",
+                    color=_colors[_is],
+                    linewidth=0.5,
+                )
                 # _ax.plot(_ells, _iqu["cl_22"][_idx].mean(axis=0), marker='.', color=_colors[_is])
                 # _ax.plot(_ells, _pd["cl_22"][_idx].mean(axis=0), marker='d', color=_colors[_is])
 
@@ -329,7 +361,7 @@ def _(JZ, SCATTERS, mpl, plt, sns, stack_noise_cl_instr):
         for _ax in _axs:
             _ax.set_xlim(right=600)
 
-    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_absolute", dpi=200)
+    _fig.savefig(JZ / "analysis" / "optimality" / "var_increase_spectra_instr_absolute.pdf")
     plt.show()
     return
 
