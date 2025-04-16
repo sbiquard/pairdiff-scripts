@@ -11,6 +11,7 @@ from sigma_to_epsilon import get_epsilon_samples, get_scatters
 
 sns.color_palette()
 
+JZ_OUT_DIR = Path(__file__).parents[1] / "jz_out"
 SAVE_PLOTS_DIR = Path(__file__).parents[1] / "jz_out" / "analysis" / "optimality"
 SAVE_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -28,12 +29,36 @@ scatters = get_scatters((0.9 * SCATTERS[0], 1.1 * SCATTERS[-1]))
 eps = get_epsilon_samples(jax.random.key(1426), scatters)
 alpha = 1 / (1 - eps**2)
 
+# epsilon distributions that were used in the simulation
+epsilons = {
+    k_ml_pd: {
+        k_hwp: [
+            np.load(
+                JZ_OUT_DIR
+                / "opti"
+                / ("var_increase" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+                / f"scatter_{scatter}"
+                / k_ml_pd
+                / "epsilon_dist.npy"
+            )
+            for scatter in SCATTERS
+        ]
+        for k_hwp in ["hwp", "no_hwp"]
+    }
+    for k_ml_pd in ["ml", "pd"]
+}
+
+# for i, _ in enumerate(SCATTERS):
+#     np.testing.assert_allclose(epsilons["ml"]["hwp"][i], epsilons["pd"]["hwp"][i])
+
 # loop over hwp and no_hwp cases
 for k_hwp in ["hwp", "no_hwp"]:
     # load data
     data = np.load(SAVE_PLOTS_DIR / "data" / f"variance_increase_white_{k_hwp}.npz")
     x_m = np.array(SCATTERS)
     q = np.array([10, 90, 1, 99])
+    eps_m = np.stack([epsilons["ml"][k_hwp][i] for i in range(len(SCATTERS))])
+    alpha_m = (1 / (1 - eps_m**2)).mean(axis=-1)
 
     fig, ax = plt.subplots()
     hwp_title = k_hwp.replace("_", " ")
@@ -46,7 +71,8 @@ for k_hwp in ["hwp", "no_hwp"]:
     # Expected variance increase as a function of scatter
     x = scatters
     y = alpha.mean(axis=-1) - 1
-    ax.plot(x, y, "k", label="expected increase")
+    ax.plot(x, y, "k", label="true expectation")
+    ax.scatter(x_m, alpha_m - 1, s=128, marker="x", c="r", label="empirical expectation")
 
     # # interpolate measured percentiles in log space
     # y_10 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[0] for _p in p_qq])))
@@ -71,8 +97,8 @@ for k_hwp in ["hwp", "no_hwp"]:
     # err_q = data['std_q']
     # err_u = data['std_u']
 
-    ax.errorbar(x_m, data["avg_q"], yerr=err_q, ls="", marker=5, capsize=3, label="Q increase")
-    ax.errorbar(x_m, data["avg_u"], yerr=err_u, ls="", marker=4, capsize=3, label="U increase")
+    ax.errorbar(x_m, data["avg_q"], yerr=err_q, ls="", marker=5, capsize=3, label="Q pixels")
+    ax.errorbar(x_m, data["avg_u"], yerr=err_u, ls="", marker=4, capsize=3, label="U pixels")
 
     ax.set_xscale("log")
     ax.set_yscale("asinh", linear_width=1e-4)
@@ -91,4 +117,5 @@ for k_hwp in ["hwp", "no_hwp"]:
     ax.legend()
     ax.grid(True)
 
-    my_savefig(fig, f"variance_increase_scatter_{k_hwp}")
+    my_savefig(fig, f"variance_increase_scatter_{k_hwp}.png", close=False)
+    my_savefig(fig, f"variance_increase_scatter_{k_hwp}.pdf")
