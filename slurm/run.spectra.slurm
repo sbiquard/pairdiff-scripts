@@ -6,18 +6,32 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=40
 #SBATCH --hint=nomultithread
-#SBATCH --time=00:30:00
+#SBATCH --time=02:00:00
 
 cd ${SLURM_SUBMIT_DIR}
 
+# namaster environment
 module purge
-module load python; conda deactivate
-conda activate $SCRATCH/envs/namaster
+module load python
+conda deactivate
+conda activate $SCRATCH/micromamba/envs/namaster
 
 date
 ncpu=$SLURM_CPUS_PER_TASK
-srun python post/compute_spectra.py --verbose -n $ncpu --plot --mask mask_apo_1000 --ref hits_1000
-# srun python post/compute_spectra.py --verbose -n $ncpu --plot --mask mask_apo_20deg_1000 --ref hits_1000_apo_20
-# srun python post/compute_spectra.py --verbose -n $ncpu --plot --mask mask_apo_10000 --ref hits_10000
-# srun python post/compute_spectra.py --verbose -n $ncpu --plot --mask mask_apo_20deg_10000 --ref hits_10000_apo_20
+root=$1
+echo "Running with $ncpu threads in $root"
+
+for hits in 1000 10000; do
+    for apo in 10deg 20deg; do
+        if [[ "$apo" == "10deg" ]]; then
+            mask="mask_apo_${hits}"
+            ref="hits_${hits}"
+        else
+            mask="mask_apo_${apo}_${hits}"
+            ref="hits_${hits}_apo_20"
+        fi
+        srun python post/compute_spectra.py --verbose -n $ncpu --plot --mask $mask --ref $ref --root $root
+    done
+done
+
 echo "$(date) : Done!"
