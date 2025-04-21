@@ -113,6 +113,16 @@ def read_hits_cond(dirname, ref=None):
     return hits, cond
 
 
+def read_hits(dirname, ref=None):
+    # ref of the run
+    if ref is None:
+        ref = get_last_ref(dirname)
+
+    # load hits and condition number maps
+    run = Path(dirname)
+    return hp.fitsfunc.read_map(str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32)
+
+
 def read_residuals(dirname, ref=None):
     # ref of the run
     if ref is None:
