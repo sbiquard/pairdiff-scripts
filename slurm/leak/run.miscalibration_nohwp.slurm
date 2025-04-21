@@ -41,6 +41,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     $(< no_hwp.par) \
+    --mappraiser.save_fit_info \
     --scramble-after \
     --mappraiser.estimate_psd \
     --mappraiser.maxiter 2000 \
@@ -57,6 +58,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     $(< no_hwp.par) \
+    --mappraiser.save_fit_info \
     --gainscrambler.enable \
     --mappraiser.estimate_psd \
     --mappraiser.maxiter 2000 \
