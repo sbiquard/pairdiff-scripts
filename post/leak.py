@@ -1,13 +1,15 @@
+
+
 import marimo
 
-__generated_with = "0.12.8"
+__generated_with = "0.13.0"
 app = marimo.App(width="full")
 
 
 @app.cell
 def _():
     import marimo as mo
-    return (mo,)
+    return
 
 
 @app.cell
@@ -33,57 +35,73 @@ def _():
 
 @app.cell
 def _(LEAK, read_hits, read_input_sky):
-    hits = read_hits(LEAK / "correlated" / "ml")
+    hits = read_hits(LEAK / "correlated_no_hwp" / "ml")
     sky = {"IQU"[i]: arr for i, arr in enumerate(read_input_sky())}
     return hits, sky
 
 
 @app.cell
 def _(LEAK, hits, hp, np, read_maps, sky):
-    perfect_ml = {"maps": read_maps(LEAK / "correlated" / "ml"), "resid": {}}
-    perfect_pd = {"maps": read_maps(LEAK / "correlated" / "pd"), "resid": {}}
-    miscal_ml = {"maps": read_maps(LEAK / "miscalibration" / "ml"), "resid": {}}
-    miscal_pd = {"maps": read_maps(LEAK / "miscalibration" / "pd"), "resid": {}}
+    correl_ml = {"maps": read_maps(LEAK / "correlated_no_hwp" / "ml"), "resid": {}}
+    correl_pd = {"maps": read_maps(LEAK / "correlated_no_hwp" / "pd"), "resid": {}}
+    miscal_ml = {"maps": read_maps(LEAK / "miscalibration_no_hwp" / "ml"), "resid": {}}
+    miscal_pd = {"maps": read_maps(LEAK / "miscalibration_no_hwp" / "pd"), "resid": {}}
 
     # mask unseen pixels
-    for run in (perfect_ml, perfect_pd, miscal_ml, miscal_pd):
+    for run in (correl_ml, correl_pd, miscal_ml, miscal_pd):
         for k, v in run["maps"].items():
             run["maps"][k] = np.where(hits > 0, v, hp.UNSEEN)
             run["resid"][k] = np.where(hits > 0, v - sky[k], hp.UNSEEN)
-    return k, miscal_ml, miscal_pd, perfect_ml, perfect_pd, run, v
+    return correl_ml, correl_pd, miscal_ml, miscal_pd
 
 
 @app.cell
 def _(hp):
     from functools import partial
 
-    gnomview = partial(hp.gnomview, rot=(25, -40), xsize=3000, cmap="bwr", min=-10, max=10, unit="µK")
-    return gnomview, partial
+    gnomview = partial(hp.gnomview, rot=(25, -40), xsize=2500, cmap="bwr", min=-10, max=10, unit="µK")
+    return (gnomview,)
 
 
 @app.cell
-def _(LEAK, gnomview, miscal_ml, miscal_pd, perfect_ml, plt):
-    _fig = plt.figure(figsize=(11, 8))
-    gnomview(perfect_ml["maps"]["Q"], sub=231, title="No miscal")
-    gnomview(miscal_ml["maps"]["Q"], sub=232, title="IQU miscal")
-    gnomview(miscal_pd["maps"]["Q"], sub=233, title="PD miscal")
-    gnomview(perfect_ml["maps"]["U"], sub=234, title="")
-    gnomview(miscal_ml["maps"]["U"], sub=235, title="")
-    gnomview(miscal_pd["maps"]["U"], sub=236, title="")
+def _(
+    LEAK,
+    correl_ml,
+    correl_pd,
+    gnomview,
+    hits,
+    hp,
+    miscal_ml,
+    miscal_pd,
+    np,
+    plt,
+    sky,
+):
+    _fig = plt.figure(figsize=(17, 8))
+    gnomview(np.where(hits > 0, sky["Q"], hp.UNSEEN), sub=[2, 5, 1], title="Input CMB")
+    gnomview(correl_ml["maps"]["Q"], sub=[2, 5, 2], title="IQU good")
+    gnomview(correl_pd["maps"]["Q"], sub=[2, 5, 3], title="PD good")
+    gnomview(miscal_ml["maps"]["Q"], sub=[2, 5, 4], title="IQU miscal")
+    gnomview(miscal_pd["maps"]["Q"], sub=[2, 5, 5], title="PD miscal")
+    gnomview(np.where(hits > 0, sky["U"], hp.UNSEEN), sub=[2, 5, 6], title="")
+    gnomview(correl_ml["maps"]["U"], sub=[2, 5, 7], title="")
+    gnomview(correl_pd["maps"]["U"], sub=[2, 5, 8], title="")
+    gnomview(miscal_ml["maps"]["U"], sub=[2, 5, 9], title="")
+    gnomview(miscal_pd["maps"]["U"], sub=[2, 5, 10], title="")
     plt.savefig(LEAK.parent / "analysis" / "miscalibration.pdf", bbox_inches="tight")
     plt.gcf()
     return
 
 
 @app.cell
-def _(LEAK, gnomview, miscal_ml, miscal_pd, perfect_ml, perfect_pd, plt):
+def _(LEAK, correl_ml, correl_pd, gnomview, miscal_ml, miscal_pd, plt):
     _fig = plt.figure(figsize=(14, 8))
-    gnomview(perfect_ml["resid"]["Q"], sub=241, title="IQU good", min=-1e-1, max=1e-1)
-    gnomview(perfect_pd["resid"]["Q"], sub=242, title="PD good", min=-1e-6, max=1e-6)
+    gnomview(correl_ml["resid"]["Q"], sub=241, title="IQU good", min=-10, max=10)
+    gnomview(correl_pd["resid"]["Q"], sub=242, title="PD good", min=-1e-1, max=1e-1)
     gnomview(miscal_ml["resid"]["Q"], sub=243, title="IQU miscal")
     gnomview(miscal_pd["resid"]["Q"], sub=244, title="PD miscal")
-    gnomview(perfect_ml["resid"]["U"], sub=245, title="", min=-1e-1, max=1e-1)
-    gnomview(perfect_pd["resid"]["U"], sub=246, title="", min=-1e-6, max=1e-6)
+    gnomview(correl_ml["resid"]["U"], sub=245, title="", min=-10, max=10)
+    gnomview(correl_pd["resid"]["U"], sub=246, title="", min=-1e-1, max=1e-1)
     gnomview(miscal_ml["resid"]["U"], sub=247, title="")
     gnomview(miscal_pd["resid"]["U"], sub=248, title="")
     plt.savefig(LEAK.parent / "analysis" / "miscalibration_resid.pdf", bbox_inches="tight")
