@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=leak-atm-binned
 #SBATCH --account=nih@cpu
+#SBATCH --qos=qos_cpu-dev
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
