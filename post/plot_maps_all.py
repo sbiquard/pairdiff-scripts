@@ -10,7 +10,7 @@ import plot_maps
 import utils
 
 
-def process(run, diff_range_P: int):
+def process(run, hits_percentile: float, diff_range_P: int):
     # start timer
     tic = time.perf_counter()
 
@@ -31,8 +31,9 @@ def process(run, diff_range_P: int):
     residuals = utils.read_residuals(run, ref=ref)
     sky_in = utils.read_input_sky()
 
-    # define a mask for pixels outside the solved patch
-    mask = hits < 1
+    # define a mask for pixels with less hits than the given percentile
+    thresh = np.percentile(hits[hits > 0], hits_percentile)
+    mask = hits < thresh
     for m in maps.values():
         m[mask] = np.nan
     cond[mask] = np.nan
@@ -58,6 +59,12 @@ def main():
         help="number of CPUs to use (default: 4)",
     )
     parser.add_argument("--diff-range-P", type=int)
+    parser.add_argument(
+        "--hits-percentile",
+        type=float,
+        default=20,
+        help="exclude pixels with less hits than this percentile of the hit map",
+    )
     args = parser.parse_args()
     runs = list(utils.get_all_runs(args.root))
     if len(runs) == 0:
@@ -75,7 +82,8 @@ def main():
         if args.verbose:
             print(f"Using {ncpu} CPU")
         for run, elapsed in pool.imap_unordered(
-            partial(process, diff_range_P=args.diff_range_P), runs
+            partial(process, hits_percentile=args.hits_percentile, diff_range_P=args.diff_range_P),
+            runs,
         ):
             if elapsed is None:
                 print(f"Could not plot maps for '{run}' (missing files)")
