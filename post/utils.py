@@ -77,7 +77,7 @@ def read_input_sky(field=None):
     return 1e6 * hp.fitsfunc.read_map(filename, field=field)
 
 
-def read_maps(dirname, ref=None):
+def read_maps(dirname, ref=None, mask=None):
     # ref of the run
     if ref is None:
         ref = get_last_ref(dirname)
@@ -97,7 +97,9 @@ def read_maps(dirname, ref=None):
     maps["Q"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None)
     maps["U"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None)
 
-    return maps
+    if mask is None:
+        return maps
+    return {k: np.where(mask, v, hp.UNSEEN) for k, v in maps.items()}
 
 
 def read_hits_cond(dirname, ref=None):
