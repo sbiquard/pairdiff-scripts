@@ -10,7 +10,7 @@ import plot_maps
 import utils
 
 
-def process(run, hits_percentile: float, diff_range_P: int):
+def process(run, args):
     # start timer
     tic = time.perf_counter()
 
@@ -29,10 +29,10 @@ def process(run, hits_percentile: float, diff_range_P: int):
     maps = utils.read_maps(run, ref=ref)
     hits, cond = utils.read_hits_cond(run, ref=ref)
     residuals = utils.read_residuals(run, ref=ref)
-    sky_in = utils.read_input_sky()
+    sky_in = utils.read_input_sky(name=args.sky)
 
     # define a mask for pixels with less hits than the given percentile
-    thresh = np.percentile(hits[hits > 0], hits_percentile)
+    thresh = np.percentile(hits[hits > 0], args.hits_percentile)
     mask = hits < thresh
     for m in maps.values():
         m[mask] = np.nan
@@ -40,7 +40,7 @@ def process(run, hits_percentile: float, diff_range_P: int):
 
     plot_maps.plot_hits_cond(hits, cond, plotdir)
     plot_maps.plot_res_hist(maps, sky_in, plotdir)
-    plot_maps.plot_maps(maps, sky_in, plotdir, diff_range_P=diff_range_P)
+    plot_maps.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
     plot_maps.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
@@ -65,6 +65,11 @@ def main():
         default=20,
         help="exclude pixels with less hits than this percentile of the hit map",
     )
+    parser.add_argument(
+        "--sky",
+        type=str,
+        help="input sky file",
+    )
     args = parser.parse_args()
     runs = list(utils.get_all_runs(args.root))
     if len(runs) == 0:
@@ -81,10 +86,7 @@ def main():
     with multiprocessing.Pool(processes=ncpu) as pool:
         if args.verbose:
             print(f"Using {ncpu} CPU")
-        for run, elapsed in pool.imap_unordered(
-            partial(process, hits_percentile=args.hits_percentile, diff_range_P=args.diff_range_P),
-            runs,
-        ):
+        for run, elapsed in pool.imap_unordered(partial(process, args=args), runs):
             if elapsed is None:
                 print(f"Could not plot maps for '{run}' (missing files)")
                 continue

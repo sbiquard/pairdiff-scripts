@@ -9,7 +9,6 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import numpy as np
 import utils
-from astropy.visualization import hist
 
 LONRA = [-95, 135]
 LATRA = [-70, -10]
@@ -46,12 +45,11 @@ def plot_res_hist(maps, sky_in, savedir):
         for stoke in stokes:
             residual = resid[stoke]
             residual = residual[~np.isnan(residual)]
-            hist(
+            ax.hist(
                 residual,
-                bins="scott",  # pyright: ignore[reportArgumentType]
+                bins=100,
                 label=f"{stoke} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
                 histtype="step",
-                ax=ax,
             )
 
         fig.suptitle(f"Histograms of {stokes!r} residuals")

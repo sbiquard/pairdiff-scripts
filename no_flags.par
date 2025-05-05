@@ -1,0 +1,16 @@
+--det_pointing_azel.det_mask
+0
+--det_pointing_azel.shared_flag_mask
+0
+--det_pointing_radec.det_mask
+0
+--det_pointing_radec.shared_flag_mask
+0
+--scan_map.det_mask
+0
+--mappraiser.det_flag_mask
+0
+--mappraiser.det_mask
+0
+--mappraiser.shared_flag_mask
+0

@@ -1,5 +1,5 @@
 # TOAST config
-# Generated with version c711376b
+# Generated with version 21ae3af2
 
 [operators.load_hdf5]
     class = "toast.ops.load_hdf5.LoadHDF5"
@@ -1822,9 +1822,9 @@
     binned = false # Make a binned map
     bs_red = 0 # Use dynamic search reduction
     det_data = "signal" # Observation detdata key for the timestream data
-    det_flag_mask = 0 # Bit mask value for detector sample flagging
+    det_flag_mask = 7 # Bit mask value for detector sample flagging
     det_flags = "flags" # Observation detdata key for flags to use
-    det_mask = 0 # Bit mask value for per-detector flagging
+    det_mask = 7 # Bit mask value for per-detector flagging
     downscale = 300 # Downscale the noise by sqrt of this factor
     enabled = true # If True, this class instance is marked as enabled
     enl_fac = 1 # Enlargement factor for ECG
@@ -1848,11 +1848,12 @@
     precond = 0 # Preconditioner choice
     ptcomm_flag = 6 # Choose collective communication scheme
     purge_det_data = true # Clear all observation detector data after staging
+    rcond_threshold = 0.1 # Pixels with rcond below this are cut
     realization = 0 # Noise realization index (for gap filling)
     ref = "run0" # Reference that is added to the name of the output maps
     save_fit_info = false # Save fit information when estimating noise PSD
     scrambling = "None" # GainScrambler to perturb the data after noise estimation
-    shared_flag_mask = 0 # Bit mask value for shared flagging
+    shared_flag_mask = 15 # Bit mask value for shared flagging
     shared_flags = "flags" # Observation shared key for telescope flags to use
     solver = 0 # Solver choice
     stokes_weights = "None" # Operator to generate I/Q/U weights

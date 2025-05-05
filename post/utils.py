@@ -72,8 +72,10 @@ def is_complete(run: Path):
     return True
 
 
-def read_input_sky(field=None):
-    filename = Path(__file__).parents[1] / "ffp10_lensed_scl_100_nside0512.fits"
+def read_input_sky(field=None, name=None):
+    if name is None:
+        name = "ffp10_lensed_scl_100_nside0512.fits"
+    filename = Path(__file__).parents[1] / name
     return 1e6 * hp.fitsfunc.read_map(filename, field=field)
 
 
