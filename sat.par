@@ -1,8 +1,10 @@
 --config
-sat.toml 
+sat.toml
 --bands
 SAT_f090
 --telescope
 SAT1
 --sample_rate
-37 
+37
+--thinfp
+4

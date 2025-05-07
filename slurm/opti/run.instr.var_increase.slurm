@@ -29,7 +29,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.01.south.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 opti="${SCRATCH}/pairdiff_runs/opti"
 
@@ -55,9 +54,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
     echo "Writing $logfile"
     srun ./so_mappraiser.py \
         $(<sat.par) \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 512 \
         --variable_model.scatter $scatter \
         --out $outdir/ml \
@@ -68,9 +65,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
     echo "Writing $logfile"
     srun ./so_mappraiser.py \
         $(<sat.par) \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 512 \
         --mappraiser.pair_diff \
         --variable_model.scatter $scatter \
@@ -91,9 +86,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
     srun ./so_mappraiser.py \
         $(<sat.par) \
         $(< no_hwp.par) \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 512 \
         --variable_model.scatter $scatter \
         --out $outdir/ml \
@@ -105,9 +98,7 @@ for scatter in 0.001 0.01 0.1 0.2; do
     srun ./so_mappraiser.py \
         $(<sat.par) \
         $(< no_hwp.par) \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 512 \
         --mappraiser.pair_diff \
         --variable_model.scatter $scatter \

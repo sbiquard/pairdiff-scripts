@@ -31,7 +31,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.01.south.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 # Output (sub)directory
 outdir="$SCRATCH/pairdiff_runs/atm-ml-atomic"
@@ -54,9 +53,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     --mappraiser.estimate_psd \
-    --thinfp 4 \
     --schedule $subschedule \
-    --scan_map.file $cmb_input \
     --out $subdir \
     >$subdir/run.log 2>&1
 

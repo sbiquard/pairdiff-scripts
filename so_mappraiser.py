@@ -58,7 +58,7 @@ def simulate_data(job, otherargs, runargs, data):
 
     # Shortcut if we are only caching the atmosphere.  If this job is only caching
     # (not observing) the atmosphere, then return at this point.
-    if job.operators.sim_atmosphere.cache_only:
+    if job.operators.sim_atmosphere.cache_only or job.operators.sim_atmosphere_coarse.cache_only:
         return
 
     wrk.simulate_sky_map_signal(job, otherargs, runargs, data)

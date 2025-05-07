@@ -29,7 +29,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.01.south.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=$SCRATCH/pairdiff_runs/opti/instr_no_hwp
 mkdir -p $outdir/ml
@@ -41,9 +40,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 512 \
     --out $outdir/ml \
     >$logfile 2>&1
@@ -54,9 +51,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 512 \
     --mappraiser.pair_diff \
     --out $outdir/pd \

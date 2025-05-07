@@ -28,7 +28,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=$SCRATCH/pairdiff_runs/leak/correlated_no_hwp
 mkdir -p $outdir/ml
@@ -44,9 +43,7 @@ srun ./so_mappraiser.py \
     --mappraiser.estimate_psd \
     --variable_model.disable \
     --sim_noise.disable \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -60,9 +57,7 @@ srun ./so_mappraiser.py \
     --mappraiser.binned \
     --variable_model.disable \
     --sim_noise.disable \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.pair_diff \
     --out $outdir/pd \
     >$logfile 2>&1

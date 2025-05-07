@@ -47,13 +47,9 @@ timeout 115m \
     $(< sat.par) \
     $(< atm.par) \
     --thinfp 64 \
-    --config sat.toml \
     --schedule $schedule \
-    --scan_map.disable \
     --sim_atmosphere.cache_only \
-    --sim_atmosphere.field_of_view "Quantity('40 deg')" \
     --sim_atmosphere_coarse.cache_only \
-    --sim_atmosphere_coarse.field_of_view "Quantity('40 deg')" \
     --out $outdir \
     >>$logfile 2>&1
 

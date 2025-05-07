@@ -29,7 +29,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 outdir=$SCRATCH/pairdiff_runs/leak/binned
 mkdir -p $outdir/ml
@@ -43,9 +42,7 @@ srun ./so_mappraiser.py \
     $(< atm.par) \
     --sim_noise.disable \
     --mappraiser.binned \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -57,9 +54,7 @@ srun ./so_mappraiser.py \
     $(< atm.par) \
     --sim_noise.disable \
     --mappraiser.binned \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.pair_diff \
     --out $outdir/pd \
     >$logfile 2>&1
@@ -77,9 +72,7 @@ srun ./so_mappraiser.py \
     $(< no_hwp.par) \
     --sim_noise.disable \
     --mappraiser.binned \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --out $outdir/ml \
     >$logfile 2>&1
 
@@ -92,9 +85,7 @@ srun ./so_mappraiser.py \
     $(< no_hwp.par) \
     --sim_noise.disable \
     --mappraiser.binned \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.pair_diff \
     --out $outdir/pd \
     >$logfile 2>&1

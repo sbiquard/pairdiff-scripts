@@ -29,7 +29,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.01.south.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 opti="${SCRATCH}/pairdiff_runs/opti"
 real=$(printf "%03d" "$SLURM_ARRAY_TASK_ID")
@@ -57,9 +56,7 @@ for scatter in 0.001 0.01 0.1 0.2 0.3; do
     srun ./so_mappraiser.py \
         $(<sat.par) \
         --realization ${real} \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 1 \
         --variable_model.white \
         --variable_model.scatter $scatter \
@@ -72,9 +69,7 @@ for scatter in 0.001 0.01 0.1 0.2 0.3; do
     srun ./so_mappraiser.py \
         $(<sat.par) \
         --realization ${real} \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 1 \
         --mappraiser.pair_diff \
         --variable_model.white \
@@ -97,9 +92,7 @@ for scatter in 0.001 0.01 0.1 0.2 0.3; do
         $(<sat.par) \
         $(< no_hwp.par) \
         --realization ${real} \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 1 \
         --variable_model.white \
         --variable_model.scatter $scatter \
@@ -113,9 +106,7 @@ for scatter in 0.001 0.01 0.1 0.2 0.3; do
         $(<sat.par) \
         $(< no_hwp.par) \
         --realization ${real} \
-        --thinfp 4 \
         --schedule $schedule \
-        --scan_map.file $cmb_input \
         --mappraiser.lagmax 1 \
         --mappraiser.pair_diff \
         --variable_model.white \

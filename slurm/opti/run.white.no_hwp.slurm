@@ -29,7 +29,6 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.01.south.txt"
-cmb_input="ffp10_lensed_scl_100_nside0512.fits"
 
 rootdir=$SCRATCH/pairdiff_runs/opti/white_no_hwp
 
@@ -47,9 +46,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
     $(<no_scatter.par) \
@@ -62,9 +59,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \
@@ -86,9 +81,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
     $(<same_scatter.par) \
@@ -101,9 +94,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \
@@ -125,9 +116,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
     $(<opposite_scatter.par) \
@@ -140,9 +129,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \
@@ -164,9 +151,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --variable_model.white \
     --out $outdir/ml \
@@ -178,9 +163,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(<sat.par) \
     $(< no_hwp.par) \
-    --thinfp 4 \
     --schedule $schedule \
-    --scan_map.file $cmb_input \
     --mappraiser.lagmax 1 \
     --mappraiser.pair_diff \
     --variable_model.white \

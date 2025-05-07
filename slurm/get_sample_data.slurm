@@ -52,7 +52,6 @@ srun ./so_mappraiser.py \
     $(<atm.par) \
     --thinfp 64 \
     --schedule $subschedule \
-    --scan_map.file $cmb_input \
     --out $outdir \
     >$outdir/run.log 2>&1
 
