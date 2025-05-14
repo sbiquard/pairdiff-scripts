@@ -55,6 +55,7 @@ def plot_res_hist(maps, sky_in, savedir):
         fig.suptitle(f"Histograms of {stokes!r} residuals")
         ax.set_xlabel("$\\mu K_{CMB}$")
         ax.grid(True)
+        ax.set_yscale('log')
         ax.legend()
         fig.savefig(savedir / f"diff_histograms_{stokes}.png")
         plt.close(fig)
