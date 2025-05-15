@@ -62,7 +62,7 @@ def main():
     parser.add_argument(
         "--hits-percentile",
         type=float,
-        default=20,
+        default=1,
         help="exclude pixels with less hits than this percentile of the hit map",
     )
     parser.add_argument(
