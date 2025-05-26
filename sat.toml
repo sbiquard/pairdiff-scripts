@@ -36,7 +36,7 @@
 
 [operators.sim_atmosphere_coarse]
     class = "toast.ops.sim_tod_atm.SimAtmosphere"
-    cache_dir = "/lustre/fsn1/projects/rech/nih/usl22vm/pairdiff_runs/atm_cache_coarse" # Directory to use for loading / saving atmosphere realizations
+    cache_dir = "atm_cache_coarse" # Directory to use for loading / saving atmosphere realizations
     det_data = "atm" # Observation detdata key for accumulating atmosphere timestreams
     field_of_view = "Quantity('40 deg')" # Override the focalplane field of view
     sample_rate = "Quantity('10 Hz')" # Rate at which to sample atmospheric TOD before interpolation.  Default is no interpolation.
@@ -44,7 +44,7 @@
 
 [operators.sim_atmosphere]
     class = "toast.ops.sim_tod_atm.SimAtmosphere"
-    cache_dir = "/lustre/fsn1/projects/rech/nih/usl22vm/pairdiff_runs/atm_cache" # Directory to use for loading / saving atmosphere realizations
+    cache_dir = "atm_cache" # Directory to use for loading / saving atmosphere realizations
     det_data = "atm" # Observation detdata key for accumulating atmosphere timestreams
     field_of_view = "Quantity('40 deg')" # Override the focalplane field of view
     sample_rate = "Quantity('10 Hz')" # Rate at which to sample atmospheric TOD before interpolation.  Default is no interpolation.
@@ -113,6 +113,7 @@
     enabled = true # If True, this class instance is marked as enabled
     fill_gaps = false # Perform gap filling on the data
     lagmax = 4096 # Maximum lag of the correlation function
+    maxiter = 2000 # Maximum number of iterations allowed for the solver
     mem_report = true # Print memory reports
     nside = 512 # HEALPix nside parameter for the output maps
     rcond_threshold = 0.001 # Pixels with rcond below this are cut
