@@ -94,8 +94,12 @@ def synthesize_noise_and_atm_for_mappraiser(job, data):
         # mappraiser disabled, nothing to do
         return
 
+    log = toast.utils.Logger.get()
+    comm = data.comm.comm_world
+
     # first check if mappraiser's noise data key should exist
     nkey = mappraiser.noise_data
+    log.info_rank(f"Checking for existing noise key {nkey!r} in the data...", comm)
     if (noise_op := job.operators.sim_noise).enabled:
         # the noise simulation operator is enabled, key should exist
         _nkey_exists = True
@@ -105,20 +109,38 @@ def synthesize_noise_and_atm_for_mappraiser(job, data):
     else:
         # key should not exist yet
         # Toast will log a warning when we try to copy to an existing key
+        log.info_rank("Noise simulation operator disabled. Key does not exist yet.", comm)
         _nkey_exists = False
 
     # Add atmosphere and noise buffers together in the mappraiser noise buffer
-    for atm_op in [job.operators.sim_atmosphere, job.operators.sim_atmosphere_coarse]:
-        if not atm_op.enabled:
-            continue
-        akey = atm_op.det_data
+    atm_op = job.operators.sim_atmosphere
+    akey = atm_op.det_data
+    if atm_op.enabled:
         if _nkey_exists:
+            log.info_rank(f"Adding atmosphere data {akey!r} to noise buffer.", comm)
             toast.ops.Combine(op="add", first=nkey, second=akey, result=nkey).apply(data)
         else:
+            log.info_rank(f"Copying atmosphere data {akey!r} into a new noise buffer.", comm)
             toast.ops.Copy(detdata=[(akey, nkey)]).apply(data)
             # noise key was created by the line above
             _nkey_exists = True
             toast.ops.Delete(detdata=[akey]).apply(data)
+    
+    atm_coarse_op = job.operators.sim_atmosphere_coarse
+    ackey = atm_coarse_op.det_data
+    if ackey == akey or not atm_coarse_op.enabled:
+        # nothing to do
+        return
+    
+    if _nkey_exists:
+        log.info_rank(f"Adding coarse atmosphere data {ackey!r} to noise buffer.", comm)
+        toast.ops.Combine(op="add", first=nkey, second=ackey, result=nkey).apply(data)
+    else:
+        log.info_rank(f"Copying coarse atmosphere data {ackey!r} into a new noise buffer.", comm)
+        toast.ops.Copy(detdata=[(ackey, nkey)]).apply(data)
+        # noise key was created by the line above
+        _nkey_exists = True
+        toast.ops.Delete(detdata=[ackey]).apply(data)
 
 
 def reduce_data(job, otherargs, runargs, data):
