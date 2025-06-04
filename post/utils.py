@@ -76,7 +76,7 @@ def read_input_sky(field=None, name=None):
     if name is None:
         name = "ffp10_lensed_scl_100_nside0512.fits"
     filename = Path(__file__).parents[1] / name
-    return 1e6 * hp.fitsfunc.read_map(filename, field=field)
+    return 1e6 * hp.fitsfunc.read_map(filename, field=field, dtype=np.float64)
 
 
 def read_maps(dirname, ref=None, mask=None):
@@ -95,9 +95,9 @@ def read_maps(dirname, ref=None, mask=None):
     # read the output maps and put them in a dict
     maps = {}
     if iqu:
-        maps["I"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapI_{ref}.fits"), field=None)
-    maps["Q"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None)
-    maps["U"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None)
+        maps["I"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapI_{ref}.fits"), field=None, dtype=np.float64)
+    maps["Q"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None, dtype=np.float64)
+    maps["U"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None, dtype=np.float64)
 
     if mask is None:
         return maps
@@ -112,7 +112,7 @@ def read_hits_cond(dirname, ref=None):
     # load hits and condition number maps
     run = Path(dirname)
     hits = hp.fitsfunc.read_map(str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32)
-    cond = hp.fitsfunc.read_map(str(run / f"Cond_{ref}.fits"), field=None)
+    cond = hp.fitsfunc.read_map(str(run / f"Cond_{ref}.fits"), field=None, dtype=np.float64)
 
     return hits, cond
 
