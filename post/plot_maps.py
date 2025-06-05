@@ -112,8 +112,8 @@ def plot_maps(
             )
 
             # Plot difference map
-            diff = sky_in[i] - maps[stokes]
-            offset = np.nanmedian(diff)
+            diff = maps[stokes] - sky_in[i]
+            offset = np.nanmean(diff)
             rms = np.nanstd(diff)
             amp = 2 * rms
             cartview(
