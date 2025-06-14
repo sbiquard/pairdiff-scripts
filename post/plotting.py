@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-import argparse
 import functools
 import time
 from pathlib import Path
@@ -55,7 +52,7 @@ def plot_res_hist(maps, sky_in, savedir):
         fig.suptitle(f"Histograms of {stokes!r} residuals")
         ax.set_xlabel("$\\mu K_{CMB}$")
         ax.grid(True)
-        ax.set_yscale('log')
+        ax.set_yscale("log")
         ax.legend()
         fig.savefig(savedir / f"diff_histograms_{stokes}.png")
         plt.close(fig)
@@ -177,23 +174,3 @@ def process(args):
 
     elapsed = time.perf_counter() - tic
     print(f"Elapsed time: {elapsed:.2f} s")
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Plot difference maps and histograms for a given run."
-    )
-    parser.add_argument("dirname", type=utils.dir_path, help="name of directory")
-    parser.add_argument("--range-pol", type=int, help="colorbar range for residual Q/U maps")
-    parser.add_argument(
-        "--hits-percentile",
-        type=float,
-        default=1,
-        help="exclude pixels with less hits than this percentile of the hit map",
-    )
-    args = parser.parse_args()
-    process(args)
-
-
-if __name__ == "__main__":
-    main()

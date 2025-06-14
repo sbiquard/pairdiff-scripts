@@ -63,8 +63,8 @@ Post-processing
 * `post/compute_spectra.py` : Compute and save power spectra for all runs
 * `post/get_input_spectra.py` : Compute and save power spectra of input map
 * `post/get_mask_apo.py` : Create and save a mask (requires [NaMaster](https://namaster.readthedocs.io))
-* `post/plot_maps_all.py` : Plot difference maps and histograms for all runs in a root directory
-* `post/plot_maps.py` : Produce difference maps and histograms for a given run
+* `post/plot_maps.py` : Plot difference maps and histograms for all runs in a root directory
+* `post/plotting.py` : Plotting utilities
 * `post/plot_spectra.py` : Plot power spectra recursively for all runs in a root directory
 * `post/spectrum.py` : Power spectrum routines
 * `slurm/run.spectra.slurm` : Job script to compute power spectra

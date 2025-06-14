@@ -6,7 +6,7 @@ import time
 from functools import partial
 
 import numpy as np
-import plot_maps
+import plotting
 import utils
 
 
@@ -38,49 +38,32 @@ def process(run, args):
         m[mask] = np.nan
     cond[mask] = np.nan
 
-    plot_maps.plot_hits_cond(hits, cond, plotdir)
-    plot_maps.plot_res_hist(maps, sky_in, plotdir)
-    plot_maps.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
-    plot_maps.plot_residuals(residuals, plotdir)
+    plotting.plot_hits_cond(hits, cond, plotdir)
+    plotting.plot_res_hist(maps, sky_in, plotdir)
+    plotting.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
+    plotting.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
     return run, elapsed
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Produce plots of output maps for all runs.")
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
-    parser.add_argument("-r", "--root", type=utils.dir_path, default="out", help="root directory")
-    parser.add_argument(
-        "-n",
-        "--ncpu",
-        type=int,
-        default=4,
-        help="number of CPUs to use (default: 4)",
-    )
+    parser = argparse.ArgumentParser(description="Produce plots for all runs under a given root")
+    parser.add_argument("root", type=utils.dir_path)
+    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("-n", "--ncpu", type=int, default=4)
     parser.add_argument("--diff-range-P", type=int)
-    parser.add_argument(
-        "--hits-percentile",
-        type=float,
-        default=1,
-        help="exclude pixels with less hits than this percentile of the hit map",
-    )
-    parser.add_argument(
-        "--sky",
-        type=str,
-        help="input sky file",
-    )
+    parser.add_argument("--hits-percentile", type=float, default=0)
+    parser.add_argument("--sky", type=str)
+    parser.add_argument("-p", "--pattern", type=str, default="*")
     args = parser.parse_args()
-    runs = list(utils.get_all_runs(args.root))
+
+    runs = list(utils.get_all_runs(args.root, pattern=args.pattern))
     if len(runs) == 0:
+        print(f"No runs found under {args.root!r} with pattern {args.pattern!r}")
         return
 
-    if args.ncpu > 0:
-        ncpu = args.ncpu
-    else:
-        ncpu = multiprocessing.cpu_count()
-
-    # Don't use more CPUs than runs to process
+    ncpu = args.ncpu if args.ncpu > 0 else multiprocessing.cpu_count()
     ncpu = min(ncpu, len(runs))
 
     with multiprocessing.Pool(processes=ncpu) as pool:

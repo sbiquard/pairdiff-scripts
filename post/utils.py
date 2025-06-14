@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from pathlib import Path
 
 import healpy as hp
@@ -13,27 +14,37 @@ def dir_path(string):
     raise NotADirectoryError(string)
 
 
-SKIP_DIRS = ["plots", "spectra", "atm_cache"]
+SKIP_DIRS = ["plots", "spectra", "atm_cache", "noise_psd_fit", "var_noise_model_data"]
 
 
-def get_all_runs(root, exclude=SKIP_DIRS):
+def get_all_runs(root: str | Path, exclude=None, pattern=None):
+    """
+    Get all runs in the given directory and subdirectories.
+
+    Args:
+        root: The root directory to search
+        exclude: List of directory names to exclude
+        pattern: Regex pattern to match directory names
+    """
+    if exclude is None:
+        exclude = SKIP_DIRS
+
     root = Path(root)
+
+    # Check if root directory itself is a valid run
+    if contains_log(root) and (pattern is None or re.search(pattern, root.name)):
+        yield root
+
+    # Recursively explore contents
     for item in root.iterdir():
-        if not item.is_dir():
-            # skip files
+        if not item.is_dir() or item.name in SKIP_DIRS:
+            # skip files and excluded directories
             continue
-        if item.name in exclude:
-            # skip excluded directories
-            continue
-        if contains_log(item):
-            # only yield if the directory contains a log file
-            # i.e. it contains the output of a run
-            yield item
-        # recursively explore
-        yield from get_all_runs(item)
+
+        yield from get_all_runs(item, exclude=exclude, pattern=pattern)
 
 
-def contains_log(run: Path):
+def contains_log(run: Path) -> bool:
     for _ in run.glob("*.log"):
         return True
     return False
@@ -95,9 +106,15 @@ def read_maps(dirname, ref=None, mask=None):
     # read the output maps and put them in a dict
     maps = {}
     if iqu:
-        maps["I"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapI_{ref}.fits"), field=None, dtype=np.float64)
-    maps["Q"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapQ_{ref}.fits"), field=None, dtype=np.float64)
-    maps["U"] = 1e6 * hp.fitsfunc.read_map(str(run / f"mapU_{ref}.fits"), field=None, dtype=np.float64)
+        maps["I"] = 1e6 * hp.fitsfunc.read_map(
+            str(run / f"mapI_{ref}.fits"), field=None, dtype=np.float64
+        )
+    maps["Q"] = 1e6 * hp.fitsfunc.read_map(
+        str(run / f"mapQ_{ref}.fits"), field=None, dtype=np.float64
+    )
+    maps["U"] = 1e6 * hp.fitsfunc.read_map(
+        str(run / f"mapU_{ref}.fits"), field=None, dtype=np.float64
+    )
 
     if mask is None:
         return maps
