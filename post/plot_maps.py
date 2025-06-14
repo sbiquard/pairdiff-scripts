@@ -49,18 +49,18 @@ def process(run, args):
 
 def main():
     parser = argparse.ArgumentParser(description="Produce plots for all runs under a given root")
-    parser.add_argument("root", type=utils.dir_path)
+    parser.add_argument("roots", type=utils.dir_path, nargs="+", help="List of run directories")
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("-n", "--ncpu", type=int, default=4)
     parser.add_argument("--diff-range-P", type=int)
     parser.add_argument("--hits-percentile", type=float, default=0)
     parser.add_argument("--sky", type=str)
-    parser.add_argument("-p", "--pattern", type=str, default="*")
+    parser.add_argument("-p", "--pattern", type=str, default=None)
     args = parser.parse_args()
 
-    runs = list(utils.get_all_runs(args.root, pattern=args.pattern))
+    runs = list(utils.get_all_runs(args.roots, pattern=args.pattern))
     if len(runs) == 0:
-        print(f"No runs found under {args.root!r} with pattern {args.pattern!r}")
+        print(f"No runs found under {args.roots!r} with pattern {args.pattern!r}")
         return
 
     ncpu = args.ncpu if args.ncpu > 0 else multiprocessing.cpu_count()

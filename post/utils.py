@@ -17,31 +17,37 @@ def dir_path(string):
 SKIP_DIRS = ["plots", "spectra", "atm_cache", "noise_psd_fit", "var_noise_model_data"]
 
 
-def get_all_runs(root: str | Path, exclude=None, pattern=None):
+def get_all_runs(root: list[str | Path] | str | Path, exclude=None, pattern=None):
     """
-    Get all runs in the given directory and subdirectories.
+    Get all runs in the given directory or directories and their subdirectories.
 
     Args:
-        root: The root directory to search
+        root: The root directory or list of root directories to search
         exclude: List of directory names to exclude
         pattern: Regex pattern to match directory names
     """
     if exclude is None:
         exclude = SKIP_DIRS
 
-    root = Path(root)
+    # Convert a single directory path to a list
+    if not isinstance(root, list):
+        roots = [Path(root)]
+    else:
+        roots = [Path(r) for r in root]
 
-    # Check if root directory itself is a valid run
-    if contains_log(root) and (pattern is None or re.search(pattern, root.name)):
-        yield root
+    # Process each root directory
+    for root_dir in roots:
+        # Check if root directory itself is a valid run
+        if contains_log(root_dir) and (pattern is None or re.search(pattern, root_dir.name)):
+            yield root_dir
 
-    # Recursively explore contents
-    for item in root.iterdir():
-        if not item.is_dir() or item.name in SKIP_DIRS:
-            # skip files and excluded directories
-            continue
+        # Recursively explore contents
+        for item in root_dir.iterdir():
+            if not item.is_dir() or item.name in SKIP_DIRS:
+                # skip files and excluded directories
+                continue
 
-        yield from get_all_runs(item, exclude=exclude, pattern=pattern)
+            yield from get_all_runs(item, exclude=exclude, pattern=pattern)
 
 
 def contains_log(run: Path) -> bool:
