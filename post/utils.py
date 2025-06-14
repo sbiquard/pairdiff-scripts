@@ -37,13 +37,17 @@ def get_all_runs(root: list[str | Path] | str | Path, exclude=None, pattern=None
 
     # Process each root directory
     for root_dir in roots:
-        # Check if root directory itself is a valid run
-        if contains_log(root_dir) and (pattern is None or re.search(pattern, root_dir.name)):
+        # Check if root directory itself is a valid run or if it matches pattern for special dirs
+        matches_pattern = (
+            pattern is None or re.search(pattern, root_dir.name) or root_dir.name in ("ml", "pd")
+        )
+
+        if matches_pattern and contains_log(root_dir):
             yield root_dir
 
         # Recursively explore contents
         for item in root_dir.iterdir():
-            if not item.is_dir() or item.name in SKIP_DIRS:
+            if not item.is_dir() or item.name in exclude:
                 # skip files and excluded directories
                 continue
 
