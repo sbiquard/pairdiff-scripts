@@ -68,10 +68,10 @@ def plot_maps(
     sky_in,
     savedir: Path,
     cmap: str = "bwr",
-    map_range_T: int = 500,
-    map_range_P: int = 10,
-    diff_range_T: int | None = None,
-    diff_range_P: int | None = None,
+    map_range_T: float = 500,
+    map_range_P: float = 15,
+    diff_range_T: float | None = None,
+    diff_range_P: float | None = None,
 ):
     nrow, ncol = 3, 3
     fig = plt.figure(figsize=(8 * ncol, 4 * nrow))
@@ -81,7 +81,6 @@ def plot_maps(
 
     for i, stokes in enumerate(convert):
         map_range = map_range_T if i == 0 else map_range_P
-        diff_range = diff_range_T if i == 0 else diff_range_P
 
         # Plot input sky
         cartview(
@@ -109,6 +108,7 @@ def plot_maps(
             )
 
             # Plot difference map
+            diff_range = diff_range_T if i == 0 else diff_range_P
             diff = maps[stokes] - sky_in[i]
             offset = np.nanmean(diff)
             rms = np.nanstd(diff)
