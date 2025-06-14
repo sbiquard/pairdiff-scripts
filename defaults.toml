@@ -1835,6 +1835,7 @@
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     lagmax = 1000 # Maximum lag of the correlation function
     maxiter = 3000 # Maximum number of iterations allowed for the solver
+    median_psd_fit = false # Use median fitted PSD values for all detectors
     mem_report = false # Print memory reports
     name = "mappraiser" # The 'name' of this class instance
     noise_data = "noise" # Observation detdata key for the noise data
@@ -1846,6 +1847,7 @@
     pixel_pointing = "None" # Operator to generate healpix indices
     plot_tod = false # Plot the signal+noise TOD after staging
     precond = 0 # Preconditioner choice
+    psd_regularization = 0.0 # Constant value added to the noise PSD for regularization
     ptcomm_flag = 6 # Choose collective communication scheme
     purge_det_data = true # Clear all observation detector data after staging
     rcond_threshold = 0.1 # Pixels with rcond below this are cut
