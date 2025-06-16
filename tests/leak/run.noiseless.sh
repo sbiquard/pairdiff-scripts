@@ -87,4 +87,4 @@ mpirun -np $ntask ./so_mappraiser.py \
 echo "$(date) : Done!"
 echo "Plotting..."
 
-python post/plot_maps.py -v -r out/leak/noiseless --sky $sky
+python post/plot_maps.py -v out/leak/noiseless --sky $sky

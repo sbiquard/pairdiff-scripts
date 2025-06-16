@@ -1040,7 +1040,7 @@
     component = 0 # Component index for this simulation
     constant = false # If True, scramble all detector pairs in the same way
     det_data_names = "['signal',]" # Observation detdata key(s) to apply the gain error to
-    dist = 0 # Gain distribution density
+    distribution = 0 # Gain distribution density (0=Gaussian, 1=Cauchy)
     enabled = false # If True, this class instance is marked as enabled
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     location = 1.0 # Distribution location parameter
@@ -1831,7 +1831,7 @@
     estimate_psd = false # Estimate the noise PSD from the data
     estimate_spin_zero = false # When doing pair-diff, still estimate a spin-zero field
     fill_gaps = true # Perform gap filling on the data
-    gap_stgy = 0 # Strategy for handling timestream gaps
+    gap_strategy = 0 # Strategy for handling timestream gaps
     kernel_implementation = 0 # Which kernel implementation to use (DEFAULT, COMPILED, NUMPY, JAX).
     lagmax = 1000 # Maximum lag of the correlation function
     maxiter = 3000 # Maximum number of iterations allowed for the solver
