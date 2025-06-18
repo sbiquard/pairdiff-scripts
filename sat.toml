@@ -115,7 +115,6 @@
     lagmax = 4096 # Maximum lag of the correlation function
     maxiter = 2000 # Maximum number of iterations allowed for the solver
     mem_report = true # Print memory reports
-    nside = 512 # HEALPix nside parameter for the output maps
     rcond_threshold = 0.001 # Pixels with rcond below this are cut
     tol = 1e-8 # Convergence threshold for the iterative solver
 

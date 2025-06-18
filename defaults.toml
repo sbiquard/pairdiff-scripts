@@ -1837,10 +1837,10 @@
     maxiter = 3000 # Maximum number of iterations allowed for the solver
     median_psd_fit = false # Use median fitted PSD values for all detectors
     mem_report = false # Print memory reports
+    mirror = false # Use mirror technique for flagged intervals
     name = "mappraiser" # The 'name' of this class instance
     noise_data = "noise" # Observation detdata key for the noise data
     noise_model = "noise_model" # Observation key containing the noise model
-    nside = 64 # HEALPix nside parameter for the output maps
     ortho_alg = 1 # Orthogonalization scheme for ECG (O->odir, 1->omin)
     output_dir = "." # Write output data products to this directory
     pair_diff = false # Process differenced timestreams

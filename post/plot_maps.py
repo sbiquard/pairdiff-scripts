@@ -27,7 +27,9 @@ def process(run, args):
 
     # read data
     maps = utils.read_maps(run, ref=ref)
+    maps_mirror = utils.read_maps(run, ref=ref, mirror=True)
     hits, cond = utils.read_hits_cond(run, ref=ref)
+    hits_mirror, cond_mirror = utils.read_hits_cond(run, ref=ref, mirror=True)
     residuals = utils.read_residuals(run, ref=ref)
     sky_in = utils.read_input_sky(name=args.sky)
 
@@ -38,9 +40,15 @@ def process(run, args):
         m[mask] = np.nan
     cond[mask] = np.nan
 
-    plotting.plot_hits_cond(hits, cond, plotdir)
+    # same for mirror maps
+    if maps_mirror is not None:
+        for m in maps_mirror.values():
+            m[hits_mirror == 0] = np.nan
+        cond_mirror[hits_mirror == 0] = np.nan
+
+    plotting.plot_hits_cond(hits, cond, plotdir, mirror_hits=hits_mirror, mirror_cond=cond_mirror)
     plotting.plot_res_hist(maps, sky_in, plotdir)
-    plotting.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P)
+    plotting.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P, mirrors=maps_mirror)
     plotting.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic

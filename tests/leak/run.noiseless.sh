@@ -20,7 +20,6 @@ mpirun -np $ntask ./so_mappraiser.py \
     --schedule $schedule \
     --scan_map.file $sky \
     --pixels_healpix_radec.nside $nside \
-    --mappraiser.nside $nside \
     --mappraiser.binned \
     --mappraiser.zero_noise \
     --thinfp 64 \
@@ -38,7 +37,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --schedule $schedule \
     --scan_map.file $sky \
     --pixels_healpix_radec.nside $nside \
-    --mappraiser.nside $nside \
+    --mappraiser.mirror \
     --mappraiser.binned \
     --mappraiser.zero_noise \
     --thinfp 64 \
@@ -58,7 +57,6 @@ mpirun -np $ntask ./so_mappraiser.py \
     --schedule $schedule \
     --scan_map.file $sky \
     --pixels_healpix_radec.nside $nside \
-    --mappraiser.nside $nside \
     --mappraiser.binned \
     --mappraiser.zero_noise \
     --thinfp 64 \
@@ -77,7 +75,7 @@ mpirun -np $ntask ./so_mappraiser.py \
     --schedule $schedule \
     --scan_map.file $sky \
     --pixels_healpix_radec.nside $nside \
-    --mappraiser.nside $nside \
+    --mappraiser.mirror \
     --mappraiser.binned \
     --mappraiser.zero_noise \
     --thinfp 64 \

@@ -11,20 +11,25 @@ LONRA = [-95, 135]
 LATRA = [-70, -10]
 
 cartview = functools.partial(hp.cartview, lonra=LONRA, latra=LATRA)
+cartview_sky = functools.partial(cartview, cmap="bwr", unit=r"$\mu K_{CMB}$")
 
 
-def plot_hits_cond(hits, cond, savedir, cmap="bwr"):
-    def plot(m, title):
-        cartview(m, norm="hist", title=title, cmap=cmap)
+def plot_hits_cond(hits, cond, savedir, mirror_hits=None, mirror_cond=None):
+    def plot(m, title, mirror_m=None):
+        if mirror_m is None:
+            cartview(m, title=title)
+            return
+        cartview(m, title=title, sub=211)
+        cartview(mirror_m, title="Mirror", sub=212)
 
     # Plot hits
-    plot(hits, "Hits map")
-    plt.savefig(savedir / "hits.png")
+    plot(hits, "Hits map", mirror_m=mirror_hits)
+    plt.savefig(savedir / "hits.png", bbox_inches="tight")
     plt.close()
 
     # Plot cond
-    plot(cond, "Inverse condition number map")
-    plt.savefig(savedir / "cond.png")
+    plot(cond, "Inverse condition number map", mirror_m=mirror_cond)
+    plt.savefig(savedir / "cond.png", bbox_inches="tight")
     plt.close()
 
 
@@ -54,7 +59,7 @@ def plot_res_hist(maps, sky_in, savedir):
         ax.grid(True)
         ax.set_yscale("log")
         ax.legend()
-        fig.savefig(savedir / f"diff_histograms_{stokes}.png")
+        fig.savefig(savedir / f"diff_histograms_{stokes}.png", bbox_inches="tight")
         plt.close(fig)
 
     # plot I separately
@@ -67,44 +72,35 @@ def plot_maps(
     maps,
     sky_in,
     savedir: Path,
-    cmap: str = "bwr",
     map_range_T: float = 500,
     map_range_P: float = 15,
     diff_range_T: float | None = None,
     diff_range_P: float | None = None,
+    mirrors=None,
 ):
-    nrow, ncol = 3, 3
+    nrow, ncol = 3, (3 if mirrors is None else 4)
     fig = plt.figure(figsize=(8 * ncol, 4 * nrow))
 
-    unit = "$\\mu K_{CMB}$"
-    convert = {"I": 0, "Q": 1, "U": 2}
-
-    for i, stokes in enumerate(convert):
+    for i, stokes in enumerate("IQU"):
         map_range = map_range_T if i == 0 else map_range_P
 
         # Plot input sky
-        cartview(
+        cartview_sky(
             sky_in[i],
             title=f"Input {stokes}",
-            sub=[nrow, ncol, 1 + 3 * i],
-            notext=False,
+            sub=[nrow, ncol, ncol * i + 1],
             min=-map_range,
             max=map_range,
-            cmap=cmap,
-            unit=unit,
         )
 
         if stokes in maps:
             # Plot reconstructed map
-            cartview(
+            cartview_sky(
                 maps[stokes],
                 title=f"Reconstructed {stokes} map",
-                sub=[nrow, ncol, 1 + 3 * i + 1],
-                notext=False,
+                sub=[nrow, ncol, ncol * i + 2],
                 min=-map_range,
                 max=map_range,
-                cmap=cmap,
-                unit=unit,
             )
 
             # Plot difference map
@@ -113,18 +109,23 @@ def plot_maps(
             offset = np.nanmean(diff)
             rms = np.nanstd(diff)
             amp = 2 * rms
-            cartview(
+            cartview_sky(
                 diff,
                 title=f"Difference {stokes}",
-                sub=[nrow, ncol, 1 + 3 * i + 2],
-                notext=False,
-                cmap="bwr",
+                sub=[nrow, ncol, ncol * i + 3],
                 min=-(diff_range or -(offset - amp)),
                 max=diff_range or (offset + amp),
-                unit=unit,
             )
 
-    fig.savefig(savedir / "maps.png")
+        if mirrors is not None and stokes in mirrors:
+            # Plot mirror map
+            cartview_sky(
+                mirrors[stokes],
+                title=f"Mirror {stokes}",
+                sub=[nrow, ncol, ncol * i + 4],
+            )
+
+    fig.savefig(savedir / "maps.png", bbox_inches="tight")
     plt.close(fig)
 
 
@@ -140,7 +141,7 @@ def plot_residuals(data, savedir):
     ax.set_ylabel("||r|| / ||r0||")
     ax.grid(True)
     ax.legend()
-    fig.savefig(savedir / "pcg_residuals.png")
+    fig.savefig(savedir / "pcg_residuals.png", bbox_inches="tight")
     plt.close(fig)
 
 
