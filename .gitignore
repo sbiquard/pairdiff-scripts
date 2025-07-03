@@ -9,3 +9,4 @@ slurm*.out
 .vscode/
 .helix/
 __marimo__
+thesis_plots/*.png
