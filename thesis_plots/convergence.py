@@ -43,4 +43,4 @@ plt.yscale("log")  # Log scale often better for residual plots
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
-plt.savefig("pairdiff_convergence.png", bbox_inches="tight", dpi=600)
+plt.savefig("convergence.png", bbox_inches="tight", dpi=600)
