@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -34,13 +36,32 @@ iterations_ml = np.arange(rel_residuals_ml.size)
 iterations_pd = np.arange(rel_residuals_pd.size)
 
 # Create the plot
-# plt.title("Convergence of Residuals")
-plt.plot(iterations_ml, rel_residuals_ml, label="full IQU")
-plt.plot(iterations_pd, rel_residuals_pd, label="pair differencing")
-plt.xlabel("Iteration number")
-plt.ylabel("Relative residual reduction")
-plt.yscale("log")  # Log scale often better for residual plots
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-plt.savefig("convergence.png", bbox_inches="tight", dpi=600)
+fig, ax = plt.subplots()
+ax.plot(iterations_ml, rel_residuals_ml, label="full IQU")
+ax.plot(iterations_pd, rel_residuals_pd, label="pair differencing")
+ax.axhline(1e-8, color="k", ls="--", label="convergence criterion")
+ax.set(
+    xlabel="Iteration number",
+    ylabel="Relative residual reduction",
+    yscale="log",  # Log scale often better for residual plots
+)
+ax.grid(visible=True)
+ax.legend()
+
+# Create an inset axes for zooming on the PD curve
+axins = ax.inset_axes((0.15, 0.2, 0.35, 0.3))
+axins.plot(iterations_pd, rel_residuals_pd, color=ax.lines[1].get_color())
+axins.axhline(1e-8, color="k", ls="--")
+axins.set_yscale("log")
+axins.grid(True)
+
+# Adjust inset axes view to focus on PD curve
+niter_pd = len(iterations_pd)
+axins.set_xlim(-1, niter_pd)
+axins.set_xticks(np.arange(0, niter_pd, 4))
+# axins.grid(False)
+
+# ax.indicate_inset_zoom(axins, edgecolor="black")
+
+# fig.tight_layout()
+fig.savefig("convergence.png", bbox_inches="tight", dpi=600)
