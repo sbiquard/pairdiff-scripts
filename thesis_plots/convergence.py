@@ -4,6 +4,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+
+sns.set_theme(context="paper", style="ticks")
 
 
 def parse_logs(log_file):
@@ -19,46 +22,51 @@ def parse_logs(log_file):
     return np.array(residuals_squared)
 
 
-# broken :/
-# residuals_ml = np.loadtxt(JZ / "leak/incl_turnarounds/diff_gains_with_instr/ml/residuals_run0.dat")
-# residuals_pd = np.loadtxt(JZ / "leak/incl_turnarounds/diff_gains_with_instr/pd/residuals_run0.dat")
-log_ml = Path("../jz_out/leak/incl_turnarounds/diff_gains_with_instr/ml/run.log")
-log_pd = Path("../jz_out/leak/incl_turnarounds/diff_gains_with_instr/pd/run.log")
+logs = {}
+logs["ml"] = Path("../jz_out/leak/incl_turnarounds/diff_gains_with_instr/ml/run.log")
+logs["pd"] = Path("../jz_out/leak/incl_turnarounds/diff_gains_with_instr/pd/run.log")
+logs["ml_nohwp"] = Path("../jz_out/leak/incl_turnarounds/diff_gains_with_instr_nohwp/ml/run.log")
+logs["pd_nohwp"] = Path("../jz_out/leak/incl_turnarounds/diff_gains_with_instr_nohwp/pd/run.log")
 
 # Calculate relative residuals by dividing by first residual
-residuals_squared_ml = parse_logs(log_ml)
-residuals_squared_pd = parse_logs(log_pd)
-rel_residuals_ml = np.sqrt(residuals_squared_ml / residuals_squared_ml[0])
-rel_residuals_pd = np.sqrt(residuals_squared_pd / residuals_squared_pd[0])
-
-# Create iteration indices
-iterations_ml = np.arange(rel_residuals_ml.size)
-iterations_pd = np.arange(rel_residuals_pd.size)
+relative_residuals = {}
+iterations = {}
+for key, log in logs.items():
+    if not log.exists():
+        raise FileNotFoundError(f"Log file {log} does not exist.")
+    res_squared = parse_logs(log)
+    relative_residuals[key] = np.sqrt(res_squared / res_squared[0])
+    iterations[key] = np.arange(len(res_squared))
 
 # Create the plot
+sns.set_palette("Paired")
 fig, ax = plt.subplots()
-ax.plot(iterations_ml, rel_residuals_ml, label="full IQU")
-ax.plot(iterations_pd, rel_residuals_pd, label="pair differencing")
+ax.plot(iterations["ml"], relative_residuals["ml"], label="IQU")
+ax.plot(iterations["ml_nohwp"], relative_residuals["ml_nohwp"], label="IQU (no HWP)")
+ax.plot(iterations["pd"], relative_residuals["pd"], label="pair diff")
+ax.plot(iterations["pd_nohwp"], relative_residuals["pd_nohwp"], label="pair diff (no HWP)")
 ax.axhline(1e-8, color="k", ls="--", label="convergence criterion")
 ax.set(
     xlabel="Iteration number",
     ylabel="Relative residual reduction",
     yscale="log",  # Log scale often better for residual plots
 )
+# ax.set_ylim(bottom=1e-10)
 ax.grid(visible=True)
 ax.legend()
 
 # Create an inset axes for zooming on the PD curve
-axins = ax.inset_axes((0.15, 0.2, 0.35, 0.3))
-axins.plot(iterations_pd, rel_residuals_pd, color=ax.lines[1].get_color())
+axins = ax.inset_axes((0.2, 0.2, 0.4, 0.3))
+axins.plot(iterations["pd"], relative_residuals["pd"], color=ax.lines[2].get_color())
+axins.plot(iterations["pd_nohwp"], relative_residuals["pd_nohwp"], color=ax.lines[3].get_color())
 axins.axhline(1e-8, color="k", ls="--")
 axins.set_yscale("log")
 axins.grid(True)
 
 # Adjust inset axes view to focus on PD curve
-niter_pd = len(iterations_pd)
-axins.set_xlim(-1, niter_pd)
-axins.set_xticks(np.arange(0, niter_pd, 4))
+niter = iterations["pd_nohwp"].size
+# axins.set_xlim(-1, niter)
+# axins.set_xticks(np.arange(0, niter, 4))
 # axins.grid(False)
 
 # ax.indicate_inset_zoom(axins, edgecolor="black")
