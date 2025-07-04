@@ -9,17 +9,18 @@ import seaborn as sns
 from matplotlib.ticker import FixedFormatter, FixedLocator
 from sigma_to_epsilon import get_epsilon_samples, get_scatters
 
+sns.set_theme(context="paper", style="ticks")
 sns.color_palette()
 
 JZ_OUT_DIR = Path(__file__).parents[1] / "jz_out"
-SAVE_PLOTS_DIR = Path(__file__).parents[1] / "jz_out" / "analysis" / "optimality"
+SAVE_PLOTS_DIR = JZ_OUT_DIR / "analysis" / "optimality"
 SAVE_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
 SCATTERS = [0.001, 0.01, 0.1, 0.2]
 
 
-def my_savefig(fig, title: str, close: bool = True, dpi=200):
-    fig.savefig(SAVE_PLOTS_DIR / title, bbox_inches="tight", dpi=dpi)
+def my_savefig(fig, title: str, close: bool = True, dpi=600):
+    fig.savefig(title, bbox_inches="tight", dpi=dpi)
     if close:
         plt.close(fig)
 
@@ -27,7 +28,7 @@ def my_savefig(fig, title: str, close: bool = True, dpi=200):
 # sample scatter values
 scatters = get_scatters((0.9 * SCATTERS[0], 1.1 * SCATTERS[-1]))
 eps = get_epsilon_samples(jax.random.key(1426), scatters)
-alpha = 1 / (1 - eps**2)
+eta = 1 / (1 - eps**2)
 
 # epsilon distributions that were used in the simulation
 epsilons = {
@@ -58,21 +59,21 @@ for k_hwp in ["hwp", "no_hwp"]:
     x_m = np.array(SCATTERS)
     q = np.array([10, 90, 1, 99])
     eps_m = np.stack([epsilons["ml"][k_hwp][i] for i in range(len(SCATTERS))])
-    alpha_m = (1 / (1 - eps_m**2)).mean(axis=-1)
+    eta_m = (1 / (1 - eps_m**2)).mean(axis=-1)
 
     fig, ax = plt.subplots()
     hwp_title = k_hwp.replace("_", " ")
     ax.set(
         xlabel="Scatter around nominal NET",
-        ylabel="Variance increase",
-        title=f"Variance increase per pixel ({hwp_title})",
+        ylabel="Relative variance increase",
+        # title=f"Variance increase per pixel ({hwp_title})",
     )
 
     # Expected variance increase as a function of scatter
     x = scatters
-    y = alpha.mean(axis=-1) - 1
+    y = eta.mean(axis=-1) - 1
     ax.plot(x, y, "k", label="true expectation")
-    ax.scatter(x_m, alpha_m - 1, s=128, marker="x", c="r", label="empirical expectation")
+    ax.scatter(x_m, eta_m - 1, s=128, marker="x", c="r", label="empirical expectation")
 
     # # interpolate measured percentiles in log space
     # y_10 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[0] for _p in p_qq])))
@@ -102,7 +103,7 @@ for k_hwp in ["hwp", "no_hwp"]:
 
     ax.set_xscale("log")
     ax.set_yscale("asinh", linear_width=1e-4)
-    ax.set_ylim(-0.03 / 100, 0.25)  # -0.3 to 25 percent
+    ax.set_ylim(-3e-4, 0.25)  # -0.3 to 25 percent
 
     # Apply custom ticks to both axes
     x_tick_locations = np.array([0.1, 1, 10, 20]) / 100  # percents
@@ -117,5 +118,4 @@ for k_hwp in ["hwp", "no_hwp"]:
     ax.legend()
     ax.grid(True)
 
-    my_savefig(fig, f"variance_increase_scatter_{k_hwp}.png", close=False)
-    my_savefig(fig, f"variance_increase_scatter_{k_hwp}.pdf")
+    my_savefig(fig, f"variance_increase_{k_hwp}.png")
