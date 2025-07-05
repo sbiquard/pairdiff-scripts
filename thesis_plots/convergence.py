@@ -72,4 +72,4 @@ niter = iterations["pd_nohwp"].size
 # ax.indicate_inset_zoom(axins, edgecolor="black")
 
 # fig.tight_layout()
-fig.savefig("convergence.png", bbox_inches="tight", dpi=600)
+fig.savefig("convergence.svg", bbox_inches="tight")

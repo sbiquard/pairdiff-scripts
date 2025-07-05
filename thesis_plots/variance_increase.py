@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
+from functools import partial
 from pathlib import Path
 
+import healpy as hp
 import jax
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from matplotlib.ticker import FixedFormatter, FixedLocator
+from matplotlib.ticker import FixedFormatter, FixedLocator, PercentFormatter
 from sigma_to_epsilon import get_epsilon_samples, get_scatters
 
 sns.set_theme(context="paper", style="ticks")
-sns.color_palette()
+default_palette = sns.color_palette()
 
 JZ_OUT_DIR = Path(__file__).parents[1] / "jz_out"
 SAVE_PLOTS_DIR = JZ_OUT_DIR / "analysis" / "optimality"
@@ -25,10 +27,11 @@ def my_savefig(fig, title: str, close: bool = True, dpi=600):
         plt.close(fig)
 
 
-# sample scatter values
-scatters = get_scatters((0.9 * SCATTERS[0], 1.1 * SCATTERS[-1]))
-eps = get_epsilon_samples(jax.random.key(1426), scatters)
-eta = 1 / (1 - eps**2)
+LONRA = [-95, 135]
+LATRA = [-70, -10]
+
+cartview_sky = partial(hp.cartview, lonra=LONRA, latra=LATRA, xsize=5000)
+
 
 # epsilon distributions that were used in the simulation
 epsilons = {
@@ -49,8 +52,106 @@ epsilons = {
     for k_ml_pd in ["ml", "pd"]
 }
 
+eta_maps = {
+    k_hwp: [
+        np.load(JZ_OUT_DIR / "analysis/optimality/data" / f"eta_scatter{scatter}_{k_hwp}.npz")
+        for scatter in SCATTERS
+    ]
+    for k_hwp in ["hwp", "no_hwp"]
+}
+
+# sample scatter values
+scatters = get_scatters((0.9 * SCATTERS[0], 1.1 * SCATTERS[-1]))
+eps = get_epsilon_samples(jax.random.key(1426), scatters)
+eta = 1 / (1 - eps**2)
+eta_rel = eta.mean(axis=-1) - 1
+
+fhist, axsh = plt.subplots(2, 2, figsize=(8, 6), layout="constrained")
+fmaps = {k: plt.figure(figsize=(10, 4)) for k in eta_maps}
+for k in eta_maps:
+    for i, scatter in enumerate(SCATTERS):
+        eta = eta_maps[k][i]
+        qq = np.where(eta["qq"] < 0.5, np.nan, eta["qq"])  # unphysical
+        uu = np.where(eta["uu"] < 0.5, np.nan, eta["uu"])  # unphysical
+        # plot the eta maps for Q and U
+        plt.figure(fmaps[k])
+        cartview_sky((qq - 1) * 100, sub=221 + i, title=f"z = {scatter:.1%}", unit="%")
+        # cartview_sky(eta["uu"], sub=221 + i)
+        # histogram
+        ax = axsh.flat[i]
+
+        # Calculate histogram and bin centers for Q values
+        q_hist, q_bins = np.histogram((qq - 1)[~np.isnan(qq)], bins=100)
+        q_bin_centers = (q_bins[:-1] + q_bins[1:]) / 2
+
+        # Plot histogram
+        stair = ax.stairs(q_hist, q_bins, label=f"Q {k}" if i == 0 else None)
+
+        # Fit Gaussian to the central part of the histogram data
+        # Define the central region (e.g., within 1.5 standard deviations)
+        q_values = (qq - 1)[~np.isnan(qq - 1)]
+        q_mean = np.nanmean(q_values)
+        q_std = np.nanstd(q_values)
+
+        # Filter data to use only central part for fitting
+        central_mask = np.abs(q_values - q_mean) < 1.5 * q_std
+        central_values = q_values[central_mask]
+
+        # Recalculate mean and std using only central data
+        q_mean = np.mean(central_values)
+        q_std = np.std(central_values)
+
+        # Generate the Gaussian curve
+        q_gaussian = np.exp(-0.5 * ((q_bin_centers - q_mean) / q_std) ** 2) / (
+            q_std * np.sqrt(2 * np.pi)
+        )
+        q_gaussian = (
+            q_gaussian * np.max(q_hist) / np.max(q_gaussian)
+        )  # Scale to match histogram height
+
+        # Plot the Gaussian fit
+        ax.plot(q_bin_centers, q_gaussian, ls="--", lw=0.8, color="b" if k == "hwp" else "g")
+        # ax.axvline(np.nanmean(qq) - 1, color="k", ls="--")
+
+        # U histogram
+        # Calculate histogram and bin centers for U values
+        u_hist, u_bins = np.histogram((uu - 1)[~np.isnan(uu)], bins=100)
+        u_bin_centers = (u_bins[:-1] + u_bins[1:]) / 2
+
+        # Plot histogram using stairs
+        ax.stairs(u_hist, u_bins, label=f"U {k}" if i == 0 else None)
+fhist.legend(loc="outside upper center", ncols=4)
+for i, ax in enumerate(axsh.flat):
+    ax.axvline(eta_rel[np.argmin(np.abs(scatters - SCATTERS[i]))], color="k", ls="--")
+    ax.set_yscale("log")
+    ax.set_ylim(1, 1e5)
+    ax.set_xlabel("Relative variance increase")
+    ax.set_ylabel("Count")
+    if i < 2:
+        dec = 2
+    elif i < 3:
+        dec = 1
+    else:
+        dec = 0
+    ax.xaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=dec))
+    ax.text(
+        0.85,
+        0.95,
+        f"$z$ = {SCATTERS[i]:.1%}",
+        transform=ax.transAxes,
+        ha="center",
+        va="top",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+    )
+# f.tight_layout()
+my_savefig(fhist, "eta_histograms.svg")
+for k in fmaps:
+    my_savefig(fmaps[k], title=f"eta_maps_Q_{k}.png")
+
 # for i, _ in enumerate(SCATTERS):
 #     np.testing.assert_allclose(epsilons["ml"]["hwp"][i], epsilons["pd"]["hwp"][i])
+
+sns.set_palette(default_palette)
 
 # loop over hwp and no_hwp cases
 for k_hwp in ["hwp", "no_hwp"]:
@@ -71,8 +172,7 @@ for k_hwp in ["hwp", "no_hwp"]:
 
     # Expected variance increase as a function of scatter
     x = scatters
-    y = eta.mean(axis=-1) - 1
-    ax.plot(x, y, "k", label="true expectation")
+    ax.plot(x, eta_rel, "k", label="true expectation")
     ax.scatter(x_m, eta_m - 1, s=128, marker="x", c="r", label="empirical expectation")
 
     # # interpolate measured percentiles in log space
@@ -118,4 +218,4 @@ for k_hwp in ["hwp", "no_hwp"]:
     ax.legend()
     ax.grid(True)
 
-    my_savefig(fig, f"variance_increase_{k_hwp}.png")
+    my_savefig(fig, f"variance_increase_{k_hwp}.svg")
