@@ -4,7 +4,6 @@ from enum import Enum
 from pathlib import Path
 
 import jax
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
@@ -76,7 +75,7 @@ def load_spectra(path: Path | list[Path], lmax=1000, dl=False):
         return {"ells": ell[good], **{k: cl[k][..., good] for k in cl}}
 
 
-theory_cl = get_theory_powers(r=1.0)
+theory_cl = get_theory_powers()
 ls = np.arange(theory_cl["BB"].size)
 theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
 lens_BB = get_theory_powers(r=0)["BB"]
@@ -127,106 +126,117 @@ stack_noise_dl_white = jax.tree.map(_stack, noise_dl_white, is_leaf=lambda x: is
 stack_noise_dl_instr = jax.tree.map(_stack, noise_dl_instr, is_leaf=lambda x: isinstance(x, list))
 
 
-def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=True, r=0.01):
-    fig = plt.figure(layout="constrained", figsize=(12, 10))
-    # fig.suptitle(
-    #     "{} noise power increase in pair differencing maps with {} noise".format(
-    #         "Relative" if relative else "Absolute", noise_type
-    #     )
-    # )
+def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=True):
+    # Determine sharey based on plot type and noise type
+    sharey = "row" if relative or noise_type == NoiseType.INSTR else True
 
-    subfigs = fig.subfigures(2, 1)
-    subfigs[0].suptitle("HWP on")
-    subfigs[1].suptitle("HWP off")
+    # Create subplots with determined parameters
+    fig, axs = plt.subplots(
+        2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey=sharey
+    )
 
-    cmap = sns.color_palette("flare", as_cmap=True)
-    colors = [cmap(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+    # Set titles for rows
+    axs[0, 0].set_title("EE, HWP on")
+    axs[0, 1].set_title("BB, HWP on")
+    axs[1, 0].set_title("EE, HWP off")
+    axs[1, 1].set_title("BB, HWP off")
 
-    for khwp, subfig in zip(["hwp", "no_hwp"], subfigs):
+    flare = sns.color_palette("flare", as_cmap=True)
+    colors = [flare(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+
+    # Create empty list to store legend handles
+    legend_handles = []
+
+    for row, khwp in enumerate(["hwp", "no_hwp"]):
         cl = stack_noise_cl_data[khwp]
-        axs = subfig.subplots(1, 2, sharex=True, sharey=True)
-        axs[0].set_title("EE")
-        axs[1].set_title("BB")
 
         # Set appropriate axis limits
-        for ax in axs:
-            ax.set_xlim(2, 1000)
+        for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
+            ax = axs[row, col]
             ax.grid(True)
-            ax.set_xlabel(r"Multipole $\ell$")
-            if relative:
-                ax.set_ylabel("Relative power increase")
-                ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
-            else:
-                ax.set_ylabel(r"Power $[\mu K^2]$")
-            ax.label_outer()
+
+            if col == 0:  # Only set ylabel on first column
+                if relative:
+                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} / N_\ell^\mathsf{iqu} - 1$")
+                    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+                else:
+                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
+
+            if row == 1:  # Only set xlabel on bottom row
+                ax.set_xlabel(r"Multipole $\ell$")
 
             # Plot theory spectra if showing absolute values
-            if not relative:
-                # Only plot theory BB spectrum on the second axis
-                # Only plot for ell > 20
+            if not relative and col == 1:
                 mask = ls > 20
-                axs[1].plot(
-                    ls[mask], r * theory_cl["BB"][mask], "k-", lw=1.0, alpha=0.7, label="Theory BB"
-                )
-                axs[1].legend()
+                line = ax.plot(
+                    ls[mask], prim_BB[mask], "k-", lw=1.0, alpha=0.7, label=r"BB prim ($r=0.01$)"
+                )[0]
+                # avoid duplicate legend entries
+                if row == 0:
+                    legend_handles.append(line)
 
-        for is_, scatter in enumerate(SCATTERS):
+        for i, scatter in enumerate(SCATTERS):
             iqu = cl[scatter]["ml"]
             pd = cl[scatter]["pd"]
             ells = iqu["ells"][0]  # identical for all realizations
             good = ells > 30
 
             if relative:
-                diff = pd["cl_22"] / iqu["cl_22"] - 1
+                y = pd["cl_22"] / iqu["cl_22"] - 1
             else:
-                diff = pd["cl_22"] - iqu["cl_22"]
+                y = pd["cl_22"] - iqu["cl_22"]
 
-            for ax, idx in zip(axs, (0, 3)):
-                y = diff.mean(axis=0)[idx]
-                yerr = diff.std(axis=0)[idx]
-                ax.errorbar(
-                    ells[good] + (is_ + 0.5 - len(SCATTERS) / 2) * 2,
-                    y[good],
+            for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
+                ax = axs[row, col]
+                ymean = y.mean(axis=0)[idx]
+                yerr = y.std(axis=0)[idx]
+                # slightly adjust ells of different scatter values for better visibility
+                ells_sep = ells[good] + (i + 0.5 - len(SCATTERS) / 2) * 2
+                errorbar = ax.errorbar(
+                    ells_sep,
+                    ymean[good],
                     yerr=yerr[good],
                     fmt=".",
-                    color=colors[is_],
+                    color=colors[i],
                     linewidth=0.5,
+                    label=f"Scatter {scatter:.1%}",
                 )
+
+                # Only add to legend for the first subplot to avoid duplicates
+                if row == 0 and col == 0:
+                    legend_handles.append(errorbar)
 
                 # # Print increase averaged over bins
                 # if relative:
                 #     print(khwp, scatter, "EE" if idx == 0 else "BB", f"{y.mean():.2%}")
 
-        # Add colorbar with scatter values
-        sm = plt.cm.ScalarMappable(
-            cmap=cmap, norm=mpl.colors.Normalize(vmin=min(SCATTERS), vmax=max(SCATTERS), clip=True)
-        )
-        cbar = fig.colorbar(sm, ax=axs, pad=0.01)
-        cbar.set_ticks(SCATTERS)
-        cbar.set_ticklabels([f"{s:.1%}" for s in SCATTERS])
-        cbar.set_label("Scatter")
+    # Add a figure-level legend at the top
+    fig.legend(
+        handles=legend_handles,
+        labels=[h.get_label() for h in legend_handles],
+        loc="outside upper center",
+        ncol=len(legend_handles),  # everything on one line
+    )
 
-        # Autoscale axes after adding collections
-        axs[0].autoscale()
-        axs[1].autoscale()
+    # Autoscale axes after adding collections
+    for ax in axs.flat:
+        ax.autoscale()
+        ax.set_xlim(right=600)
 
-        # Apply specific ylim settings for certain plots
-        if noise_type == NoiseType.WHITE and relative:
-            if khwp == "hwp":
-                axs[1].set_ylim(top=0.2)
-            else:
-                axs[1].set_ylim(-0.1, 0.4)
-        elif noise_type == NoiseType.INSTR and not relative and khwp == "no_hwp":
-            axs[1].set_ylim(-5e-7, 8e-6)
-
-        for ax in axs:
-            ax.set_xlim(right=600)
+    # Apply specific ylim settings for absolute plots
+    if not relative:  # absolute plots
+        # Set all plots to the same ylim in white noise case
+        for ax in axs[0]:
+            ax.set_ylim(-0.5e-7, 0.5e-6)
+        if noise_type == NoiseType.INSTR:
+            # For instr noise, set different ylim when HWP is off
+            for ax in axs[1]:  # HWP off row
+                ax.set_ylim(-0.5e-6, 0.8e-5)
 
     # Save the figure
     plot_type = "relative" if relative else "absolute"
     fig.savefig(f"var_increase_spectra_{noise_type.value}_{plot_type}.svg", bbox_inches="tight")
     plt.close(fig)
-    # plt.show()
 
 
 # Plot relative increase with white noise
@@ -255,26 +265,32 @@ plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=False)
 
 
 # ___________________________________________________________________
-# _l = input_dl["ells"]
-# _fig, _axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
-# _axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
-# _axs[0].plot(_l, input_dl["cl_22"][0], label="Input EE")
-# _axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
-# _axs[1].plot(_l, input_dl["cl_22"][3], label="Input BB")
-# _axs[2].plot(_l, input_dl["cl_22"][0] / theory_dl["EE"][_l.astype(int)], label="EE ratio")
-# _axs[2].plot(_l, input_dl["cl_22"][3] / theory_dl["BB"][_l.astype(int)], label="BB ratio")
-# _axs[2].set_ylim(0, 1.1)
-# for _i, _ax in enumerate(_axs):
-#     _ax.set_xlabel(r"$\ell$")
-#     if _i < 2:
-#         _ax.set_ylabel(r"$C_\ell [\mu K^2]$")
-#     _ax.legend()
-# _fig.tight_layout()
-# plt.show()
+_l = input_dl["ells"]
+_fig, _axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
+_axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
+_axs[0].plot(_l, input_dl["cl_22"][0], label="Input EE")
+_axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
+_axs[1].plot(_l, input_dl["cl_22"][3], label="Input BB")
+_axs[2].plot(_l, input_dl["cl_22"][0] / theory_dl["EE"][_l.astype(int)], label="EE ratio")
+_axs[2].plot(_l, input_dl["cl_22"][3] / theory_dl["BB"][_l.astype(int)], label="BB ratio")
+_axs[2].set_ylim(0, 1.1)
+for _i, _ax in enumerate(_axs):
+    _ax.set_xlabel(r"$\ell$")
+    if _i < 2:
+        _ax.set_ylabel(r"$C_\ell [\mu K^2]$")
+    _ax.legend()
+_fig.tight_layout()
+_fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
 
 
-def fisher(ell_arr, N_ell, fsky: float, lmin: int = 25, A_lens: float = 1.0):
-    # TODO: bin the theory spectra to the same ell bins as the measured spectra
-    ratio = prim_BB / (A_lens * lens_BB + N_ell)
+def fisher_r0(ell_arr, N_ell, fsky: float, lmin: int = 25, A_lens: float = 1.0):
+    mask = ell_arr >= lmin  # Only use bins above lmin
+    ell_filtered = ell_arr[mask]
+
+    # Sample prim_BB and lens_BB at ell values in ell_arr
+    prim_BB_sampled = prim_BB[ell_filtered.astype(int)]
+    lens_BB_sampled = lens_BB[ell_filtered.astype(int)]
+    ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell[mask])
+
     # TODO: factor in the sum should be summed over the bin?
-    return (0.5 * fsky * np.sum((2 * ell_arr + 1) * ratio**2)) ** -0.5
+    return (0.5 * fsky * np.sum((2 * ell_filtered + 1) * ratio**2)) ** -0.5
