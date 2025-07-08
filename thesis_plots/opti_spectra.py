@@ -23,9 +23,9 @@ class NoiseType(Enum):
 JZ = Path(__file__).parents[1].absolute() / "jz_out"
 OPTI = JZ / "opti"
 SCATTERS = [0.001, 0.01, 0.1, 0.2]
+NUM_REAL = 25
 MASK_REF = "hits_10000"
-LMIN = 30
-LMAX = 500
+LMIN, LMAX = 30, 500
 
 runs = {
     k_white: {
@@ -42,7 +42,7 @@ runs = {
                     / f"scatter_{scatter}"
                     # / (k_ml_pd if k_ml_pd == "ml" else "pd_new")
                     / k_ml_pd
-                    for real in range(25)
+                    for real in range(NUM_REAL)
                 ]
                 for k_ml_pd in ["ml", "pd"]
             }
@@ -126,25 +126,14 @@ stack_noise_dl_instr = jax.tree.map(_stack, noise_dl_instr, is_leaf=lambda x: is
 
 
 # empirical eta (variance increase)
-epsilon_data = {
-    k_hwp: [
-        np.load(
-            JZ
-            / "opti"
-            / ("var_increase" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
-            / f"scatter_{scatter}"
-            / "ml"
-            / "epsilon_dist.npy"
-        )
+# only load for hwp case since it is the same for the other one
+epsilon_data = np.stack(
+    [
+        np.load(JZ / "opti/var_increase" / f"scatter_{scatter}" / "ml/epsilon_dist.npy")
         for scatter in SCATTERS
     ]
-    for k_hwp in ["hwp", "no_hwp"]
-}
-epsilon_stack = {
-    k: np.stack([epsilon_data[k][i] for i in range(len(SCATTERS))]) for k in epsilon_data
-}
-etas = {k: (1 / (1 - epsilon_stack[k] ** 2)).mean(axis=-1) for k in epsilon_stack}
-# print(etas)
+)
+etas = (1 / (1 - epsilon_data**2)).mean(axis=-1)
 
 
 def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=True):
@@ -167,6 +156,9 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
 
     # Create empty list to store legend handles
     legend_handles = []
+
+    # Dictionary to store average values
+    average_values = {"hwp": {"EE": {}, "BB": {}}, "no_hwp": {"EE": {}, "BB": {}}}
 
     for row, khwp in enumerate(["hwp", "no_hwp"]):
         cl = stack_noise_cl_data[khwp]
@@ -204,7 +196,6 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
             iqu = cl[scatter]["ml"]
             pd = cl[scatter]["pd"]
             ells = iqu["ells"][0]  # identical for all realizations
-            # good = ells > 30
 
             if relative:
                 y = pd["cl_22"] / iqu["cl_22"] - 1
@@ -212,9 +203,15 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
                 y = pd["cl_22"] - iqu["cl_22"]
 
             for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
+                spec_type = "EE" if idx == 0 else "BB"
                 ax = axs[row, col]
                 ymean = y.mean(axis=0)[idx]
                 yerr = y.std(axis=0)[idx]
+
+                # Store the average values in the dictionary
+                if relative:
+                    average_values[khwp][spec_type][scatter] = ymean
+
                 # slightly adjust ells of different scatter values for better visibility
                 ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
                 errorbar = ax.errorbar(
@@ -233,7 +230,7 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
 
                 # Print increase averaged over bins
                 if relative:
-                    line = ax.axhline(etas[khwp][i] - 1, color=colors[i], alpha=0.7, linestyle="--")
+                    line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
                     # Only add to legend for the first subplot to avoid duplicates
                     if row == 0 and col == 0 and i == 0:
                         legend_handles.insert(
@@ -273,6 +270,9 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
     fig.savefig(f"var_increase_spectra_{noise_type.value}_{plot_type}.svg", bbox_inches="tight")
     plt.close(fig)
 
+    # Return the dictionary with average values
+    return average_values
+
 
 # # Plot relative increase with white noise
 # plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=True)
@@ -281,25 +281,30 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
 # plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=False)
 
 # Plot relative increase with instrumental noise
-plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=True)
+avg_instr = plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=True)
+np.savetxt(
+    "average_increase_bins.txt",
+    np.column_stack(
+        [
+            SCATTERS,
+            etas - 1,
+            [avg_instr["hwp"]["EE"][scatter].mean() for scatter in SCATTERS],
+            [avg_instr["hwp"]["BB"][scatter].mean() for scatter in SCATTERS],
+            [avg_instr["no_hwp"]["EE"][scatter].mean() for scatter in SCATTERS],
+            [avg_instr["no_hwp"]["BB"][scatter].mean() for scatter in SCATTERS],
+        ]
+    ),
+    delimiter="\t",
+    header="scatter\teta-1\tEE hwp\tBB hwp\tEE no_hwp\tBB no_hwp",
+    fmt=["%.3f", "%.2e", "%.2e", "%.2e", "%.2e", "%.2e"],
+)
 
 # Plot absolute increase with instrumental noise
 plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=False)
 
-# ___________________________________________________________________
-# from utils import read_input_sky, read_mask
-
-# sky = read_input_sky()
-# mask_apo = read_mask(JZ / "mask_apo_1000.fits")
-
-# plt.figure(figsize=(18, 8))
-# hp.mollview(np.where(mask_apo > 0, sky[0] * mask_apo, np.nan), sub=131, title="input I", cmap="bwr")
-# hp.mollview(np.where(mask_apo > 0, sky[1] * mask_apo, np.nan), sub=132, title="input Q", cmap="bwr")
-# hp.mollview(np.where(mask_apo > 0, sky[2] * mask_apo, np.nan), sub=133, title="input U", cmap="bwr")
-# plt.gcf()
-
 
 # ___________________________________________________________________
+
 _l = input_dl["ells"]
 _fig, _axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
 _axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
@@ -318,14 +323,49 @@ _fig.tight_layout()
 _fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
 
 
-def fisher_r0(ell_arr, N_ell, fsky: float, lmin: int = 25, A_lens: float = 1.0):
-    mask = ell_arr >= lmin  # Only use bins above lmin
-    ell_filtered = ell_arr[mask]
+# ___________________________________________________________________
+
+
+def fisher_r0(avg_noise_cl, ells, fsky: float, A_lens: float = 1.0):
+    # Get the ells and average noise power spectrum
+    N_ell = avg_noise_cl
 
     # Sample prim_BB and lens_BB at ell values in ell_arr
-    prim_BB_sampled = prim_BB[ell_filtered.astype(int)]
-    lens_BB_sampled = lens_BB[ell_filtered.astype(int)]
-    ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell[mask])
+    prim_BB_sampled = 100 * prim_BB[ells.astype(int)]  # originally for r = 0.01
+    lens_BB_sampled = lens_BB[ells.astype(int)]
+    ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell)
 
-    # TODO: factor in the sum should be summed over the bin?
-    return (0.5 * fsky * np.sum((2 * ell_filtered + 1) * ratio**2)) ** -0.5
+    return (0.5 * fsky * np.sum((2 * ells + 1) * ratio**2)) ** -0.5
+
+
+# Compute increase in Fisher r0 for each scatter value
+sigma_r0 = {
+    khwp: {
+        k_ml_pd: np.array(
+            [
+                fisher_r0(
+                    stack_noise_cl_instr[khwp][scatter][k_ml_pd]["cl_22"][3],
+                    stack_noise_cl_instr[khwp][scatter]["ml"]["ells"][0],
+                    fsky=0.15,
+                )
+                for scatter in SCATTERS
+            ]
+        )
+        for k_ml_pd in ["ml", "pd"]
+    }
+    for khwp in ["hwp", "no_hwp"]
+}
+np.savetxt(
+    "sigma_r0.txt",
+    np.column_stack(
+        [
+            sigma_r0["hwp"]["ml"],
+            sigma_r0["hwp"]["pd"],
+            sigma_r0["no_hwp"]["ml"],
+            sigma_r0["no_hwp"]["pd"],
+        ]
+    ),
+    delimiter="\t",
+    header="IQU hwp\tPD hwp\tIQU no hwp\tPD no hwp",
+    fmt="%.6e",
+)
