@@ -125,8 +125,10 @@ for i, ax in enumerate(axsh.flat):
     ax.axvline(eta_rel[np.argmin(np.abs(scatters - SCATTERS[i]))], color="k", ls="--")
     ax.set_yscale("log")
     ax.set_ylim(1, 1e5)
-    ax.set_xlabel("Relative variance increase")
-    ax.set_ylabel("Count")
+    if i >= 2:
+        ax.set_xlabel("Relative variance increase")
+    if i % 2 == 0:
+        ax.set_ylabel("Count")
     if i < 2:
         dec = 2
     elif i < 3:
