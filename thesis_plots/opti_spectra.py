@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from enum import Enum
 from pathlib import Path
 
 import jax
@@ -8,53 +7,22 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
 import seaborn as sns
+
+# import wadler_lindig as wl
 from theory_spectra import get_theory_powers
 
 sns.set_theme(context="notebook", style="ticks")
-
-
-class NoiseType(Enum):
-    """Enum representing the type of noise."""
-
-    WHITE = "white"
-    INSTR = "instr"
 
 
 JZ = Path(__file__).parents[1].absolute() / "jz_out"
 OPTI = JZ / "opti"
 SCATTERS = [0.001, 0.01, 0.1, 0.2]
 NUM_REAL = 25
-MASK_REF = "hits_10000"
+HITS = 10_000
 LMIN, LMAX = 30, 500
 
-runs = {
-    k_white: {
-        k_hwp: {
-            scatter: {
-                k_ml_pd: [
-                    OPTI
-                    / (
-                        "var_increase"
-                        + ("_instr" if k_white != "white" else "")
-                        + (f"_{k_hwp}" if k_hwp == "no_hwp" else "")
-                    )
-                    / f"{real + 1:03d}"
-                    / f"scatter_{scatter}"
-                    # / (k_ml_pd if k_ml_pd == "ml" else "pd_new")
-                    / k_ml_pd
-                    for real in range(NUM_REAL)
-                ]
-                for k_ml_pd in ["ml", "pd"]
-            }
-            for scatter in SCATTERS
-        }
-        for k_hwp in ["hwp", "no_hwp"]
-    }
-    for k_white in ["white", "instr"]
-}
 
-
-def load_npz(path):
+def load_npz(path: Path) -> dict[str, np.ndarray]:
     data = np.load(path)
     # remove unnecessary dimensions
     return {k: data[k].squeeze() for k in data}
@@ -64,66 +32,88 @@ def cl2dl(ell, cl):
     return ell * (ell + 1) / 2 / np.pi * cl
 
 
-def load_spectra(path: Path | list[Path], dl=False):
+def load_spectra(path: Path, only_22: bool = True, convert_to_dl: bool = False):
     cl = load_npz(path)
-    ell = cl.pop("ell_arr")
+    ell = cl.pop("ell_arr").astype(np.int32)
+    if convert_to_dl:
+        cl = jax.tree.map(lambda x: cl2dl(ell, x), cl)
     good = (LMIN <= ell) & (ell <= LMAX)
-    if dl:
-        return {"ells": ell[good], **{k: cl2dl(ell[good], cl[k][..., good]) for k in cl}}
-    else:
-        return {"ells": ell[good], **{k: cl[k][..., good] for k in cl}}
+    if only_22:
+        return {"ells": ell[good], "cl_22": cl["cl_22"][..., good]}
+    return {"ells": ell[good], **{k: cl[k][..., good] for k in cl}}
 
 
-theory_cl = get_theory_powers()
-ls = np.arange(theory_cl["BB"].size)
-theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
-lens_BB = get_theory_powers(r=0)["BB"]
-prim_BB = theory_cl["BB"] - lens_BB
-prim_BB_dl = cl2dl(ls, prim_BB)
-
-
-input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
-input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", dl=True)
-full_cl_white = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz"), runs["white"]
-)
-full_cl_instr = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz"), runs["instr"]
-)
-full_dl_white = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz", dl=True), runs["white"]
-)
-full_dl_instr = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"full_cl_{MASK_REF}.npz", dl=True), runs["instr"]
-)
-noise_cl_white = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz"), runs["white"]
-)
-noise_cl_instr = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz"), runs["instr"]
-)
-noise_dl_white = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz", dl=True), runs["white"]
-)
-noise_dl_instr = jax.tree.map(
-    lambda x: load_spectra(x / "spectra" / f"noise_cl_{MASK_REF}.npz", dl=True), runs["instr"]
-)
-
-
-def _stack(cl):
+def stack_dict(cl: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
     # turn list of dicts into a single dict with stacked arrays
     return {k: np.stack(tuple(cl[i][k] for i in range(len(cl)))) for k in cl[0]}
 
 
-stack_full_cl_white = jax.tree.map(_stack, full_cl_white, is_leaf=lambda x: isinstance(x, list))
-stack_full_cl_instr = jax.tree.map(_stack, full_cl_instr, is_leaf=lambda x: isinstance(x, list))
-stack_full_dl_white = jax.tree.map(_stack, full_dl_white, is_leaf=lambda x: isinstance(x, list))
-stack_full_dl_instr = jax.tree.map(_stack, full_dl_instr, is_leaf=lambda x: isinstance(x, list))
-stack_noise_cl_white = jax.tree.map(_stack, noise_cl_white, is_leaf=lambda x: isinstance(x, list))
-stack_noise_cl_instr = jax.tree.map(_stack, noise_cl_instr, is_leaf=lambda x: isinstance(x, list))
-stack_noise_dl_white = jax.tree.map(_stack, noise_dl_white, is_leaf=lambda x: isinstance(x, list))
-stack_noise_dl_instr = jax.tree.map(_stack, noise_dl_instr, is_leaf=lambda x: isinstance(x, list))
+# ___________________________________________________________________
+# Theory spectra
 
+theory_cl = get_theory_powers(lmax=LMAX)
+ls = np.arange(theory_cl["BB"].size)
+theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
+lens_BB = get_theory_powers(r=0, lmax=LMAX)["BB"]
+prim_BB = theory_cl["BB"] - lens_BB
+prim_BB_dl = cl2dl(ls, prim_BB)
+
+input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
+input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", convert_to_dl=True)
+
+ells_full = input_dl["ells"].astype(int)
+fig, axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
+axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
+axs[0].plot(ells_full, input_dl["cl_22"][0], label="Input EE")
+axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
+axs[1].plot(ells_full, input_dl["cl_22"][3], label="Input BB")
+axs[2].plot(ells_full, input_dl["cl_22"][0] / theory_dl["EE"][ells_full], label="EE ratio")
+axs[2].plot(ells_full, input_dl["cl_22"][3] / theory_dl["BB"][ells_full], label="BB ratio")
+axs[2].set_ylim(0, 1.1)
+for i, ax in enumerate(axs):
+    ax.set_xlabel(r"$\ell$")
+    if i < 2:
+        ax.set_ylabel(r"$C_\ell [\mu K^2]$")
+    ax.legend()
+    ax.grid(True)
+fig.tight_layout()
+fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
+
+
+# ___________________________________________________________________
+# Optimality runs
+
+
+def get_run_path(k_ml_pd: str, k_noise: str, k_hwp: str, scatter: float, real: int) -> Path:
+    noise_suffix = "" if k_noise == "white" else "_instr"
+    hwp_suffix = "" if k_hwp == "hwp" else "_no_hwp"
+    folder = OPTI / ("var_increase" + noise_suffix + hwp_suffix)
+    return folder / f"{real + 1:03d}" / f"scatter_{scatter}" / k_ml_pd
+
+
+noise_cl = {
+    k_noise: {
+        k_hwp: {
+            k_ml_pd: {
+                scatter: stack_dict(
+                    [
+                        load_spectra(
+                            get_run_path(k_ml_pd, k_noise, k_hwp, scatter, real)
+                            / "spectra"
+                            / f"noise_cl_hits_{HITS}.npz"
+                        )
+                        for real in range(NUM_REAL)
+                    ]
+                )
+                for scatter in SCATTERS
+            }
+            for k_ml_pd in ["ml", "pd"]
+        }
+        for k_hwp in ["hwp", "no_hwp"]
+    }
+    for k_noise in ["white", "instr"]
+}
+# wl.pprint(noise_cl)
 
 # empirical eta (variance increase)
 # only load for hwp case since it is the same for the other one
@@ -136,9 +126,9 @@ epsilon_data = np.stack(
 etas = (1 / (1 - epsilon_data**2)).mean(axis=-1)
 
 
-def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=True):
+def plot_noise_increase(noise_type: str, relative: bool = True):
     # Determine sharey based on plot type and noise type
-    sharey = "row" if not relative and noise_type == NoiseType.INSTR else True
+    sharey = "row" if not relative and noise_type == "instr" else True
 
     # Create subplots with determined parameters
     fig, axs = plt.subplots(
@@ -157,13 +147,7 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
     # Create empty list to store legend handles
     legend_handles = []
 
-    # Dictionary to store average values
-    average_values = {"hwp": {"EE": {}, "BB": {}}, "no_hwp": {"EE": {}, "BB": {}}}
-
     for row, khwp in enumerate(["hwp", "no_hwp"]):
-        cl = stack_noise_cl_data[khwp]
-
-        # Set appropriate axis limits
         for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
             ax = axs[row, col]
             ax.grid(True)
@@ -192,25 +176,18 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
                 if row == 0:
                     legend_handles.append(line)
 
-        for i, scatter in enumerate(SCATTERS):
-            iqu = cl[scatter]["ml"]
-            pd = cl[scatter]["pd"]
-            ells = iqu["ells"][0]  # identical for all realizations
+            for i, scatter in enumerate(SCATTERS):
+                # ells don't change from realization to realization
+                ells = noise_cl[noise_type][khwp]["ml"][scatter]["ells"][0]
+                iqu = noise_cl[noise_type][khwp]["ml"][scatter]["cl_22"][:, idx]
+                pd = noise_cl[noise_type][khwp]["pd"][scatter]["cl_22"][:, idx]
 
-            if relative:
-                y = pd["cl_22"] / iqu["cl_22"] - 1
-            else:
-                y = pd["cl_22"] - iqu["cl_22"]
-
-            for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
-                spec_type = "EE" if idx == 0 else "BB"
-                ax = axs[row, col]
-                ymean = y.mean(axis=0)[idx]
-                yerr = y.std(axis=0)[idx]
-
-                # Store the average values in the dictionary
+                diff = pd - iqu
                 if relative:
-                    average_values[khwp][spec_type][scatter] = ymean
+                    diff /= iqu
+
+                ymean = diff.mean(axis=0)
+                yerr = diff.std(axis=0)
 
                 # slightly adjust ells of different scatter values for better visibility
                 ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
@@ -235,7 +212,7 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
                     if row == 0 and col == 0 and i == 0:
                         legend_handles.insert(
                             0,
-                            plt.Line2D(
+                            plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
                                 [0],
                                 [0],
                                 linestyle="--",
@@ -259,7 +236,7 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
 
     # Apply specific ylim settings for absolute plots
     if not relative:
-        if noise_type == NoiseType.WHITE:
+        if noise_type == "white":
             axs[0, 0].set_ylim(-1e-7, 1.5e-7)
         else:
             axs[0, 0].set_ylim(-0.2e-7, 2.5e-7)
@@ -267,75 +244,76 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
 
     # Save the figure
     plot_type = "relative" if relative else "absolute"
-    fig.savefig(f"var_increase_spectra_{noise_type.value}_{plot_type}.svg", bbox_inches="tight")
+    fig.savefig(f"var_increase_spectra_{noise_type}_{plot_type}.svg", bbox_inches="tight")
     plt.close(fig)
 
-    # Return the dictionary with average values
-    return average_values
 
+# Plot relative increase with white noise
+plot_noise_increase("white", relative=True)
 
-# # Plot relative increase with white noise
-# plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=True)
-
-# # Plot absolute increase with white noise
-# plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=False)
+# Plot absolute increase with white noise
+plot_noise_increase("white", relative=False)
 
 # Plot relative increase with instrumental noise
-avg_instr = plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=True)
-np.savetxt(
-    "average_increase_bins.txt",
-    np.column_stack(
-        [
-            SCATTERS,
-            etas - 1,
-            [avg_instr["hwp"]["EE"][scatter].mean() for scatter in SCATTERS],
-            [avg_instr["hwp"]["BB"][scatter].mean() for scatter in SCATTERS],
-            [avg_instr["no_hwp"]["EE"][scatter].mean() for scatter in SCATTERS],
-            [avg_instr["no_hwp"]["BB"][scatter].mean() for scatter in SCATTERS],
-        ]
-    ),
-    delimiter="\t",
-    header="scatter\teta-1\tEE hwp\tBB hwp\tEE no_hwp\tBB no_hwp",
-    fmt=["%.3f", "%.2e", "%.2e", "%.2e", "%.2e", "%.2e"],
-)
+plot_noise_increase("instr", relative=True)
 
 # Plot absolute increase with instrumental noise
-plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=False)
+plot_noise_increase("instr", relative=False)
 
 
 # ___________________________________________________________________
+# Average increase across bins
 
-_l = input_dl["ells"]
-_fig, _axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
-_axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
-_axs[0].plot(_l, input_dl["cl_22"][0], label="Input EE")
-_axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
-_axs[1].plot(_l, input_dl["cl_22"][3], label="Input BB")
-_axs[2].plot(_l, input_dl["cl_22"][0] / theory_dl["EE"][_l.astype(int)], label="EE ratio")
-_axs[2].plot(_l, input_dl["cl_22"][3] / theory_dl["BB"][_l.astype(int)], label="BB ratio")
-_axs[2].set_ylim(0, 1.1)
-for _i, _ax in enumerate(_axs):
-    _ax.set_xlabel(r"$\ell$")
-    if _i < 2:
-        _ax.set_ylabel(r"$C_\ell [\mu K^2]$")
-    _ax.legend()
-_fig.tight_layout()
-_fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
+
+def f(noise_type: str, k_hwp: str, spec_type: str, scatter: float):
+    idx = 0 if spec_type == "EE" else 3
+    iqu = noise_cl[noise_type][k_hwp]["ml"][scatter]["cl_22"][:, idx]
+    pd = noise_cl[noise_type][k_hwp]["pd"][scatter]["cl_22"][:, idx]
+    rel_diff = pd / iqu - 1
+    return rel_diff.mean()
+
+
+average_relative_increase = {
+    k_noise: {
+        k_hwp: {
+            spec_type: [f(k_noise, k_hwp, spec_type, scatter) for scatter in SCATTERS]
+            for spec_type in ["EE", "BB"]
+        }
+        for k_hwp in ["hwp", "no_hwp"]
+    }
+    for k_noise in ["white", "instr"]
+}
+
+for k, v in average_relative_increase.items():
+    np.savetxt(
+        f"average_increase_bins_{k}.txt",
+        np.column_stack(
+            [
+                SCATTERS,
+                etas - 1,
+                v["hwp"]["EE"],
+                v["hwp"]["BB"],
+                v["no_hwp"]["EE"],
+                v["no_hwp"]["BB"],
+            ]
+        ),
+        delimiter="\t",
+        header="scatter\teta-1\tEE hwp\tBB hwp\tEE no_hwp\tBB no_hwp",
+        fmt=["%.3f", "%.2e", "%.2e", "%.2e", "%.2e", "%.2e"],
+    )
 
 
 # ___________________________________________________________________
+# Increased uncertainty on r ?
 
 
-def fisher_r0(avg_noise_cl, ells, fsky: float, A_lens: float = 1.0):
-    # Get the ells and average noise power spectrum
-    N_ell = avg_noise_cl
-
+def fisher_r0(N_ell, ell_binned, fsky: float, A_lens: float = 1.0):
     # Sample prim_BB and lens_BB at ell values in ell_arr
-    prim_BB_sampled = 100 * prim_BB[ells.astype(int)]  # originally for r = 0.01
-    lens_BB_sampled = lens_BB[ells.astype(int)]
+    prim_BB_sampled = 100 * prim_BB[ell_binned]  # originally for r = 0.01
+    lens_BB_sampled = lens_BB[ell_binned]
     ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell)
 
-    return (0.5 * fsky * np.sum((2 * ells + 1) * ratio**2)) ** -0.5
+    return (0.5 * fsky * np.sum((2 * ell_binned + 1) * ratio**2)) ** -0.5
 
 
 # Compute increase in Fisher r0 for each scatter value
@@ -344,8 +322,8 @@ sigma_r0 = {
         k_ml_pd: np.array(
             [
                 fisher_r0(
-                    stack_noise_cl_instr[khwp][scatter][k_ml_pd]["cl_22"][3],
-                    stack_noise_cl_instr[khwp][scatter]["ml"]["ells"][0],
+                    noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3],
+                    noise_cl["instr"][khwp]["ml"][scatter]["ells"][0],
                     fsky=0.15,
                 )
                 for scatter in SCATTERS
@@ -355,6 +333,7 @@ sigma_r0 = {
     }
     for khwp in ["hwp", "no_hwp"]
 }
+# wl.pprint(sigma_r0, short_arrays=False)
 np.savetxt(
     "sigma_r0.txt",
     np.column_stack(
