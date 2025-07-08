@@ -23,10 +23,9 @@ class NoiseType(Enum):
 JZ = Path(__file__).parents[1].absolute() / "jz_out"
 OPTI = JZ / "opti"
 SCATTERS = [0.001, 0.01, 0.1, 0.2]
-# SCATTERS = [0.001, 0.01]
-# MASK_REF = "hits_10000"
-MASK_REF = "hits_1000"
-
+MASK_REF = "hits_10000"
+LMIN = 30
+LMAX = 500
 
 runs = {
     k_white: {
@@ -65,10 +64,10 @@ def cl2dl(ell, cl):
     return ell * (ell + 1) / 2 / np.pi * cl
 
 
-def load_spectra(path: Path | list[Path], lmax=1000, dl=False):
+def load_spectra(path: Path | list[Path], dl=False):
     cl = load_npz(path)
     ell = cl.pop("ell_arr")
-    good = ell <= lmax
+    good = (LMIN <= ell) & (ell <= LMAX)
     if dl:
         return {"ells": ell[good], **{k: cl2dl(ell[good], cl[k][..., good]) for k in cl}}
     else:
@@ -112,7 +111,7 @@ noise_dl_instr = jax.tree.map(
 
 
 def _stack(cl):
-    # assuming homogeneous shapes
+    # turn list of dicts into a single dict with stacked arrays
     return {k: np.stack(tuple(cl[i][k] for i in range(len(cl)))) for k in cl[0]}
 
 
@@ -128,7 +127,7 @@ stack_noise_dl_instr = jax.tree.map(_stack, noise_dl_instr, is_leaf=lambda x: is
 
 def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=True):
     # Determine sharey based on plot type and noise type
-    sharey = "row" if relative or noise_type == NoiseType.INSTR else True
+    sharey = "row" if not relative and noise_type == NoiseType.INSTR else True
 
     # Create subplots with determined parameters
     fig, axs = plt.subplots(
@@ -167,9 +166,13 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
 
             # Plot theory spectra if showing absolute values
             if not relative and col == 1:
-                mask = ls > 20
                 line = ax.plot(
-                    ls[mask], prim_BB[mask], "k-", lw=1.0, alpha=0.7, label=r"BB prim ($r=0.01$)"
+                    ls[ls > 20],
+                    prim_BB[ls > 20],
+                    "k-",
+                    lw=1.0,
+                    alpha=0.7,
+                    label=r"BB prim ($r=0.01$)",
                 )[0]
                 # avoid duplicate legend entries
                 if row == 0:
@@ -179,7 +182,7 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
             iqu = cl[scatter]["ml"]
             pd = cl[scatter]["pd"]
             ells = iqu["ells"][0]  # identical for all realizations
-            good = ells > 30
+            # good = ells > 30
 
             if relative:
                 y = pd["cl_22"] / iqu["cl_22"] - 1
@@ -191,11 +194,11 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
                 ymean = y.mean(axis=0)[idx]
                 yerr = y.std(axis=0)[idx]
                 # slightly adjust ells of different scatter values for better visibility
-                ells_sep = ells[good] + (i + 0.5 - len(SCATTERS) / 2) * 2
+                ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
                 errorbar = ax.errorbar(
                     ells_sep,
-                    ymean[good],
-                    yerr=yerr[good],
+                    ymean,
+                    yerr=yerr,
                     fmt=".",
                     color=colors[i],
                     linewidth=0.5,
@@ -221,17 +224,15 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
     # Autoscale axes after adding collections
     for ax in axs.flat:
         ax.autoscale()
-        ax.set_xlim(right=600)
+        ax.set_xlim(0, LMAX)
 
     # Apply specific ylim settings for absolute plots
-    if not relative:  # absolute plots
-        # Set all plots to the same ylim in white noise case
-        for ax in axs[0]:
-            ax.set_ylim(-0.5e-7, 0.5e-6)
-        if noise_type == NoiseType.INSTR:
-            # For instr noise, set different ylim when HWP is off
-            for ax in axs[1]:  # HWP off row
-                ax.set_ylim(-0.5e-6, 0.8e-5)
+    if not relative:
+        if noise_type == NoiseType.WHITE:
+            axs[0, 0].set_ylim(-1e-7, 1.5e-7)
+        else:
+            axs[0, 0].set_ylim(-0.2e-7, 2.5e-7)
+            axs[1, 0].set_ylim(-1.2e-6, 7e-6)
 
     # Save the figure
     plot_type = "relative" if relative else "absolute"
