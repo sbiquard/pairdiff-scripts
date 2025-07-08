@@ -125,6 +125,28 @@ stack_noise_dl_white = jax.tree.map(_stack, noise_dl_white, is_leaf=lambda x: is
 stack_noise_dl_instr = jax.tree.map(_stack, noise_dl_instr, is_leaf=lambda x: isinstance(x, list))
 
 
+# empirical eta (variance increase)
+epsilon_data = {
+    k_hwp: [
+        np.load(
+            JZ
+            / "opti"
+            / ("var_increase" + (f"_{k_hwp}" if k_hwp == "no_hwp" else ""))
+            / f"scatter_{scatter}"
+            / "ml"
+            / "epsilon_dist.npy"
+        )
+        for scatter in SCATTERS
+    ]
+    for k_hwp in ["hwp", "no_hwp"]
+}
+epsilon_stack = {
+    k: np.stack([epsilon_data[k][i] for i in range(len(SCATTERS))]) for k in epsilon_data
+}
+etas = {k: (1 / (1 - epsilon_stack[k] ** 2)).mean(axis=-1) for k in epsilon_stack}
+# print(etas)
+
+
 def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=True):
     # Determine sharey based on plot type and noise type
     sharey = "row" if not relative and noise_type == NoiseType.INSTR else True
@@ -209,9 +231,21 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
                 if row == 0 and col == 0:
                     legend_handles.append(errorbar)
 
-                # # Print increase averaged over bins
-                # if relative:
-                #     print(khwp, scatter, "EE" if idx == 0 else "BB", f"{y.mean():.2%}")
+                # Print increase averaged over bins
+                if relative:
+                    line = ax.axhline(etas[khwp][i] - 1, color=colors[i], alpha=0.7, linestyle="--")
+                    # Only add to legend for the first subplot to avoid duplicates
+                    if row == 0 and col == 0 and i == 0:
+                        legend_handles.insert(
+                            0,
+                            plt.Line2D(
+                                [0],
+                                [0],
+                                linestyle="--",
+                                color="gray",
+                                label="empirical expectation",
+                            ),
+                        )
 
     # Add a figure-level legend at the top
     fig.legend(
@@ -240,11 +274,11 @@ def plot_noise_increase(noise_type: NoiseType, stack_noise_cl_data, relative=Tru
     plt.close(fig)
 
 
-# Plot relative increase with white noise
-plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=True)
+# # Plot relative increase with white noise
+# plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=True)
 
-# Plot absolute increase with white noise
-plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=False)
+# # Plot absolute increase with white noise
+# plot_noise_increase(NoiseType.WHITE, stack_noise_cl_white, relative=False)
 
 # Plot relative increase with instrumental noise
 plot_noise_increase(NoiseType.INSTR, stack_noise_cl_instr, relative=True)
