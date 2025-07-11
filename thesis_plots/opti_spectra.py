@@ -286,7 +286,7 @@ average_relative_increase = {
 
 for k, v in average_relative_increase.items():
     np.savetxt(
-        f"average_increase_bins_{k}.txt",
+        f"average_increase_bins_{k}.csv",
         np.column_stack(
             [
                 SCATTERS,
@@ -297,8 +297,8 @@ for k, v in average_relative_increase.items():
                 v["no_hwp"]["BB"],
             ]
         ),
-        delimiter="\t",
-        header="scatter\teta-1\tEE hwp\tBB hwp\tEE no_hwp\tBB no_hwp",
+        delimiter=",",
+        header="scatter,eta-1,EE hwp,BB hwp,EE no_hwp,BB no_hwp",
         fmt=["%.3f", "%.2e", "%.2e", "%.2e", "%.2e", "%.2e"],
     )
 
@@ -335,16 +335,19 @@ sigma_r0 = {
 }
 # wl.pprint(sigma_r0, short_arrays=False)
 np.savetxt(
-    "sigma_r0.txt",
+    "sigma_r0.csv",
     np.column_stack(
         [
-            sigma_r0["hwp"]["ml"],
-            sigma_r0["hwp"]["pd"],
-            sigma_r0["no_hwp"]["ml"],
-            sigma_r0["no_hwp"]["pd"],
+            np.array(SCATTERS) * 100,
+            hwp_ml := sigma_r0["hwp"]["ml"],
+            hwp_pd := sigma_r0["hwp"]["pd"],
+            (hwp_pd / hwp_ml - 1) * 100,
+            no_hwp_ml := sigma_r0["no_hwp"]["ml"],
+            no_hwp_pd := sigma_r0["no_hwp"]["pd"],
+            (no_hwp_pd / no_hwp_ml - 1) * 100,
         ]
     ),
-    delimiter="\t",
-    header="IQU hwp\tPD hwp\tIQU no hwp\tPD no hwp",
-    fmt="%.6e",
+    delimiter=",",
+    header="Scatter (%),IQU hwp,PD hwp,rel increase HWP (%),IQU no hwp,PD no hwp,rel increase no HWP (%)",
+    fmt=("%.1f","%.18f","%.18f","%.18f","%.18f","%.18f","%.18f"),
 )
