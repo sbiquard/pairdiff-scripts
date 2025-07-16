@@ -49,7 +49,7 @@ def plot_res_hist(maps, sky_in, savedir):
             residual = residual[~np.isnan(residual)]
             ax.hist(
                 residual,
-                bins="auto",
+                bins=50,
                 label=f"{stoke} ; {np.mean(residual):.2e} +/- {np.std(residual):.2e} $\\mu K$",
                 histtype="step",
             )
