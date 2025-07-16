@@ -75,7 +75,7 @@ for k in eta_maps:
         uu = np.where(eta["uu"] < 0.5, np.nan, eta["uu"])  # unphysical
         # plot the eta maps for Q and U
         plt.figure(fmaps[k])
-        cartview_sky((qq - 1) * 100, sub=221 + i, title=f"z = {scatter:.1%}", unit="%")
+        cartview_sky((qq - 1) * 100, sub=221 + i, title=f"z = {scatter:.1%}", unit=r"$\%$")
         # cartview_sky(eta["uu"], sub=221 + i)
         # histogram
         ax = axsh.flat[i]
@@ -148,7 +148,7 @@ for i, ax in enumerate(axsh.flat):
 # f.tight_layout()
 my_savefig(fhist, "eta_histograms.svg")
 for k in fmaps:
-    my_savefig(fmaps[k], title=f"eta_maps_Q_{k}.png")
+    my_savefig(fmaps[k], title=f"eta_maps_Q_{k}.svg")
 
 # for i, _ in enumerate(SCATTERS):
 #     np.testing.assert_allclose(epsilons["ml"]["hwp"][i], epsilons["pd"]["hwp"][i])
