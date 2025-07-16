@@ -151,9 +151,11 @@ def process(args):
 
     # create folder for the plots
     run = Path(args.dirname)
+    ref = utils.get_last_ref(run)
+    if ref is None:
+        return
     plotdir = run / "plots"
     plotdir.mkdir(parents=True, exist_ok=True)
-    ref = utils.get_last_ref(run)
 
     # read data
     maps = utils.read_maps(args.dirname, ref=ref)

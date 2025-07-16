@@ -69,8 +69,10 @@ def contains_log(run: Path) -> bool:
     return False
 
 
-def get_last_ref(dirname):
+def get_last_ref(dirname) -> None | str:
     run = Path(dirname)
+    if not contains_log(run):
+        return None
 
     try:
         # try json first
@@ -87,6 +89,9 @@ def get_last_ref(dirname):
 
 def is_complete(run: Path):
     ref = get_last_ref(run)
+    if ref is None:
+        return False
+
     fnames = (
         f"Cond_{ref}.fits",
         f"Hits_{ref}.fits",
@@ -106,7 +111,7 @@ def read_input_sky(field=None, name=None):
     if name is None:
         name = "ffp10_lensed_scl_100_nside0512.fits"
     filename = Path(__file__).parents[1] / name
-    return 1e6 * hp.fitsfunc.read_map(filename, field=field, dtype=np.float64)
+    return 1e6 * hp.read_map(filename, field=field, dtype=np.float64)
 
 
 def read_maps(dirname, ref=None, mask=None, mirror=False):
@@ -128,13 +133,13 @@ def read_maps(dirname, ref=None, mask=None, mirror=False):
 
     try:
         if iqu:
-            maps["I"] = 1e6 * hp.fitsfunc.read_map(
+            maps["I"] = 1e6 * hp.read_map(
                 str(run / f"mapI_{ref}{mirror_suffix}.fits"), field=None, dtype=np.float64
             )
-        maps["Q"] = 1e6 * hp.fitsfunc.read_map(
+        maps["Q"] = 1e6 * hp.read_map(
             str(run / f"mapQ_{ref}{mirror_suffix}.fits"), field=None, dtype=np.float64
         )
-        maps["U"] = 1e6 * hp.fitsfunc.read_map(
+        maps["U"] = 1e6 * hp.read_map(
             str(run / f"mapU_{ref}{mirror_suffix}.fits"), field=None, dtype=np.float64
         )
     except FileNotFoundError:
@@ -154,10 +159,8 @@ def read_hits_cond(dirname, ref=None, mirror=False):
     run = Path(dirname)
     mirror_suffix = "_mirror" if mirror else ""
     try:
-        hits = hp.fitsfunc.read_map(
-            str(run / f"Hits_{ref}{mirror_suffix}.fits"), field=None, dtype=np.int32
-        )
-        cond = hp.fitsfunc.read_map(
+        hits = hp.read_map(str(run / f"Hits_{ref}{mirror_suffix}.fits"), field=None, dtype=np.int32)
+        cond = hp.read_map(
             str(run / f"Cond_{ref}{mirror_suffix}.fits"), field=None, dtype=np.float64
         )
     except FileNotFoundError:
@@ -173,7 +176,7 @@ def read_hits(dirname, ref=None):
 
     # load hits and condition number maps
     run = Path(dirname)
-    return hp.fitsfunc.read_map(str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32)
+    return hp.read_map(str(run / f"Hits_{ref}.fits"), field=None, dtype=np.int32)
 
 
 def read_residuals(dirname, ref=None):
