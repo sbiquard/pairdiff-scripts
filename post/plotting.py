@@ -7,20 +7,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utils
 
-LONRA = [-95, 135]
+LONRA_S1 = [-95, 135]
+LONRA_S2 = [-30, 90]
 LATRA = [-70, -10]
 
-cartview = functools.partial(hp.cartview, lonra=LONRA, latra=LATRA)
-cartview_sky = functools.partial(cartview, cmap="bwr", unit=r"$\mu K_{CMB}$")
+cartview_latra = functools.partial(hp.cartview, latra=LATRA, xsize=1500)
+cartview_sky_latra = functools.partial(cartview_latra, cmap="bwr", unit=r"$\mu K_{CMB}$")
 
 
-def plot_hits_cond(hits, cond, savedir, mirror_hits=None, mirror_cond=None):
+def plot_hits_cond(hits, cond, savedir, mirror_hits=None, mirror_cond=None, s2=False):
+    skyview = functools.partial(cartview_latra, lonra=LONRA_S2 if s2 else LONRA_S1)
+
     def plot(m, title, mirror_m=None):
         if mirror_m is None:
-            cartview(m, title=title)
+            skyview(m, title=title)
             return
-        cartview(m, title=title, sub=211)
-        cartview(mirror_m, title="Mirror", sub=212)
+        skyview(m, title=title, sub=211)
+        skyview(mirror_m, title="Mirror", sub=212)
 
     # Plot hits
     plot(hits, "Hits map", mirror_m=mirror_hits)
@@ -77,15 +80,18 @@ def plot_maps(
     diff_range_T: float | None = None,
     diff_range_P: float | None = None,
     mirrors=None,
+    s2: bool = False,
 ):
     nrow, ncol = 3, (3 if mirrors is None else 4)
     fig = plt.figure(figsize=(8 * ncol, 4 * nrow))
+    lonra = LONRA_S2 if s2 else LONRA_S1
+    skyview = functools.partial(cartview_sky_latra, lonra=lonra)
 
     for i, stokes in enumerate("IQU"):
         map_range = map_range_T if i == 0 else map_range_P
 
         # Plot input sky
-        cartview_sky(
+        skyview(
             sky_in[i],
             title=f"Input {stokes}",
             sub=[nrow, ncol, ncol * i + 1],
@@ -95,7 +101,7 @@ def plot_maps(
 
         if stokes in maps:
             # Plot reconstructed map
-            cartview_sky(
+            skyview(
                 maps[stokes],
                 title=f"Reconstructed {stokes} map",
                 sub=[nrow, ncol, ncol * i + 2],
@@ -109,7 +115,7 @@ def plot_maps(
             offset = np.nanmean(diff)
             rms = np.nanstd(diff)
             amp = 2 * rms
-            cartview_sky(
+            skyview(
                 diff,
                 title=f"Difference {stokes}",
                 sub=[nrow, ncol, ncol * i + 3],
@@ -119,7 +125,7 @@ def plot_maps(
 
         if mirrors is not None and stokes in mirrors:
             # Plot mirror map
-            cartview_sky(
+            skyview(
                 mirrors[stokes],
                 title=f"Mirror {stokes}",
                 sub=[nrow, ncol, ncol * i + 4],

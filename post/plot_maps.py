@@ -46,9 +46,13 @@ def process(run, args):
             m[hits_mirror == 0] = np.nan
         cond_mirror[hits_mirror == 0] = np.nan
 
-    plotting.plot_hits_cond(hits, cond, plotdir, mirror_hits=hits_mirror, mirror_cond=cond_mirror)
+    plotting.plot_hits_cond(
+        hits, cond, plotdir, mirror_hits=hits_mirror, mirror_cond=cond_mirror, s2=args.s2
+    )
     plotting.plot_res_hist(maps, sky_in, plotdir)
-    plotting.plot_maps(maps, sky_in, plotdir, diff_range_P=args.diff_range_P, mirrors=maps_mirror)
+    plotting.plot_maps(
+        maps, sky_in, plotdir, diff_range_P=args.diff_range_P, mirrors=maps_mirror, s2=args.s2
+    )
     plotting.plot_residuals(residuals, plotdir)
 
     elapsed = time.perf_counter() - tic
@@ -64,6 +68,7 @@ def main():
     parser.add_argument("--hits-percentile", type=float, default=0)
     parser.add_argument("--sky", type=str)
     parser.add_argument("-p", "--pattern", type=str, default=None)
+    parser.add_argument("-s2", action="store_true")
     args = parser.parse_args()
 
     runs = list(utils.get_all_runs(args.roots, pattern=args.pattern))
