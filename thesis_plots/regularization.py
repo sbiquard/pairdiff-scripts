@@ -28,11 +28,11 @@ ob = data.obs[0]
 freq, Pxx = welch(ob.detdata["atm"][0], fs=37, nperseg=1024)
 NET = 245.1e-6
 eta = NET**2
-print(f"Regularization: {eta * 1e12} µK²/Hz")
+# print(f"Regularization: {eta * 1e12} µK²/Hz")
 
 JZ_VALIDATION = Path("../jz_validation")
-HWP = JZ_VALIDATION / "incl/correlated-regularized-noiseless"
-NO_HWP = JZ_VALIDATION / "incl/correlated-regularized-nohwp-noiseless"
+HWP = JZ_VALIDATION / "incl/correlated-regularized"
+NO_HWP = JZ_VALIDATION / "incl/correlated-regularized-nohwp"
 
 SKY = 1e6 * hp.read_map(
     Path("..") / "ffp10_lensed_scl_100_nside0512.fits",
