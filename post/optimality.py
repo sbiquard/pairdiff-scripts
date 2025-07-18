@@ -8,6 +8,7 @@ import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import toml
 from furax import TreeOperator
 from furax.obs.stokes import Stokes, StokesIQU, StokesQU
@@ -15,6 +16,7 @@ from furax_preconditioner import BJPreconditioner
 from timer import Timer
 from utils import get_last_ref
 
+sns.set_theme(context="paper", style="ticks")
 jax.config.update("jax_enable_x64", True)
 
 OPTI = Path("..") / "out" / "opti"
@@ -24,7 +26,7 @@ SAVE_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 SCATTERS = [0.001, 0.01, 0.1, 0.2]
 
 
-def my_savefig(fig, title: str, close: bool = True, dpi=200):
+def my_savefig(fig, title: str, close: bool = True, dpi=600):
     fig.savefig(SAVE_PLOTS_DIR / title, bbox_inches="tight", dpi=dpi)
     if close:
         plt.close(fig)
@@ -327,6 +329,12 @@ with Timer(thread="compute-variance-increase-scatter"):
             alpha_qq = val[scatter].tree.q.q - 1
             alpha_uu = val[scatter].tree.u.u - 1
 
+            np.savez(
+                SAVE_PLOTS_DIR / "data" / f"eta_scatter{scatter}_{k_hwp}",
+                qq=val[scatter].tree.q.q,
+                uu=val[scatter].tree.u.u,
+            )
+
             means_qq.append(jnp.nanmean(alpha_qq))
             means_uu.append(jnp.nanmean(alpha_uu))
 
@@ -335,8 +343,6 @@ with Timer(thread="compute-variance-increase-scatter"):
 
             p_qq.append(jnp.nanpercentile(alpha_qq, q))
             p_uu.append(jnp.nanpercentile(alpha_uu, q))
-
-        x_m = jnp.array(SCATTERS)
 
         np.savez(
             SAVE_PLOTS_DIR / "data" / f"variance_increase_white_{k_hwp}",
