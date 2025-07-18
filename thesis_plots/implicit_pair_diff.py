@@ -12,13 +12,12 @@ sns.set_theme(context="notebook", style="ticks")
 
 
 JZ_VALIDATION = Path("../jz_validation")
-JZ_LEAK = Path("../jz_out/leak")
 BINNED_HWP = JZ_VALIDATION / "incl/binned/ml"
 BINNED_NO_HWP = JZ_VALIDATION / "incl/binned-nohwp"
-HWP = JZ_LEAK / "incl_turnarounds/correlated/ml"
-NO_HWP = JZ_LEAK / "incl_turnarounds/correlated_no_hwp/ml"
-HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-cond-noiseless"
-NO_HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-cond-nohwp-noiseless"
+HWP = JZ_VALIDATION / "incl/correlated"
+NO_HWP = JZ_VALIDATION / "incl/correlated_no_hwp"
+HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-noiseless"
+NO_HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-nohwp-noiseless"
 
 SKY = 1e6 * hp.read_map(
     Path("..") / "ffp10_lensed_scl_100_nside0512.fits",
