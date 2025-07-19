@@ -100,8 +100,14 @@ for hwp_config in ["hwp", "no_hwp"]:
     for stokes in ["Q", "U"]:
         r = residuals[hwp_config][stokes]
         offset = np.nanmean(r)
-        rms = np.nanstd(r)
-        amp = 2 * rms
+
+        # Use fixed range for HWP residuals as requested
+        if hwp_config == "hwp":
+            min_val = -1e-6
+            max_val = 1e-6
+        else:
+            min_val = -1e-2
+            max_val = +1e-2
 
         row, col = plot_positions[(hwp_config, stokes)]
 
@@ -109,8 +115,8 @@ for hwp_config in ["hwp", "no_hwp"]:
             r,
             sub=(2, 2, row * 2 + col + 1),
             title=f"{hwp_label} {stokes} Residuals",
-            min=offset - amp,
-            max=offset + amp,
+            min=min_val,
+            max=max_val,
         )
 
 fig.savefig("regularization_maps.svg", dpi=600, bbox_inches="tight")
