@@ -15,7 +15,7 @@ JZ_VALIDATION = Path("../jz_validation")
 BINNED_HWP = JZ_VALIDATION / "incl/binned/ml"
 BINNED_NO_HWP = JZ_VALIDATION / "incl/binned-nohwp"
 HWP = JZ_VALIDATION / "incl/correlated"
-NO_HWP = JZ_VALIDATION / "incl/correlated_no_hwp"
+NO_HWP = JZ_VALIDATION / "incl/correlated-nohwp"
 HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-noiseless"
 NO_HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-nohwp-noiseless"
 
@@ -93,7 +93,7 @@ for i, stokes in enumerate(["Q", "U"]):
             max=offset + amp,
         )
 
-# fig.savefig("implicit_pair_diff.svg", dpi=600, bbox_inches="tight")
+fig.savefig("implicit_pair_diff.svg", dpi=600, bbox_inches="tight")
 
 # Set up figure comparing residuals between noiseless and non noiseless runs
 fig = plt.figure(figsize=(12, 6))
