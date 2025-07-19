@@ -114,7 +114,7 @@ for hwp_config in ["hwp", "no_hwp"]:
         cartview(
             r,
             sub=(2, 2, row * 2 + col + 1),
-            title=f"{hwp_label} {stokes} Residuals",
+            title=f"{hwp_label} {stokes} Regularized",
             min=min_val,
             max=max_val,
         )

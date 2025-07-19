@@ -18,6 +18,8 @@ HWP = JZ_VALIDATION / "incl/correlated"
 NO_HWP = JZ_VALIDATION / "incl/correlated-nohwp"
 HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-noiseless"
 NO_HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-nohwp-noiseless"
+HWP_NOISELESS_POLAR = JZ_VALIDATION / "incl/correlated-noiseless-polar"
+NO_HWP_NOISELESS_POLAR = JZ_VALIDATION / "incl/correlated-nohwp-noiseless-polar"
 
 SKY = 1e6 * hp.read_map(
     Path("..") / "ffp10_lensed_scl_100_nside0512.fits",
@@ -46,6 +48,8 @@ data_sources = {
     "no_hwp_noiseless": NO_HWP_NOISELESS,
     "binned_hwp": BINNED_HWP,
     "binned_no_hwp": BINNED_NO_HWP,
+    "hwp_noiseless_polar": HWP_NOISELESS_POLAR,
+    "no_hwp_noiseless_polar": NO_HWP_NOISELESS_POLAR,
 }
 
 # Read hitmaps and maps for each data source
@@ -83,27 +87,45 @@ for i, stokes in enumerate(["Q", "U"]):
 
         r = residuals[hwp_config][stokes]
         offset = np.nanmean(r)
-        rms = np.nanstd(r)
-        amp = 2 * rms
+
+        # Use custom color range based on the type of run
+        if "binned" in hwp_config:
+            # For binned runs, use +/- 1e-10
+            min_val = -1e-10
+            max_val = +1e-10
+        elif hwp_config == "hwp":
+            # For correlated HWP, use +/- 5
+            min_val = -5
+            max_val = +5
+        else:
+            # For other configurations, use the original 2*rms
+            rms = np.nanstd(r)
+            min_val = offset - 2 * rms
+            max_val = offset + 2 * rms
+
         cartview(
             r,
             sub=(2, 4, plot_num),
             title=f"{hwp_label} {stokes} Residuals",
-            min=offset - amp,
-            max=offset + amp,
+            min=min_val,
+            max=max_val,
         )
 
 fig.savefig("implicit_pair_diff.svg", dpi=600, bbox_inches="tight")
 
+
 # Set up figure comparing residuals between noiseless and non noiseless runs
-fig = plt.figure(figsize=(12, 6))
+fig = plt.figure(figsize=(10, 5))  # Wider to accommodate third column
 
 # Compare noiseless vs non-noiseless runs for both HWP and no HWP configurations
-configurations = [("hwp", "hwp_noiseless", "HWP"), ("no_hwp", "no_hwp_noiseless", "No HWP")]
+configurations = [
+    ("hwp", "hwp_noiseless", "hwp_noiseless_polar", "HWP"),
+    ("no_hwp", "no_hwp_noiseless", "no_hwp_noiseless_polar", "No HWP"),
+]
 
 stokes = "Q"  # Only compare Q as requested
 
-for j, (noisy_config, noiseless_config, label) in enumerate(configurations):
+for j, (noisy_config, noiseless_config, polar_noiseless_config, label) in enumerate(configurations):
     # Noisy residuals
     r_noisy = residuals[noisy_config][stokes]
     offset_noisy = np.nanmean(r_noisy)
@@ -114,42 +136,61 @@ for j, (noisy_config, noiseless_config, label) in enumerate(configurations):
     offset_noiseless = np.nanmean(r_noiseless)
     rms_noiseless = np.nanstd(r_noiseless)
 
-    # Use the same scale for both plots for fair comparison
-    amp = 2 * max(rms_noisy, rms_noiseless)
+    # Noiseless polar residuals
+    r_noiseless_polar = residuals[polar_noiseless_config][stokes]
+    offset_noiseless_polar = np.nanmean(r_noiseless_polar)
+    rms_noiseless_polar = np.nanstd(r_noiseless_polar)
 
     # Plot noisy residuals
-    plot_num = j * 3 + 1
+    plot_num = j * 3 + 1  # Modified for 3 columns
+    if label == "HWP":
+        min_val = -5
+        max_val = +5
+    else:
+        min_val = offset_noisy - 2 * rms_noisy
+        max_val = offset_noisy + 2 * rms_noisy
+
     cartview(
         r_noisy,
-        sub=(2, 3, plot_num),
+        sub=(2, 3, plot_num),  # Modified for 3 columns
         title=f"{label} {stokes} (with atmosphere)",
-        min=offset_noisy - 2 * rms_noisy,
-        max=offset_noisy + 2 * rms_noisy,
+        min=min_val,
+        max=max_val,
     )
 
     # Plot noiseless residuals
-    plot_num = j * 3 + 2
+    plot_num = j * 3 + 2  # Modified for 3 columns
+    if label == "HWP":
+        min_val = -2e-5
+        max_val = +2e-5
+    else:
+        # No HWP noiseless
+        min_val = offset_noiseless - 2 * rms_noiseless
+        max_val = offset_noiseless + 2 * rms_noiseless
+
     cartview(
         r_noiseless,
-        sub=(2, 3, plot_num),
+        sub=(2, 3, plot_num),  # Modified for 3 columns
         title=f"{label} {stokes} (noiseless)",
-        min=offset_noiseless - 2 * rms_noiseless,
-        max=offset_noiseless + 2 * rms_noiseless,
+        min=min_val,
+        max=max_val,
     )
 
-    # Plot noise increase (difference between noisy and noiseless)
-    plot_num = j * 3 + 3
-    noise_increase = r_noisy - r_noiseless
-    noise_offset = np.nanmean(noise_increase)
-    noise_rms = np.nanstd(noise_increase)
-    noise_amp = 2 * noise_rms
+    # Plot noiseless polar residuals
+    plot_num = j * 3 + 3  # Third column
+    if label == "HWP":
+        min_val = -1e-7
+        max_val = +1e-7
+    else:
+        min_val = offset_noiseless_polar - 2 * rms_noiseless_polar
+        max_val = offset_noiseless_polar + 2 * rms_noiseless_polar
 
     cartview(
-        noise_increase,
+        r_noiseless_polar,
         sub=(2, 3, plot_num),
-        title=f"{label} {stokes} difference",
-        min=noise_offset - noise_amp,
-        max=noise_offset + noise_amp,
+        title=f"{label} {stokes} (polarization only)",
+        min=min_val,
+        max=max_val,
     )
 
 fig.savefig("noiseless_comparison.svg", dpi=600, bbox_inches="tight")
