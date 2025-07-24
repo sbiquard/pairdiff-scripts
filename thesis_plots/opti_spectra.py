@@ -2,11 +2,13 @@
 
 from pathlib import Path
 
+import healpy as hp
 import jax
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
 import seaborn as sns
+from implicit_pair_diff import cartview
 
 # import wadler_lindig as wl
 from theory_spectra import get_theory_powers
@@ -78,6 +80,19 @@ for i, ax in enumerate(axs):
     ax.grid(True)
 fig.tight_layout()
 fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
+
+
+# ___________________________________________________________________
+# Synthetic Q/U maps from pure B-mode simulation
+
+zeros = np.zeros_like(prim_BB)
+almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
+mapIQU = hp.alm2map(almTEB, 512, pol=True)
+
+fig = plt.figure(figsize=(10, 5))
+cartview(mapIQU[1], title="Q", sub=121, fig=fig)
+cartview(mapIQU[2], title="U", sub=122, fig=fig)
+fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
 
 
 # ___________________________________________________________________
@@ -349,5 +364,5 @@ np.savetxt(
     ),
     delimiter=",",
     header="Scatter (%),IQU hwp,PD hwp,rel increase HWP (%),IQU no hwp,PD no hwp,rel increase no HWP (%)",
-    fmt=("%.1f","%.18f","%.18f","%.18f","%.18f","%.18f","%.18f"),
+    fmt=("%.1f", "%.18f", "%.18f", "%.18f", "%.18f", "%.18f", "%.18f"),
 )
