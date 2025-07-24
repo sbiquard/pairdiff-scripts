@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
 import seaborn as sns
-from implicit_pair_diff import cartview
 
 # import wadler_lindig as wl
+from implicit_pair_diff import cartview
 from theory_spectra import get_theory_powers
 
 sns.set_theme(context="notebook", style="ticks")
@@ -328,10 +328,12 @@ def fisher_r0(N_ell, ell_binned, fsky: float, A_lens: float = 1.0):
     lens_BB_sampled = lens_BB[ell_binned]
     ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell)
 
-    return (0.5 * fsky * np.sum((2 * ell_binned + 1) * ratio**2)) ** -0.5
+    # compute for each realization (so do not sum over axis 0)
+    return (0.5 * fsky * np.sum((2 * ell_binned + 1) * ratio**2, axis=-1)) ** -0.5
 
 
 # Compute increase in Fisher r0 for each scatter value
+# wl.pprint(noise_cl["instr"]["hwp"])
 sigma_r0 = {
     khwp: {
         k_ml_pd: np.array(
@@ -348,21 +350,38 @@ sigma_r0 = {
     }
     for khwp in ["hwp", "no_hwp"]
 }
-# wl.pprint(sigma_r0, short_arrays=False)
+# wl.pprint(sigma_r0)
 np.savetxt(
-    "sigma_r0.csv",
+    "sigma_r0_avg.csv",
     np.column_stack(
         [
             np.array(SCATTERS) * 100,
-            hwp_ml := sigma_r0["hwp"]["ml"],
-            hwp_pd := sigma_r0["hwp"]["pd"],
-            (hwp_pd / hwp_ml - 1) * 100,
-            no_hwp_ml := sigma_r0["no_hwp"]["ml"],
-            no_hwp_pd := sigma_r0["no_hwp"]["pd"],
-            (no_hwp_pd / no_hwp_ml - 1) * 100,
+            hwp_ml_avg := sigma_r0["hwp"]["ml"].mean(axis=1),
+            hwp_pd_avg := sigma_r0["hwp"]["pd"].mean(axis=1),
+            (hwp_pd_avg / hwp_ml_avg - 1) * 100,
+            no_hwp_ml_avg := sigma_r0["no_hwp"]["ml"].mean(axis=1),
+            no_hwp_pd_avg := sigma_r0["no_hwp"]["pd"].mean(axis=1),
+            (no_hwp_pd_avg / no_hwp_ml_avg - 1) * 100,
         ]
     ),
     delimiter=",",
     header="Scatter (%),IQU hwp,PD hwp,rel increase HWP (%),IQU no hwp,PD no hwp,rel increase no HWP (%)",
     fmt=("%.1f", "%.18f", "%.18f", "%.18f", "%.18f", "%.18f", "%.18f"),
+)
+
+# Save a second file with standard deviations
+np.savetxt(
+    "sigma_r0_std.csv",
+    np.column_stack(
+        [
+            np.array(SCATTERS) * 100,
+            sigma_r0["hwp"]["ml"].std(axis=1),
+            sigma_r0["hwp"]["pd"].std(axis=1),
+            sigma_r0["no_hwp"]["ml"].std(axis=1),
+            sigma_r0["no_hwp"]["pd"].std(axis=1),
+        ]
+    ),
+    delimiter=",",
+    header="Scatter (%),IQU hwp std,PD hwp std,IQU no hwp std,PD no hwp std",
+    fmt=("%.1f", "%.18f", "%.18f", "%.18f", "%.18f"),
 )

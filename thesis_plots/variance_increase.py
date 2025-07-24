@@ -113,6 +113,15 @@ for k in eta_maps:
         ax.plot(q_bin_centers, q_gaussian, ls="--", lw=0.8, color="b" if k == "hwp" else "g")
         # ax.axvline(np.nanmean(qq) - 1, color="k", ls="--")
 
+        # Add shaded region for Q hwp cases between 10th and 90th percentiles
+        if k == "hwp":
+            # Calculate 10th and 90th percentiles
+            p10 = np.percentile(q_values, 10)
+            p90 = np.percentile(q_values, 90)
+
+            # Create shaded region
+            ax.axvspan(p10, p90, alpha=0.3, color="grey")
+
         # U histogram
         # Calculate histogram and bin centers for U values
         u_hist, u_bins = np.histogram((uu - 1)[~np.isnan(uu)], bins=100)
