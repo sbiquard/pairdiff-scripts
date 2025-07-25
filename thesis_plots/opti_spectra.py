@@ -53,46 +53,46 @@ def stack_dict(cl: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
 # ___________________________________________________________________
 # Theory spectra
 
-theory_cl = get_theory_powers(lmax=LMAX)
-ls = np.arange(theory_cl["BB"].size)
-theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
-lens_BB = get_theory_powers(r=0, lmax=LMAX)["BB"]
-prim_BB = theory_cl["BB"] - lens_BB
-prim_BB_dl = cl2dl(ls, prim_BB)
+# theory_cl = get_theory_powers(lmax=LMAX)
+# ls = np.arange(theory_cl["BB"].size)
+# theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
+# lens_BB = get_theory_powers(r=0, lmax=LMAX)["BB"]
+# prim_BB = theory_cl["BB"] - lens_BB
+# prim_BB_dl = cl2dl(ls, prim_BB)
 
 input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
 input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", convert_to_dl=True)
 
-ells_full = input_dl["ells"].astype(int)
-fig, axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
-axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
-axs[0].plot(ells_full, input_dl["cl_22"][0], label="Input EE")
-axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
-axs[1].plot(ells_full, input_dl["cl_22"][3], label="Input BB")
-axs[2].plot(ells_full, input_dl["cl_22"][0] / theory_dl["EE"][ells_full], label="EE ratio")
-axs[2].plot(ells_full, input_dl["cl_22"][3] / theory_dl["BB"][ells_full], label="BB ratio")
-axs[2].set_ylim(0, 1.1)
-for i, ax in enumerate(axs):
-    ax.set_xlabel(r"$\ell$")
-    if i < 2:
-        ax.set_ylabel(r"$C_\ell [\mu K^2]$")
-    ax.legend()
-    ax.grid(True)
-fig.tight_layout()
-fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
+# ells_full = input_dl["ells"].astype(int)
+# fig, axs = plt.subplots(1, 3, figsize=(15, 4), sharex=True)
+# axs[0].plot(ls[2:], theory_dl["EE"][2:], "k:", label="EE theory")
+# axs[0].plot(ells_full, input_dl["cl_22"][0], label="Input EE")
+# axs[1].plot(ls, theory_dl["BB"], "k:", label="BB theory")
+# axs[1].plot(ells_full, input_dl["cl_22"][3], label="Input BB")
+# axs[2].plot(ells_full, input_dl["cl_22"][0] / theory_dl["EE"][ells_full], label="EE ratio")
+# axs[2].plot(ells_full, input_dl["cl_22"][3] / theory_dl["BB"][ells_full], label="BB ratio")
+# axs[2].set_ylim(0, 1.1)
+# for i, ax in enumerate(axs):
+#     ax.set_xlabel(r"$\ell$")
+#     if i < 2:
+#         ax.set_ylabel(r"$C_\ell [\mu K^2]$")
+#     ax.legend()
+#     ax.grid(True)
+# fig.tight_layout()
+# fig.savefig("input_vs_theory_spectra.svg", bbox_inches="tight")
 
 
 # ___________________________________________________________________
 # Synthetic Q/U maps from pure B-mode simulation
 
-zeros = np.zeros_like(prim_BB)
-almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
-mapIQU = hp.alm2map(almTEB, 512, pol=True)
+# zeros = np.zeros_like(prim_BB)
+# almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
+# mapIQU = hp.alm2map(almTEB, 512, pol=True)
 
-fig = plt.figure(figsize=(10, 5))
-cartview(mapIQU[1], title="Q", sub=121, fig=fig)
-cartview(mapIQU[2], title="U", sub=122, fig=fig)
-fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
+# fig = plt.figure(figsize=(10, 5))
+# cartview(mapIQU[1], title="Q", sub=121, fig=fig)
+# cartview(mapIQU[2], title="U", sub=122, fig=fig)
+# fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
 
 
 # ___________________________________________________________________
@@ -141,139 +141,139 @@ epsilon_data = np.stack(
 etas = (1 / (1 - epsilon_data**2)).mean(axis=-1)
 
 
-def plot_noise_increase(noise_type: str, relative: bool = True):
-    # Determine sharey based on plot type and noise type
-    sharey = "row" if not relative and noise_type == "instr" else True
+# def plot_noise_increase(noise_type: str, relative: bool = True):
+#     # Determine sharey based on plot type and noise type
+#     sharey = "row" if not relative and noise_type == "instr" else True
 
-    # Create subplots with determined parameters
-    fig, axs = plt.subplots(
-        2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey=sharey
-    )
+#     # Create subplots with determined parameters
+#     fig, axs = plt.subplots(
+#         2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey=sharey
+#     )
 
-    # Set titles for rows
-    axs[0, 0].set_title("EE, HWP on")
-    axs[0, 1].set_title("BB, HWP on")
-    axs[1, 0].set_title("EE, HWP off")
-    axs[1, 1].set_title("BB, HWP off")
+#     # Set titles for rows
+#     axs[0, 0].set_title("EE, HWP on")
+#     axs[0, 1].set_title("BB, HWP on")
+#     axs[1, 0].set_title("EE, HWP off")
+#     axs[1, 1].set_title("BB, HWP off")
 
-    flare = sns.color_palette("flare", as_cmap=True)
-    colors = [flare(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+#     flare = sns.color_palette("flare", as_cmap=True)
+#     colors = [flare(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
 
-    # Create empty list to store legend handles
-    legend_handles = []
+#     # Create empty list to store legend handles
+#     legend_handles = []
 
-    for row, khwp in enumerate(["hwp", "no_hwp"]):
-        for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
-            ax = axs[row, col]
-            ax.grid(True)
+#     for row, khwp in enumerate(["hwp", "no_hwp"]):
+#         for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
+#             ax = axs[row, col]
+#             ax.grid(True)
 
-            if col == 0:  # Only set ylabel on first column
-                if relative:
-                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} / N_\ell^\mathsf{iqu} - 1$")
-                    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-                else:
-                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
+#             if col == 0:  # Only set ylabel on first column
+#                 if relative:
+#                     ax.set_ylabel(r"$N_\ell^\mathsf{pd} / N_\ell^\mathsf{iqu} - 1$")
+#                     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+#                 else:
+#                     ax.set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
 
-            if row == 1:  # Only set xlabel on bottom row
-                ax.set_xlabel(r"Multipole $\ell$")
+#             if row == 1:  # Only set xlabel on bottom row
+#                 ax.set_xlabel(r"Multipole $\ell$")
 
-            # Plot theory spectra if showing absolute values
-            if not relative and col == 1:
-                line = ax.plot(
-                    ls[ls > 20],
-                    prim_BB[ls > 20],
-                    "k-",
-                    lw=1.0,
-                    alpha=0.7,
-                    label=r"BB prim ($r=0.01$)",
-                )[0]
-                # avoid duplicate legend entries
-                if row == 0:
-                    legend_handles.append(line)
+#             # Plot theory spectra if showing absolute values
+#             if not relative and col == 1:
+#                 line = ax.plot(
+#                     ls[ls > 20],
+#                     prim_BB[ls > 20],
+#                     "k-",
+#                     lw=1.0,
+#                     alpha=0.7,
+#                     label=r"BB prim ($r=0.01$)",
+#                 )[0]
+#                 # avoid duplicate legend entries
+#                 if row == 0:
+#                     legend_handles.append(line)
 
-            for i, scatter in enumerate(SCATTERS):
-                # ells don't change from realization to realization
-                ells = noise_cl[noise_type][khwp]["ml"][scatter]["ells"][0]
-                iqu = noise_cl[noise_type][khwp]["ml"][scatter]["cl_22"][:, idx]
-                pd = noise_cl[noise_type][khwp]["pd"][scatter]["cl_22"][:, idx]
+#             for i, scatter in enumerate(SCATTERS):
+#                 # ells don't change from realization to realization
+#                 ells = noise_cl[noise_type][khwp]["ml"][scatter]["ells"][0]
+#                 iqu = noise_cl[noise_type][khwp]["ml"][scatter]["cl_22"][:, idx]
+#                 pd = noise_cl[noise_type][khwp]["pd"][scatter]["cl_22"][:, idx]
 
-                diff = pd - iqu
-                if relative:
-                    diff /= iqu
+#                 diff = pd - iqu
+#                 if relative:
+#                     diff /= iqu
 
-                ymean = diff.mean(axis=0)
-                yerr = diff.std(axis=0)
+#                 ymean = diff.mean(axis=0)
+#                 yerr = diff.std(axis=0)
 
-                # slightly adjust ells of different scatter values for better visibility
-                ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
-                errorbar = ax.errorbar(
-                    ells_sep,
-                    ymean,
-                    yerr=yerr,
-                    fmt=".",
-                    color=colors[i],
-                    linewidth=0.5,
-                    label=f"Scatter {scatter:.1%}",
-                )
+#                 # slightly adjust ells of different scatter values for better visibility
+#                 ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
+#                 errorbar = ax.errorbar(
+#                     ells_sep,
+#                     ymean,
+#                     yerr=yerr,
+#                     fmt=".",
+#                     color=colors[i],
+#                     linewidth=0.5,
+#                     label=f"Scatter {scatter:.1%}",
+#                 )
 
-                # Only add to legend for the first subplot to avoid duplicates
-                if row == 0 and col == 0:
-                    legend_handles.append(errorbar)
+#                 # Only add to legend for the first subplot to avoid duplicates
+#                 if row == 0 and col == 0:
+#                     legend_handles.append(errorbar)
 
-                # Print increase averaged over bins
-                if relative:
-                    line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
-                    # Only add to legend for the first subplot to avoid duplicates
-                    if row == 0 and col == 0 and i == 0:
-                        legend_handles.insert(
-                            0,
-                            plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
-                                [0],
-                                [0],
-                                linestyle="--",
-                                color="gray",
-                                label="empirical expectation",
-                            ),
-                        )
+#                 # Print increase averaged over bins
+#                 if relative:
+#                     line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
+#                     # Only add to legend for the first subplot to avoid duplicates
+#                     if row == 0 and col == 0 and i == 0:
+#                         legend_handles.insert(
+#                             0,
+#                             plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
+#                                 [0],
+#                                 [0],
+#                                 linestyle="--",
+#                                 color="gray",
+#                                 label="empirical expectation",
+#                             ),
+#                         )
 
-    # Add a figure-level legend at the top
-    fig.legend(
-        handles=legend_handles,
-        labels=[h.get_label() for h in legend_handles],
-        loc="outside upper center",
-        ncol=len(legend_handles),  # everything on one line
-    )
+#     # Add a figure-level legend at the top
+#     fig.legend(
+#         handles=legend_handles,
+#         labels=[h.get_label() for h in legend_handles],
+#         loc="outside upper center",
+#         ncol=len(legend_handles),  # everything on one line
+#     )
 
-    # Autoscale axes after adding collections
-    for ax in axs.flat:
-        ax.autoscale()
-        ax.set_xlim(0, LMAX)
+#     # Autoscale axes after adding collections
+#     for ax in axs.flat:
+#         ax.autoscale()
+#         ax.set_xlim(0, LMAX)
 
-    # Apply specific ylim settings for absolute plots
-    if not relative:
-        if noise_type == "white":
-            axs[0, 0].set_ylim(-1e-7, 1.5e-7)
-        else:
-            axs[0, 0].set_ylim(-0.2e-7, 2.5e-7)
-            axs[1, 0].set_ylim(-1.2e-6, 7e-6)
+#     # Apply specific ylim settings for absolute plots
+#     if not relative:
+#         if noise_type == "white":
+#             axs[0, 0].set_ylim(-1e-7, 1.5e-7)
+#         else:
+#             axs[0, 0].set_ylim(-0.2e-7, 2.5e-7)
+#             axs[1, 0].set_ylim(-1.2e-6, 7e-6)
 
-    # Save the figure
-    plot_type = "relative" if relative else "absolute"
-    fig.savefig(f"var_increase_spectra_{noise_type}_{plot_type}.svg", bbox_inches="tight")
-    plt.close(fig)
+#     # Save the figure
+#     plot_type = "relative" if relative else "absolute"
+#     fig.savefig(f"var_increase_spectra_{noise_type}_{plot_type}.svg", bbox_inches="tight")
+#     plt.close(fig)
 
 
-# Plot relative increase with white noise
-plot_noise_increase("white", relative=True)
+# # Plot relative increase with white noise
+# plot_noise_increase("white", relative=True)
 
-# Plot absolute increase with white noise
-plot_noise_increase("white", relative=False)
+# # Plot absolute increase with white noise
+# plot_noise_increase("white", relative=False)
 
-# Plot relative increase with instrumental noise
-plot_noise_increase("instr", relative=True)
+# # Plot relative increase with instrumental noise
+# plot_noise_increase("instr", relative=True)
 
-# Plot absolute increase with instrumental noise
-plot_noise_increase("instr", relative=False)
+# # Plot absolute increase with instrumental noise
+# plot_noise_increase("instr", relative=False)
 
 
 # ___________________________________________________________________
@@ -317,6 +317,113 @@ for k, v in average_relative_increase.items():
         fmt=["%.3f", "%.2e", "%.2e", "%.2e", "%.2e", "%.2e"],
     )
 
+# ___________________________________________________________________
+# Inspect low-ell bins in no HWP case and scatter of 1%
+
+scatter_idx = SCATTERS.index(0.01)  # 1% scatter
+khwp = "no_hwp"
+
+# Get the data
+ells = noise_cl["instr"][khwp]["ml"][0.01]["ells"][0]
+iqu_ee = noise_cl["instr"][khwp]["ml"][0.01]["cl_22"][:, 0]  # EE
+pd_ee = noise_cl["instr"][khwp]["pd"][0.01]["cl_22"][:, 0]  # EE
+iqu_bb = noise_cl["instr"][khwp]["ml"][0.01]["cl_22"][:, 3]  # BB
+pd_bb = noise_cl["instr"][khwp]["pd"][0.01]["cl_22"][:, 3]  # BB
+
+# Calculate differences (PD - IQU)
+diff_ee = pd_ee - iqu_ee
+diff_bb = pd_bb - iqu_bb
+
+# Create figure with 2 subplots for the differences in the first ell bin
+fig, axs = plt.subplots(1, 2, figsize=(12, 5), layout="constrained", sharex=True, sharey=True)
+
+# Get values for the first ell bin for both spectra types
+first_bin_idx = 0  # First ell bin
+diff_ee_first_bin = diff_ee[:, first_bin_idx]
+diff_bb_first_bin = diff_bb[:, first_bin_idx]
+
+# Plot EE differences
+axs[0].set_title("EE")
+for i in range(len(diff_ee_first_bin)):
+    axs[0].scatter([i], [diff_ee_first_bin[i]], color="purple", marker="o")
+
+# Add mean line and shaded region for standard deviation
+diff_ee_mean = diff_ee_first_bin.mean()
+diff_ee_std = diff_ee_first_bin.std()
+
+x_range = np.array([-1, len(diff_ee_first_bin)])
+axs[0].axhline(
+    diff_ee_mean, color="purple", linestyle="dashed", linewidth=2, label="Mean difference"
+)
+axs[0].axhline(0, color="black", linestyle="solid", linewidth=1, alpha=0.5, label="Zero line")
+axs[0].fill_between(
+    x_range,
+    [diff_ee_mean - diff_ee_std] * 2,
+    [diff_ee_mean + diff_ee_std] * 2,
+    color="purple",
+    alpha=0.2,
+    label="±1σ",
+)
+
+axs[0].set_xlabel("Realization index")
+axs[0].set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
+axs[0].set_xlim(-1, len(diff_ee_first_bin))
+axs[0].grid(True)
+
+# Plot BB differences
+axs[1].set_title("BB")
+for i in range(len(diff_bb_first_bin)):
+    axs[1].scatter([i], [diff_bb_first_bin[i]], color="purple", marker="o")
+
+# Add mean line and shaded region for standard deviation
+diff_bb_mean = diff_bb_first_bin.mean()
+diff_bb_std = diff_bb_first_bin.std()
+
+axs[1].axhline(
+    diff_bb_mean, color="purple", linestyle="dashed", linewidth=2, label="Mean difference"
+)
+axs[1].axhline(0, color="black", linestyle="solid", linewidth=1, alpha=0.5, label="Zero line")
+axs[1].fill_between(
+    x_range,
+    [diff_bb_mean - diff_bb_std] * 2,
+    [diff_bb_mean + diff_bb_std] * 2,
+    color="purple",
+    alpha=0.2,
+    label="±1σ",
+)
+
+axs[1].set_xlabel("Realization index")
+axs[1].set_xlim(-1, len(diff_bb_first_bin))
+axs[1].grid(True)
+
+# Create figure-level legend
+handles, labels = axs[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="outside upper center", ncol=3)
+
+# Add text with statistics
+for i, (diff_data, iqu_data, title) in enumerate(
+    [
+        (diff_ee_first_bin, iqu_ee[:, first_bin_idx], "EE"),
+        (diff_bb_first_bin, iqu_bb[:, first_bin_idx], "BB"),
+    ]
+):
+    stats_text = (
+        f"Mean diff: {diff_data.mean():.5e}\n"
+        f"Std diff: {diff_data.std():.5e}\n"
+        # f"Relative diff: {(diff_data.mean() / iqu_data.mean()):.2%}"
+    )
+    axs[i].text(
+        0.05,
+        0.95,
+        stats_text,
+        transform=axs[i].transAxes,
+        verticalalignment="top",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+    )
+
+fig.savefig("noise_difference_first_bin_no_hwp_1pct.svg", bbox_inches="tight", dpi=150)
+plt.close(fig)
+exit()
 
 # ___________________________________________________________________
 # Increased uncertainty on r ?
