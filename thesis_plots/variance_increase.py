@@ -116,11 +116,17 @@ for k in eta_maps:
         # Add shaded region for Q hwp cases between 10th and 90th percentiles
         if k == "hwp":
             # Calculate 10th and 90th percentiles
-            p10 = np.percentile(q_values, 10)
-            p90 = np.percentile(q_values, 90)
+            p01 = np.percentile(q_values, 1)
+            p99 = np.percentile(q_values, 99)
 
             # Create shaded region
-            ax.axvspan(p10, p90, alpha=0.3, color="grey")
+            ax.axvspan(
+                p01,
+                p99,
+                alpha=0.3,
+                color="grey",
+                label="1-99th percentile (Q-hwp)" if i == 0 else None,
+            )
 
         # U histogram
         # Calculate histogram and bin centers for U values
@@ -129,7 +135,7 @@ for k in eta_maps:
 
         # Plot histogram using stairs
         ax.stairs(u_hist, u_bins, label=f"U {k}" if i == 0 else None)
-fhist.legend(loc="outside upper center", ncols=4)
+fhist.legend(loc="outside upper center", ncols=5)
 for i, ax in enumerate(axsh.flat):
     ax.axvline(eta_rel[np.argmin(np.abs(scatters - SCATTERS[i]))], color="k", ls="--")
     ax.set_yscale("log")
@@ -185,6 +191,7 @@ for k_hwp in ["hwp", "no_hwp"]:
     x = scatters
     ax.plot(x, eta_rel, "k", label="true expectation")
     ax.scatter(x_m, eta_m - 1, s=128, marker="x", c="r", label="empirical expectation")
+    # ax.scatter(x_m, 2 * (eta_m - 1), s=128, marker="x", c="g", label="2x empirical expectation")
 
     # # interpolate measured percentiles in log space
     # y_10 = jnp.interp(jnp.log(x), jnp.log(x_m), jnp.log(jnp.array([_p[0] for _p in p_qq])))
@@ -203,14 +210,33 @@ for k_hwp in ["hwp", "no_hwp"]:
     # ax.scatter(x_m, means_uu, marker=4, color="r", label="UU average")
 
     # 10-90 percentiles as error bars
-    err_q = np.abs([[pq[0], pq[1]] for pq in data["pct_q"]]).T
-    err_u = np.abs([[pu[0], pu[1]] for pu in data["pct_u"]]).T
+    q_01_99 = np.array([[pq[2], pq[3]] for pq in data["pct_q"]]).T
+    u_01_99 = np.array([[pu[2], pu[3]] for pu in data["pct_u"]]).T
 
-    # err_q = data['std_q']
-    # err_u = data['std_u']
+    # err_q = np.zeros((2, 4))
+    # err_u = np.zeros((2, 4))
+    # for i in range(len(SCATTERS)):
+    #     err_q[:, i] = np.nanpercentile(eta_maps[k_hwp][i]["qq"] - 1, [10, 90])
+    #     err_u[:, i] = np.nanpercentile(eta_maps[k_hwp][i]["uu"] - 1, [10, 90])
 
-    ax.errorbar(x_m, data["avg_q"], yerr=err_q, ls="", marker=5, capsize=3, label="Q pixels")
-    ax.errorbar(x_m, data["avg_u"], yerr=err_u, ls="", marker=4, capsize=3, label="U pixels")
+    ax.errorbar(
+        x_m,
+        data["avg_q"],
+        yerr=np.abs(q_01_99 - data["avg_q"]),
+        ls="",
+        marker=5,
+        capsize=3,
+        label="Q pixels (1-99th percentiles)",
+    )
+    ax.errorbar(
+        x_m,
+        data["avg_u"],
+        yerr=np.abs(u_01_99 - data["avg_u"]),
+        ls="",
+        marker=4,
+        capsize=3,
+        label="U pixels (1-99th percentiles)",
+    )
 
     ax.set_xscale("log")
     ax.set_yscale("asinh", linear_width=1e-4)
