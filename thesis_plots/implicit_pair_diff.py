@@ -150,48 +150,35 @@ for j, (noisy_config, noiseless_config, polar_noiseless_config, label) in enumer
     rms_noiseless_polar = np.nanstd(r_noiseless_polar)
 
     # Plot noisy residuals
-    plot_num = j * 3 + 1  # Modified for 3 columns
-    if label == "HWP":
-        min_val = -5
-        max_val = +5
-    else:
-        min_val = offset_noisy - 2 * rms_noisy
-        max_val = offset_noisy + 2 * rms_noisy
+    plot_num = j * 3 + 1
+    min_val = offset_noisy - 2 * rms_noisy
+    max_val = offset_noisy + 2 * rms_noisy
 
     cartview(
         r_noisy,
-        sub=(2, 3, plot_num),  # Modified for 3 columns
+        sub=(2, 3, plot_num),
         title=f"{label} {stokes} (with atmosphere)",
         min=min_val,
         max=max_val,
     )
 
     # Plot noiseless residuals
-    plot_num = j * 3 + 2  # Modified for 3 columns
-    if label == "HWP":
-        min_val = -2e-5
-        max_val = +2e-5
-    else:
-        # No HWP noiseless
-        min_val = offset_noiseless - 2 * rms_noiseless
-        max_val = offset_noiseless + 2 * rms_noiseless
+    plot_num = j * 3 + 2
+    min_val = offset_noiseless - 2 * rms_noiseless
+    max_val = offset_noiseless + 2 * rms_noiseless
 
     cartview(
         r_noiseless,
-        sub=(2, 3, plot_num),  # Modified for 3 columns
+        sub=(2, 3, plot_num),
         title=f"{label} {stokes} (noiseless)",
         min=min_val,
         max=max_val,
     )
 
     # Plot noiseless polar residuals
-    plot_num = j * 3 + 3  # Third column
-    if label == "HWP":
-        min_val = -1e-7
-        max_val = +1e-7
-    else:
-        min_val = offset_noiseless_polar - 2 * rms_noiseless_polar
-        max_val = offset_noiseless_polar + 2 * rms_noiseless_polar
+    plot_num = j * 3 + 3
+    min_val = offset_noiseless_polar - 2 * rms_noiseless_polar
+    max_val = offset_noiseless_polar + 2 * rms_noiseless_polar
 
     cartview(
         r_noiseless_polar,
