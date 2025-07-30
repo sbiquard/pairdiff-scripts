@@ -12,3 +12,5 @@ __marimo__
 thesis_plots/*.png
 thesis_plots/*.svg
 thesis_plots/*.csv
+*.fits
+
