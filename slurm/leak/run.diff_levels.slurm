@@ -29,7 +29,7 @@ echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
 
-outdir=$SCRATCH/pairdiff_runs/leak/diff_levels
+outdir=$SCRATCH/pairdiff_runs/leak/incl_turnarounds/diff_levels
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -39,6 +39,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    $(< no_flags.par) \
     --variable_model.white \
     --variable_model.scatter 0.01 \
     --mappraiser.lagmax 1 \
@@ -53,6 +54,7 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    $(< no_flags.par) \
     --variable_model.white \
     --variable_model.scatter 0.01 \
     --mappraiser.lagmax 1 \
@@ -63,7 +65,7 @@ srun ./so_mappraiser.py \
     >$logfile 2>&1
 
 
-outdir=$SCRATCH/pairdiff_runs/leak/diff_levels_no_hwp
+outdir=$SCRATCH/pairdiff_runs/leak/incl_turnarounds/diff_levels_no_hwp
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -74,6 +76,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     $(< no_hwp.par) \
+    $(< no_flags.par) \
     --variable_model.white \
     --variable_model.scatter 0.01 \
     --mappraiser.lagmax 1 \
@@ -89,6 +92,7 @@ srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
     $(< no_hwp.par) \
+    $(< no_flags.par) \
     --variable_model.white \
     --variable_model.scatter 0.01 \
     --mappraiser.lagmax 1 \

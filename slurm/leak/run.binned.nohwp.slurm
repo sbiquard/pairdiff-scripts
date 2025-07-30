@@ -1,0 +1,66 @@
+#!/bin/bash
+#SBATCH --job-name=leak-atm-binned-nohwp
+#SBATCH --account=nih@cpu
+#SBATCH --qos=qos_cpu-dev
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=10
+#SBATCH --cpus-per-task=4
+#SBATCH --hint=nomultithread
+#SBATCH --time=00:10:00
+
+# go to submission directory
+cd ${SLURM_SUBMIT_DIR}
+
+# OpenMP threads
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+# OpenMP binding
+export OMP_PLACES=cores
+
+let nnode=$SLURM_JOB_NUM_NODES
+let ntask_node=$SLURM_NTASKS_PER_NODE
+let ntask=nnode*ntask_node
+
+# print some meta information
+date
+echo "Running with"
+echo "            nnode = ${nnode}"
+echo "  OMP_NUM_THREADS = ${OMP_NUM_THREADS}"
+echo "       ntask_node = ${ntask_node}"
+echo "            ntask = ${ntask}"
+
+schedule="schedules/schedule.small.txt"
+
+outdir=$SCRATCH/pairdiff_runs/validation/incl/binned-nohwp
+mkdir -p $outdir
+
+# ML run
+logfile=$outdir/run.log
+echo "Writing $logfile"
+srun ./so_mappraiser.py \
+    $(< sat.par) \
+    $(< atm.par) \
+    $(< no_hwp.par) \
+    $(< no_flags.par) \
+    --sim_noise.disable \
+    --mappraiser.binned \
+    --schedule $schedule \
+    --out $outdir \
+    >$logfile 2>&1
+
+outdir=$SCRATCH/pairdiff_runs/validation/excl/binned-nohwp
+mkdir -p $outdir
+
+# ML run
+logfile=$outdir/run.log
+echo "Writing $logfile"
+srun ./so_mappraiser.py \
+    $(< sat.par) \
+    $(< atm.par) \
+    $(< no_hwp.par) \
+    --sim_noise.disable \
+    --mappraiser.binned \
+    --schedule $schedule \
+    --out $outdir \
+    >$logfile 2>&1
+
+echo "$(date) : Done!"

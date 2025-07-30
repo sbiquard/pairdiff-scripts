@@ -30,9 +30,42 @@ echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
 
-outdir=$SCRATCH/pairdiff_runs/leak/binned
+outdir=$SCRATCH/pairdiff_runs/validation/incl/binned-marg
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
+
+# ML run
+logfile=$outdir/ml/run.log
+echo "Writing $logfile"
+srun ./so_mappraiser.py \
+    $(< sat.par) \
+    $(< atm.par) \
+    $(< no_flags.par) \
+    --sim_noise.disable \
+    --mappraiser.binned \
+    --mappraiser.gap_strategy 1 \
+    --schedule $schedule \
+    --out $outdir/ml \
+    >$logfile 2>&1
+
+# PD run
+logfile=$outdir/pd/run.log
+echo "Writing $logfile"
+srun ./so_mappraiser.py \
+    $(< sat.par) \
+    $(< atm.par) \
+    $(< no_flags.par) \
+    --sim_noise.disable \
+    --mappraiser.binned \
+    --mappraiser.gap_strategy 1 \
+    --schedule $schedule \
+    --mappraiser.pair_diff \
+    --out $outdir/pd \
+    >$logfile 2>&1
+
+outdir=$SCRATCH/pairdiff_runs/validation/excl/binned-gap-zero
+mkdir -p $outdir/ml
+# mkdir -p $outdir/pd
 
 # ML run
 logfile=$outdir/ml/run.log
@@ -45,49 +78,20 @@ srun ./so_mappraiser.py \
     --schedule $schedule \
     --out $outdir/ml \
     >$logfile 2>&1
+    # --mappraiser.gap_strategy 1 \
 
-# PD run
-logfile=$outdir/pd/run.log
-echo "Writing $logfile"
-srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
-    --sim_noise.disable \
-    --mappraiser.binned \
-    --schedule $schedule \
-    --mappraiser.pair_diff \
-    --out $outdir/pd \
-    >$logfile 2>&1
-
-outdir=$SCRATCH/pairdiff_runs/leak/binned_no_hwp
-mkdir -p $outdir/ml
-mkdir -p $outdir/pd
-
-# ML run
-logfile=$outdir/ml/run.log
-echo "Writing $logfile"
-srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
-    $(< no_hwp.par) \
-    --sim_noise.disable \
-    --mappraiser.binned \
-    --schedule $schedule \
-    --out $outdir/ml \
-    >$logfile 2>&1
-
-# PD run
-logfile=$outdir/pd/run.log
-echo "Writing $logfile"
-srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
-    $(< no_hwp.par) \
-    --sim_noise.disable \
-    --mappraiser.binned \
-    --schedule $schedule \
-    --mappraiser.pair_diff \
-    --out $outdir/pd \
-    >$logfile 2>&1
+# # PD run
+# logfile=$outdir/pd/run.log
+# echo "Writing $logfile"
+# srun ./so_mappraiser.py \
+#     $(< sat.par) \
+#     $(< atm.par) \
+#     --sim_noise.disable \
+#     --mappraiser.binned \
+#     --mappraiser.gap_strategy 1 \
+#     --schedule $schedule \
+#     --mappraiser.pair_diff \
+#     --out $outdir/pd \
+#     >$logfile 2>&1
 
 echo "$(date) : Done!"

@@ -29,7 +29,7 @@ echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
 
-outdir=$SCRATCH/pairdiff_runs/leak/correlated-single-det
+outdir=$SCRATCH/pairdiff_runs/leak/incl_turnarounds/correlated-single-det
 mkdir -p $outdir
 logfile=$outdir/run.log
 echo "Writing $logfile"
@@ -37,8 +37,10 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    $(< no_flags.par) \
     --single-det \
     --mappraiser.estimate_psd \
+    --mappraiser.psd_regularization 1e-6 \
     --variable_model.disable \
     --sim_noise.disable \
     --schedule $schedule \

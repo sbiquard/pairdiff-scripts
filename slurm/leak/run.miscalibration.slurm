@@ -29,7 +29,7 @@ echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
 
-outdir=$SCRATCH/pairdiff_runs/leak/miscalibration
+outdir=$SCRATCH/pairdiff_runs/leak/incl_turnarounds/miscalibration
 mkdir -p $outdir/ml
 mkdir -p $outdir/pd
 
@@ -39,9 +39,10 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    $(< no_flags.par) \
     --scramble-after \
     --mappraiser.estimate_psd \
-    --mappraiser.maxiter 2000 \
+    --mappraiser.psd_regularization 1e-6 \
     --schedule $schedule \
     --out $outdir/ml \
     >$logfile 2>&1
@@ -52,9 +53,10 @@ echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    $(< no_flags.par) \
     --gainscrambler.enable \
     --mappraiser.estimate_psd \
-    --mappraiser.maxiter 2000 \
+    --mappraiser.psd_regularization 1e-6 \
     --schedule $schedule \
     --mappraiser.pair_diff \
     --out $outdir/pd \

@@ -30,7 +30,7 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 # schedule file
-schedule="schedules/schedule.01.south.txt"
+schedule="schedules/schedule.small.txt"
 
 # output
 outdir=out/atm_cache

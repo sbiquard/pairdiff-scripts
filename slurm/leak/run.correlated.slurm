@@ -5,7 +5,7 @@
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=4
 #SBATCH --hint=nomultithread
-#SBATCH --time=20:00:00
+#SBATCH --time=10:00:00
 
 # go to submission directory
 cd ${SLURM_SUBMIT_DIR}
@@ -28,36 +28,25 @@ echo "       ntask_node = ${ntask_node}"
 echo "            ntask = ${ntask}"
 
 schedule="schedules/schedule.small.txt"
+sky="ffp10_polar_0512.fits"
 
-outdir=$SCRATCH/pairdiff_runs/leak/correlated
-mkdir -p $outdir/ml
-mkdir -p $outdir/pd
+outdir=$SCRATCH/pairdiff_runs/validation/incl/correlated-regularized-noiseless-polar
+mkdir -p $outdir
 
-# ML run
-logfile=$outdir/ml/run.log
+logfile=$outdir/run.log
 echo "Writing $logfile"
 srun ./so_mappraiser.py \
     $(< sat.par) \
     $(< atm.par) \
+    $(< no_flags.par) \
     --mappraiser.estimate_psd \
+    --mappraiser.zero_noise \
+    --mappraiser.psd_regularization 6e-8 \
     --variable_model.disable \
     --sim_noise.disable \
     --schedule $schedule \
-    --out $outdir/ml \
-    >$logfile 2>&1
-
-# PD run
-logfile=$outdir/pd/run.log
-echo "Writing $logfile"
-srun ./so_mappraiser.py \
-    $(< sat.par) \
-    $(< atm.par) \
-    --mappraiser.binned \
-    --variable_model.disable \
-    --sim_noise.disable \
-    --schedule $schedule \
-    --mappraiser.pair_diff \
-    --out $outdir/pd \
+    --out $outdir \
+    --scan_map.file $sky \
     >$logfile 2>&1
 
 echo "$(date) : Done!"
