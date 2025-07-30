@@ -53,12 +53,12 @@ def stack_dict(cl: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
 # ___________________________________________________________________
 # Theory spectra
 
-# theory_cl = get_theory_powers(lmax=LMAX)
-# ls = np.arange(theory_cl["BB"].size)
-# theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
-# lens_BB = get_theory_powers(r=0, lmax=LMAX)["BB"]
-# prim_BB = theory_cl["BB"] - lens_BB
-# prim_BB_dl = cl2dl(ls, prim_BB)
+theory_cl = get_theory_powers(lmax=LMAX)
+ls = np.arange(theory_cl["BB"].size)
+theory_dl = jax.tree.map(lambda x: cl2dl(ls, x), theory_cl)
+lens_BB = get_theory_powers(r=0, lmax=LMAX)["BB"]
+prim_BB = theory_cl["BB"] - lens_BB
+prim_BB_dl = cl2dl(ls, prim_BB)
 
 input_cl = load_spectra(JZ / "input_cells_mask_apo_1000.npz")
 input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", convert_to_dl=True)
@@ -85,14 +85,14 @@ input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", convert_to_dl=True
 # ___________________________________________________________________
 # Synthetic Q/U maps from pure B-mode simulation
 
-# zeros = np.zeros_like(prim_BB)
-# almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
-# mapIQU = hp.alm2map(almTEB, 512, pol=True)
+zeros = np.zeros_like(prim_BB)
+almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
+mapIQU = hp.alm2map(almTEB, 512, pol=True)
 
-# fig = plt.figure(figsize=(10, 5))
-# cartview(mapIQU[1], title="Q", sub=121, fig=fig)
-# cartview(mapIQU[2], title="U", sub=122, fig=fig)
-# fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
+fig = plt.figure(figsize=(10, 5))
+cartview(mapIQU[1], title="Q", sub=121, fig=fig)
+cartview(mapIQU[2], title="U", sub=122, fig=fig)
+fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
 
 
 # ___________________________________________________________________
@@ -141,181 +141,140 @@ epsilon_data = np.stack(
 etas = (1 / (1 - epsilon_data**2)).mean(axis=-1)
 
 
-# def plot_noise_increase(noise_type: str, relative: bool = True):
-#     # Determine sharey based on plot type and noise type
-#     sharey = "row" if not relative and noise_type == "instr" else True
+def plot_noise_increase(noise_type: str, relative: bool = True):
+    # Determine sharey based on plot type and noise type
+    sharey = "row" if not relative and noise_type == "instr" else True
 
-#     # Create subplots with determined parameters
-#     fig, axs = plt.subplots(
-#         2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey=sharey
-#     )
-
-#     # Set titles for rows
-#     axs[0, 0].set_title("EE, HWP on")
-#     axs[0, 1].set_title("BB, HWP on")
-#     axs[1, 0].set_title("EE, HWP off")
-#     axs[1, 1].set_title("BB, HWP off")
-
-#     flare = sns.color_palette("flare", as_cmap=True)
-#     colors = [flare(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
-
-#     # Create empty list to store legend handles
-#     legend_handles = []
-
-#     for row, khwp in enumerate(["hwp", "no_hwp"]):
-#         for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
-#             ax = axs[row, col]
-#             ax.grid(True)
-
-#             if col == 0:  # Only set ylabel on first column
-#                 if relative:
-#                     ax.set_ylabel(r"$N_\ell^\mathsf{pd} / N_\ell^\mathsf{iqu} - 1$")
-#                     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-#                 else:
-#                     ax.set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
-
-#             if row == 1:  # Only set xlabel on bottom row
-#                 ax.set_xlabel(r"Multipole $\ell$")
-
-#             # Plot theory spectra if showing absolute values
-#             if not relative and col == 1:
-#                 line = ax.plot(
-#                     ls[ls > 20],
-#                     prim_BB[ls > 20],
-#                     "k-",
-#                     lw=1.0,
-#                     alpha=0.7,
-#                     label=r"BB prim ($r=0.01$)",
-#                 )[0]
-#                 # avoid duplicate legend entries
-#                 if row == 0:
-#                     legend_handles.append(line)
-
-#             for i, scatter in enumerate(SCATTERS):
-#                 # ells don't change from realization to realization
-#                 ells = noise_cl[noise_type][khwp]["ml"][scatter]["ells"][0]
-#                 iqu = noise_cl[noise_type][khwp]["ml"][scatter]["cl_22"][:, idx]
-#                 pd = noise_cl[noise_type][khwp]["pd"][scatter]["cl_22"][:, idx]
-
-#                 diff = pd - iqu
-#                 if relative:
-#                     diff /= iqu
-
-#                 ymean = diff.mean(axis=0)
-#                 yerr = diff.std(axis=0)
-
-#                 # slightly adjust ells of different scatter values for better visibility
-#                 ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
-#                 errorbar = ax.errorbar(
-#                     ells_sep,
-#                     ymean,
-#                     yerr=yerr,
-#                     fmt=".",
-#                     color=colors[i],
-#                     linewidth=0.5,
-#                     label=f"Scatter {scatter:.1%}",
-#                 )
-
-#                 # Only add to legend for the first subplot to avoid duplicates
-#                 if row == 0 and col == 0:
-#                     legend_handles.append(errorbar)
-
-#                 # Print increase averaged over bins
-#                 if relative:
-#                     line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
-#                     # Only add to legend for the first subplot to avoid duplicates
-#                     if row == 0 and col == 0 and i == 0:
-#                         legend_handles.insert(
-#                             0,
-#                             plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
-#                                 [0],
-#                                 [0],
-#                                 linestyle="--",
-#                                 color="gray",
-#                                 label="empirical expectation",
-#                             ),
-#                         )
-
-#     # Add a figure-level legend at the top
-#     fig.legend(
-#         handles=legend_handles,
-#         labels=[h.get_label() for h in legend_handles],
-#         loc="outside upper center",
-#         ncol=len(legend_handles),  # everything on one line
-#     )
-
-#     # Autoscale axes after adding collections
-#     for ax in axs.flat:
-#         ax.autoscale()
-#         ax.set_xlim(0, LMAX)
-
-#     # Apply specific ylim settings for absolute plots
-#     if not relative:
-#         if noise_type == "white":
-#             axs[0, 0].set_ylim(-1e-7, 1.5e-7)
-#         else:
-#             axs[0, 0].set_ylim(-0.2e-7, 2.5e-7)
-#             axs[1, 0].set_ylim(-1.2e-6, 7e-6)
-
-#     # Save the figure
-#     plot_type = "relative" if relative else "absolute"
-#     fig.savefig(f"var_increase_spectra_{noise_type}_{plot_type}.svg", bbox_inches="tight")
-#     plt.close(fig)
-
-
-# # Plot relative increase with white noise
-# plot_noise_increase("white", relative=True)
-
-# # Plot absolute increase with white noise
-# plot_noise_increase("white", relative=False)
-
-# # Plot relative increase with instrumental noise
-# plot_noise_increase("instr", relative=True)
-
-# # Plot absolute increase with instrumental noise
-# plot_noise_increase("instr", relative=False)
-
-
-# ___________________________________________________________________
-# Average increase across bins
-
-
-def f(noise_type: str, k_hwp: str, spec_type: str, scatter: float):
-    idx = 0 if spec_type == "EE" else 3
-    iqu = noise_cl[noise_type][k_hwp]["ml"][scatter]["cl_22"][:, idx]
-    pd = noise_cl[noise_type][k_hwp]["pd"][scatter]["cl_22"][:, idx]
-    rel_diff = pd / iqu - 1
-    return rel_diff.mean()
-
-
-average_relative_increase = {
-    k_noise: {
-        k_hwp: {
-            spec_type: [f(k_noise, k_hwp, spec_type, scatter) for scatter in SCATTERS]
-            for spec_type in ["EE", "BB"]
-        }
-        for k_hwp in ["hwp", "no_hwp"]
-    }
-    for k_noise in ["white", "instr"]
-}
-
-for k, v in average_relative_increase.items():
-    np.savetxt(
-        f"average_increase_bins_{k}.csv",
-        np.column_stack(
-            [
-                SCATTERS,
-                etas - 1,
-                v["hwp"]["EE"],
-                v["hwp"]["BB"],
-                v["no_hwp"]["EE"],
-                v["no_hwp"]["BB"],
-            ]
-        ),
-        delimiter=",",
-        header="scatter,eta-1,EE hwp,BB hwp,EE no_hwp,BB no_hwp",
-        fmt=["%.3f", "%.2e", "%.2e", "%.2e", "%.2e", "%.2e"],
+    # Create subplots with determined parameters
+    fig, axs = plt.subplots(
+        2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey=sharey
     )
+
+    # Set titles for rows
+    axs[0, 0].set_title("EE, HWP on")
+    axs[0, 1].set_title("BB, HWP on")
+    axs[1, 0].set_title("EE, HWP off")
+    axs[1, 1].set_title("BB, HWP off")
+
+    flare = sns.color_palette("flare", as_cmap=True)
+    colors = [flare(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
+
+    # Create empty list to store legend handles
+    legend_handles = []
+
+    for row, khwp in enumerate(["hwp", "no_hwp"]):
+        for col, idx in enumerate([0, 3]):  # 0 for EE, 3 for BB
+            ax = axs[row, col]
+            ax.grid(True)
+
+            if col == 0:  # Only set ylabel on first column
+                if relative:
+                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} / N_\ell^\mathsf{iqu} - 1$")
+                    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+                else:
+                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
+
+            if row == 1:  # Only set xlabel on bottom row
+                ax.set_xlabel(r"Multipole $\ell$")
+
+            # Plot theory spectra if showing absolute values
+            if not relative and col == 1:
+                line = ax.plot(
+                    ls[ls > 20],
+                    prim_BB[ls > 20],
+                    "k-",
+                    lw=1.0,
+                    alpha=0.7,
+                    label=r"BB prim ($r=0.01$)",
+                )[0]
+                # avoid duplicate legend entries
+                if row == 0:
+                    legend_handles.append(line)
+
+            for i, scatter in enumerate(SCATTERS):
+                # ells don't change from realization to realization
+                ells = noise_cl[noise_type][khwp]["ml"][scatter]["ells"][0]
+                iqu = noise_cl[noise_type][khwp]["ml"][scatter]["cl_22"][:, idx]
+                pd = noise_cl[noise_type][khwp]["pd"][scatter]["cl_22"][:, idx]
+
+                diff = pd - iqu
+                if relative:
+                    diff /= iqu
+
+                ymean = diff.mean(axis=0)
+                yerr = diff.std(axis=0)
+
+                # slightly adjust ells of different scatter values for better visibility
+                ells_sep = ells + (i + 0.5 - len(SCATTERS) / 2) * 2
+                errorbar = ax.errorbar(
+                    ells_sep,
+                    ymean,
+                    yerr=yerr,
+                    fmt=".",
+                    color=colors[i],
+                    linewidth=0.5,
+                    label=f"Scatter {scatter:.1%}",
+                )
+
+                # Only add to legend for the first subplot to avoid duplicates
+                if row == 0 and col == 0:
+                    legend_handles.append(errorbar)
+
+                # Print increase averaged over bins
+                if relative:
+                    line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
+                    # Only add to legend for the first subplot to avoid duplicates
+                    if row == 0 and col == 0 and i == 0:
+                        legend_handles.insert(
+                            0,
+                            plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
+                                [0],
+                                [0],
+                                linestyle="--",
+                                color="gray",
+                                label="empirical expectation",
+                            ),
+                        )
+
+    # Add a figure-level legend at the top
+    fig.legend(
+        handles=legend_handles,
+        labels=[h.get_label() for h in legend_handles],
+        loc="outside upper center",
+        ncol=len(legend_handles),  # everything on one line
+    )
+
+    # Autoscale axes after adding collections
+    for ax in axs.flat:
+        ax.autoscale()
+        ax.set_xlim(0, LMAX)
+
+    # Apply specific ylim settings for absolute plots
+    if not relative:
+        if noise_type == "white":
+            axs[0, 0].set_ylim(-1e-7, 1.5e-7)
+        else:
+            axs[0, 0].set_ylim(-0.2e-7, 2.5e-7)
+            axs[1, 0].set_ylim(-1.2e-6, 7e-6)
+
+    # Save the figure
+    plot_type = "relative" if relative else "absolute"
+    fig.savefig(f"var_increase_spectra_{noise_type}_{plot_type}.svg", bbox_inches="tight")
+    plt.close(fig)
+
+
+# Plot relative increase with white noise
+plot_noise_increase("white", relative=True)
+
+# Plot absolute increase with white noise
+plot_noise_increase("white", relative=False)
+
+# Plot relative increase with instrumental noise
+plot_noise_increase("instr", relative=True)
+
+# Plot absolute increase with instrumental noise
+plot_noise_increase("instr", relative=False)
+
 
 # ___________________________________________________________________
 # Inspect low-ell bins in no HWP case and scatter of 1%
@@ -408,8 +367,7 @@ for i, (diff_data, iqu_data, title) in enumerate(
     ]
 ):
     stats_text = (
-        f"Mean diff: {diff_data.mean():.5e}\n"
-        f"Std diff: {diff_data.std():.5e}\n"
+        f"Mean diff: {diff_data.mean():.5e}\nStd diff: {diff_data.std():.5e}\n"
         # f"Relative diff: {(diff_data.mean() / iqu_data.mean()):.2%}"
     )
     axs[i].text(
@@ -423,7 +381,6 @@ for i, (diff_data, iqu_data, title) in enumerate(
 
 fig.savefig("noise_difference_first_bin_no_hwp_1pct.svg", bbox_inches="tight", dpi=150)
 plt.close(fig)
-exit()
 
 # ___________________________________________________________________
 # Increased uncertainty on r ?
