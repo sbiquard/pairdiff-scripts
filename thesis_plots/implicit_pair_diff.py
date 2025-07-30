@@ -12,14 +12,20 @@ sns.set_theme(context="notebook", style="ticks")
 
 
 JZ_VALIDATION = Path("../jz_validation")
+
+# implicit pair diff plot
 BINNED_HWP = JZ_VALIDATION / "incl/binned/ml"
 BINNED_NO_HWP = JZ_VALIDATION / "incl/binned-nohwp"
 HWP = JZ_VALIDATION / "incl/correlated"
 NO_HWP = JZ_VALIDATION / "incl/correlated-nohwp"
-HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-noiseless"
-NO_HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-nohwp-noiseless"
-HWP_NOISELESS_POLAR = JZ_VALIDATION / "incl/correlated-noiseless-polar"
-NO_HWP_NOISELESS_POLAR = JZ_VALIDATION / "incl/correlated-nohwp-noiseless-polar"
+
+# noiseless plots
+HWP_REGUL = JZ_VALIDATION / "incl/correlated-regularized"
+NO_HWP_REGUL = JZ_VALIDATION / "incl/correlated-regularized-nohwp"
+HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-regularized-noiseless"
+NO_HWP_NOISELESS = JZ_VALIDATION / "incl/correlated-regularized-nohwp-noiseless"
+HWP_NOISELESS_POLAR = JZ_VALIDATION / "incl/correlated-regularized-noiseless-polar"
+NO_HWP_NOISELESS_POLAR = JZ_VALIDATION / "incl/correlated-regularized-nohwp-noiseless-polar"
 
 SKY = 1e6 * hp.read_map(
     Path("..") / "ffp10_lensed_scl_100_nside0512.fits",
@@ -43,8 +49,10 @@ def read_maps(path):
 # Define data sources
 data_sources = {
     "hwp": HWP,
+    "hwp_regul": HWP_REGUL,
     "hwp_noiseless": HWP_NOISELESS,
     "no_hwp": NO_HWP,
+    "no_hwp_regul": NO_HWP_REGUL,
     "no_hwp_noiseless": NO_HWP_NOISELESS,
     "binned_hwp": BINNED_HWP,
     "binned_no_hwp": BINNED_NO_HWP,
@@ -119,8 +127,8 @@ fig = plt.figure(figsize=(10, 5))  # Wider to accommodate third column
 
 # Compare noiseless vs non-noiseless runs for both HWP and no HWP configurations
 configurations = [
-    ("hwp", "hwp_noiseless", "hwp_noiseless_polar", "HWP"),
-    ("no_hwp", "no_hwp_noiseless", "no_hwp_noiseless_polar", "No HWP"),
+    ("hwp_regul", "hwp_noiseless", "hwp_noiseless_polar", "HWP"),
+    ("no_hwp_regul", "no_hwp_noiseless", "no_hwp_noiseless_polar", "No HWP"),
 ]
 
 stokes = "Q"  # Only compare Q as requested
@@ -193,4 +201,4 @@ for j, (noisy_config, noiseless_config, polar_noiseless_config, label) in enumer
         max=max_val,
     )
 
-fig.savefig("noiseless_comparison.svg", dpi=600, bbox_inches="tight")
+fig.savefig("noiseless_regul_comparison.svg", dpi=600, bbox_inches="tight")
