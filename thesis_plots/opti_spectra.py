@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from functools import partial
 from pathlib import Path
 
 import healpy as hp
@@ -10,7 +11,6 @@ import numpy as np
 import seaborn as sns
 
 # import wadler_lindig as wl
-from implicit_pair_diff import cartview
 from theory_spectra import get_theory_powers
 
 sns.set_theme(context="notebook", style="ticks")
@@ -22,6 +22,11 @@ SCATTERS = [0.001, 0.01, 0.1, 0.2]
 NUM_REAL = 25
 HITS = 10_000
 LMIN, LMAX = 30, 500
+
+
+cartview = partial(
+    hp.cartview, unit=r"$\mu K$", xsize=5000, latra=[-70, -10], lonra=[-30, 90], cmap="bwr"
+)
 
 
 def load_npz(path: Path) -> dict[str, np.ndarray]:
@@ -85,14 +90,14 @@ input_dl = load_spectra(JZ / "input_cells_mask_apo_1000.npz", convert_to_dl=True
 # ___________________________________________________________________
 # Synthetic Q/U maps from pure B-mode simulation
 
-zeros = np.zeros_like(prim_BB)
-almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
-mapIQU = hp.alm2map(almTEB, 512, pol=True)
+# zeros = np.zeros_like(prim_BB)
+# almTEB = hp.synalm([zeros, zeros, prim_BB, zeros], new=True)
+# mapIQU = hp.alm2map(almTEB, 512, pol=True)
 
-fig = plt.figure(figsize=(10, 5))
-cartview(mapIQU[1], title="Q", sub=121, fig=fig)
-cartview(mapIQU[2], title="U", sub=122, fig=fig)
-fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
+# fig = plt.figure(figsize=(10, 5))
+# cartview(mapIQU[1], title="Q", sub=121, fig=fig)
+# cartview(mapIQU[2], title="U", sub=122, fig=fig)
+# fig.savefig("pure_B_r001.svg", dpi=150, bbox_inches="tight")
 
 
 # ___________________________________________________________________
@@ -142,19 +147,23 @@ etas = (1 / (1 - epsilon_data**2)).mean(axis=-1)
 
 
 def plot_noise_increase(noise_type: str, relative: bool = True):
-    # Determine sharey based on plot type and noise type
-    sharey = "row" if not relative and noise_type == "instr" else True
-
     # Create subplots with determined parameters
-    fig, axs = plt.subplots(
-        2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey=sharey
-    )
+    fig, axs = plt.subplots(2, 2, figsize=(12, 10), layout="constrained", sharex=True, sharey="row")
 
     # Set titles for rows
     axs[0, 0].set_title("EE, HWP on")
     axs[0, 1].set_title("BB, HWP on")
     axs[1, 0].set_title("EE, HWP off")
     axs[1, 1].set_title("BB, HWP off")
+
+    if relative and noise_type == "instr":
+        inset_axs = [ax.inset_axes([0.45, 0.4, 0.5, 0.4]) for ax in axs[1, :]]
+        for ax, inset in zip(axs[1, :], inset_axs):
+            # Draw box around the region that's being zoomed
+            ax.indicate_inset_zoom(inset, edgecolor="black")
+            inset.grid(True, alpha=0.5)
+            inset.set_xlim(200, 400)
+            inset.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 
     flare = sns.color_palette("flare", as_cmap=True)
     colors = [flare(i / (len(SCATTERS) - 1)) for i in range(len(SCATTERS))]
@@ -169,7 +178,9 @@ def plot_noise_increase(noise_type: str, relative: bool = True):
 
             if col == 0:  # Only set ylabel on first column
                 if relative:
-                    ax.set_ylabel(r"$N_\ell^\mathsf{pd} / N_\ell^\mathsf{iqu} - 1$")
+                    ax.set_ylabel(
+                        r"$(N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}) / \langle N_\ell^\mathsf{iqu} \rangle$"
+                    )
                     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
                 else:
                     ax.set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
@@ -197,9 +208,15 @@ def plot_noise_increase(noise_type: str, relative: bool = True):
                 iqu = noise_cl[noise_type][khwp]["ml"][scatter]["cl_22"][:, idx]
                 pd = noise_cl[noise_type][khwp]["pd"][scatter]["cl_22"][:, idx]
 
+                # estimate white noise level as average of the last 10% of ell bins
+                white_noise_level = np.mean(iqu[-len(ells) // 10 :])
+                # print(
+                #     f"White noise level for {khwp} {('EE', 'BB')[col]} {scatter:.1%}: {white_noise_level:.5e}"
+                # )
+
                 diff = pd - iqu
                 if relative:
-                    diff /= iqu
+                    diff /= white_noise_level
 
                 ymean = diff.mean(axis=0)
                 yerr = diff.std(axis=0)
@@ -220,21 +237,32 @@ def plot_noise_increase(noise_type: str, relative: bool = True):
                 if row == 0 and col == 0:
                     legend_handles.append(errorbar)
 
+                if row == 1 and relative and noise_type == "instr":
+                    inset = inset_axs[col]
+                    inset.errorbar(
+                        ells_sep[(ells_sep > 200) & (ells_sep < 400)],
+                        ymean[(ells_sep > 200) & (ells_sep < 400)],
+                        yerr=yerr[(ells_sep > 200) & (ells_sep < 400)],
+                        fmt=".",
+                        color=colors[i],
+                        linewidth=0.5,
+                    )
+
                 # Print increase averaged over bins
-                if relative:
-                    line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
-                    # Only add to legend for the first subplot to avoid duplicates
-                    if row == 0 and col == 0 and i == 0:
-                        legend_handles.insert(
-                            0,
-                            plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
-                                [0],
-                                [0],
-                                linestyle="--",
-                                color="gray",
-                                label="empirical expectation",
-                            ),
-                        )
+                # if relative:
+                #     line = ax.axhline(etas[i] - 1, color=colors[i], alpha=0.7, linestyle="--")
+                #     # Only add to legend for the first subplot to avoid duplicates
+                #     if row == 0 and col == 0 and i == 0:
+                #         legend_handles.insert(
+                #             0,
+                #             plt.Line2D(  # pyright: ignore[reportPrivateImportUsage]
+                #                 [0],
+                #                 [0],
+                #                 linestyle="--",
+                #                 color="gray",
+                #                 label="empirical expectation",
+                #             ),
+                #         )
 
     # Add a figure-level legend at the top
     fig.legend(
@@ -264,16 +292,16 @@ def plot_noise_increase(noise_type: str, relative: bool = True):
 
 
 # Plot relative increase with white noise
-plot_noise_increase("white", relative=True)
+# plot_noise_increase("white", relative=True)
 
 # Plot absolute increase with white noise
-plot_noise_increase("white", relative=False)
+# plot_noise_increase("white", relative=False)
 
 # Plot relative increase with instrumental noise
 plot_noise_increase("instr", relative=True)
 
 # Plot absolute increase with instrumental noise
-plot_noise_increase("instr", relative=False)
+# plot_noise_increase("instr", relative=False)
 
 
 # ___________________________________________________________________
@@ -289,9 +317,12 @@ pd_ee = noise_cl["instr"][khwp]["pd"][0.01]["cl_22"][:, 0]  # EE
 iqu_bb = noise_cl["instr"][khwp]["ml"][0.01]["cl_22"][:, 3]  # BB
 pd_bb = noise_cl["instr"][khwp]["pd"][0.01]["cl_22"][:, 3]  # BB
 
-# Calculate differences (PD - IQU)
-diff_ee = pd_ee - iqu_ee
-diff_bb = pd_bb - iqu_bb
+white_noise_level_ee = np.mean(iqu_ee[-len(ells) // 10 :])
+white_noise_level_bb = np.mean(iqu_bb[-len(ells) // 10 :])
+
+# Calculate differences (PD - IQU) with respect to white noise level
+diff_ee = (pd_ee - iqu_ee) / white_noise_level_ee
+diff_bb = (pd_bb - iqu_bb) / white_noise_level_bb
 
 # Create figure with 2 subplots for the differences in the first ell bin
 fig, axs = plt.subplots(1, 2, figsize=(12, 5), layout="constrained", sharex=True, sharey=True)
@@ -311,21 +342,20 @@ diff_ee_mean = diff_ee_first_bin.mean()
 diff_ee_std = diff_ee_first_bin.std()
 
 x_range = np.array([-1, len(diff_ee_first_bin)])
-axs[0].axhline(
-    diff_ee_mean, color="purple", linestyle="dashed", linewidth=2, label="Mean difference"
-)
+axs[0].axhline(diff_ee_mean, color="purple", linestyle="dashed", linewidth=2, label="Mean")
 axs[0].axhline(0, color="black", linestyle="solid", linewidth=1, alpha=0.5, label="Zero line")
 axs[0].fill_between(
     x_range,
-    [diff_ee_mean - diff_ee_std] * 2,
-    [diff_ee_mean + diff_ee_std] * 2,
+    [diff_ee_mean - diff_ee_std],
+    [diff_ee_mean + diff_ee_std],
     color="purple",
     alpha=0.2,
     label="±1σ",
 )
 
 axs[0].set_xlabel("Realization index")
-axs[0].set_ylabel(r"$N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}$ [$\mu K^2$]")
+axs[0].set_ylabel(r"$(N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}) / \langle N_\ell^\mathsf{iqu} \rangle$")
+axs[0].yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 axs[0].set_xlim(-1, len(diff_ee_first_bin))
 axs[0].grid(True)
 
@@ -338,14 +368,12 @@ for i in range(len(diff_bb_first_bin)):
 diff_bb_mean = diff_bb_first_bin.mean()
 diff_bb_std = diff_bb_first_bin.std()
 
-axs[1].axhline(
-    diff_bb_mean, color="purple", linestyle="dashed", linewidth=2, label="Mean difference"
-)
+axs[1].axhline(diff_bb_mean, color="purple", linestyle="dashed", linewidth=2, label="Mean")
 axs[1].axhline(0, color="black", linestyle="solid", linewidth=1, alpha=0.5, label="Zero line")
 axs[1].fill_between(
     x_range,
-    [diff_bb_mean - diff_bb_std] * 2,
-    [diff_bb_mean + diff_bb_std] * 2,
+    [diff_bb_mean - diff_bb_std],
+    [diff_bb_mean + diff_bb_std],
     color="purple",
     alpha=0.2,
     label="±1σ",
@@ -367,7 +395,7 @@ for i, (diff_data, iqu_data, title) in enumerate(
     ]
 ):
     stats_text = (
-        f"Mean diff: {diff_data.mean():.5e}\nStd diff: {diff_data.std():.5e}\n"
+        f"Mean: {diff_data.mean():.2%}\nStddev: {diff_data.std():.2%}\n"
         # f"Relative diff: {(diff_data.mean() / iqu_data.mean()):.2%}"
     )
     axs[i].text(
