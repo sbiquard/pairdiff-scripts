@@ -9,6 +9,10 @@
     median_weather = true # Use median weather parameters instead of sampling from the distributions
     session_split_key = "tube_slot" # Focalplane key for splitting into observations
 
+[operators.corotate_lat]
+    class = "sotodlib.toast.ops.corotator.CoRotator"
+    enabled = false
+
 [operators.default_model]
     class = "toast.ops.noise_model.DefaultNoiseModel"
     enabled = false # If True, this class instance is marked as enabled
@@ -53,7 +57,7 @@
 [operators.scan_map]
     class = "toast.ops.scan_healpix.ScanHealpixMap"
     enabled = true # If True, this class instance is marked as enabled
-    file = "/lustre/fswork/projects/rech/nih/usl22vm/repos/pairdiff-scripts/ffp10_lensed_scl_100_nside0512.fits" # Path to healpix FITS file.  Use ';' if providing multiple files
+    file = "ffp10_lensed_scl_100_nside0512.fits" # Path to healpix FITS file.  Use ';' if providing multiple files
 
 [operators.sim_noise]
     class = "toast.ops.sim_tod_noise.SimNoise"

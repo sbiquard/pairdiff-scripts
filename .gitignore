@@ -1,6 +1,5 @@
-*out/
-*atm_cache
-*atm_cache_coarse
+out*
+atm_cache*
 notebooks/
 *.ipynb
 .ipynb_checkpoints
@@ -13,4 +12,3 @@ thesis_plots/*.png
 thesis_plots/*.svg
 thesis_plots/*.csv
 *.fits
-
