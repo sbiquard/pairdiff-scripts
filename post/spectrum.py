@@ -1,3 +1,4 @@
+import numpy as np
 import pymaster as nmt
 from timer import function_timer
 
@@ -6,9 +7,10 @@ NPIX = 12 * NSIDE * NSIDE
 
 
 @function_timer(thread="get_mask_apo")
-def get_mask_apo(hits_map, min_hits: int, aposize: float):
+def get_mask_apo(hits_map, hits_frac: float, aposize: float):
     # Define the mask by cutting above a hit threshold
-    mask = hits_map > min_hits
+    thresh = hits_frac * np.max(hits_map)
+    mask = hits_map > thresh
 
     # Apodize the mask
     return nmt.mask_apodization(mask, aposize, apotype="C1")

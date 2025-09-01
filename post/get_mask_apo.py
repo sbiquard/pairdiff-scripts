@@ -16,11 +16,11 @@ def main():
     )
     parser.add_argument("location", type=Path, help="where to find the hit map")
     parser.add_argument(
-        "--min-hits",
-        dest="min_hits",
-        default=1_000,
-        type=int,
-        help="hit count threshold",
+        "--hits-fraction",
+        dest="hits_frac",
+        default=0.1,
+        type=float,
+        help="maximum hits fraction threshold",
     )
     parser.add_argument(
         "--aposize",
@@ -42,8 +42,8 @@ def main():
     hits, _ = utils.read_hits_cond(args.location)
 
     # Cut under a minimum hit count and apodize
-    print(f"Compute mask with hits > {args.min_hits:_} apodized over {args.aposize} degrees")
-    mask = spectrum.get_mask_apo(hits, args.min_hits, args.aposize)
+    print(f"Compute mask with hits/hits_max > {args.hits_frac:%} apodized over {args.aposize} degrees")
+    mask = spectrum.get_mask_apo(hits, args.hits_frac, args.aposize)
 
     # Save the mask
     maskname = Path("out") / args.filename
@@ -54,7 +54,7 @@ def main():
     # Plot the mask
     fname_plot = maskname.with_suffix(".png")
     print(f"Save mask plot under '{fname_plot}'")
-    hp.projview(mask, title=f"Apodized mask (minhits={args.min_hits}, aposize={args.aposize})")
+    hp.projview(mask, title=f"Apodized mask (hits_frac={args.hits_frac}, aposize={args.aposize})")
     plt.savefig(fname_plot)
 
 

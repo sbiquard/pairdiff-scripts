@@ -34,7 +34,7 @@ def process(run, args):
     sky_in = utils.read_input_sky(name=args.sky)
 
     # define a mask for pixels with less hits than the given percentile
-    thresh = np.percentile(hits[hits > 0], args.hits_percentile)
+    thresh = np.max(hits) * args.hits_frac
     mask = hits < thresh
     for m in maps.values():
         m[mask] = np.nan
@@ -65,7 +65,7 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("-n", "--ncpu", type=int, default=4)
     parser.add_argument("--diff-range-P", type=int)
-    parser.add_argument("--hits-percentile", type=float, default=0)
+    parser.add_argument("--hits-frac", type=float, default=0.1)
     parser.add_argument("--sky", type=str)
     parser.add_argument("-p", "--pattern", type=str, default=None)
     parser.add_argument("-s2", action="store_true")
