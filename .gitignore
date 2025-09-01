@@ -1,4 +1,4 @@
-out*
+*out
 atm_cache*
 notebooks/
 *.ipynb
