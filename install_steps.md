@@ -42,7 +42,13 @@ Load required modules:
 module load cray-fftw cfitsio
 ```
 
-Then as usual:
+Apply patch to avoid problems with lapacke (remove check at the end of `cmake/FindLAPACKE.cmake`):
+```bash
+cd extern/midapack
+git stash apply
+```
+
+Then as usual from the root:
 ```bash
 cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$SOFTDIR -DPYTHON_MAJORMINOR=3.10
 cmake --build build; cmake --install build
