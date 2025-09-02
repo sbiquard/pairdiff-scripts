@@ -44,7 +44,7 @@ module load cray-fftw cfitsio
 
 Then as usual:
 ```bash
-cmake -S . -B build --install-prefix=$SOFTDIR -DPYTHON_MAJORMINOR=3.10
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$SOFTDIR -DPYTHON_MAJORMINOR=3.10
 cmake --build build; cmake --install build
 ```
 ## Jean-Zay
