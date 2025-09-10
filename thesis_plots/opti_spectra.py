@@ -414,14 +414,14 @@ plt.close(fig)
 # Increased uncertainty on r ?
 
 
-def fisher_r0(N_ell, ell_binned, fsky: float, A_lens: float = 1.0):
+def fisher_r0(N_ell, ell_binned, fsky: float, A_lens: float = 1.0, delta_ell: int = 10):
     # Sample prim_BB and lens_BB at ell values in ell_arr
     prim_BB_sampled = 100 * prim_BB[ell_binned]  # originally for r = 0.01
     lens_BB_sampled = lens_BB[ell_binned]
     ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell)
 
     # compute for each realization (so do not sum over axis 0)
-    return (0.5 * fsky * np.sum((2 * ell_binned + 1) * ratio**2, axis=-1)) ** -0.5
+    return (0.5 * fsky * np.sum(delta_ell * (2 * ell_binned + 1) * ratio**2, axis=-1)) ** -0.5
 
 
 # Compute increase in Fisher r0 for each scatter value
