@@ -354,7 +354,9 @@ axs[0].fill_between(
 )
 
 axs[0].set_xlabel("Realization index")
-axs[0].set_ylabel(r"$(N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}) / \langle N_\ell^\mathsf{iqu} \rangle$")
+axs[0].set_ylabel(
+    r"$(N_\ell^\mathsf{pd} - N_\ell^\mathsf{iqu}) / \langle N_\ell^\mathsf{iqu} \rangle$"
+)
 axs[0].yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 axs[0].set_xlim(-1, len(diff_ee_first_bin))
 axs[0].grid(True)
@@ -420,18 +422,16 @@ def fisher_r0(N_ell, ell_binned, fsky: float, A_lens: float = 1.0, delta_ell: in
     lens_BB_sampled = lens_BB[ell_binned]
     ratio = prim_BB_sampled / (A_lens * lens_BB_sampled + N_ell)
 
-    # compute for each realization (so do not sum over axis 0)
-    return (0.5 * fsky * np.sum(delta_ell * (2 * ell_binned + 1) * ratio**2, axis=-1)) ** -0.5
+    return (0.5 * fsky * np.sum(delta_ell * (2 * ell_binned + 1) * ratio**2)) ** -0.5
 
 
-# Compute increase in Fisher r0 for each scatter value
-# wl.pprint(noise_cl["instr"]["hwp"])
+# Compute increase in Fisher r0 for each scatter value using mean noise spectra
 sigma_r0 = {
     khwp: {
         k_ml_pd: np.array(
             [
                 fisher_r0(
-                    noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3],
+                    noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3].mean(axis=0),
                     noise_cl["instr"][khwp]["ml"][scatter]["ells"][0],
                     fsky=0.15,
                 )
@@ -442,38 +442,86 @@ sigma_r0 = {
     }
     for khwp in ["hwp", "no_hwp"]
 }
-# wl.pprint(sigma_r0)
+
 np.savetxt(
     "sigma_r0_avg.csv",
     np.column_stack(
         [
             np.array(SCATTERS) * 100,
-            hwp_ml_avg := sigma_r0["hwp"]["ml"].mean(axis=1),
-            hwp_pd_avg := sigma_r0["hwp"]["pd"].mean(axis=1),
+            hwp_ml_avg := sigma_r0["hwp"]["ml"],
+            hwp_pd_avg := sigma_r0["hwp"]["pd"],
             (hwp_pd_avg / hwp_ml_avg - 1) * 100,
-            no_hwp_ml_avg := sigma_r0["no_hwp"]["ml"].mean(axis=1),
-            no_hwp_pd_avg := sigma_r0["no_hwp"]["pd"].mean(axis=1),
+            no_hwp_ml_avg := sigma_r0["no_hwp"]["ml"],
+            no_hwp_pd_avg := sigma_r0["no_hwp"]["pd"],
             (no_hwp_pd_avg / no_hwp_ml_avg - 1) * 100,
         ]
     ),
     delimiter=",",
     header="Scatter (%),IQU hwp,PD hwp,rel increase HWP (%),IQU no hwp,PD no hwp,rel increase no HWP (%)",
-    fmt=("%.1f", "%.18f", "%.18f", "%.18f", "%.18f", "%.18f", "%.18f"),
+    fmt=("%.1f", "%.3e", "%.3e", "%.3f", "%.3e", "%.3e", "%.3f"),
 )
 
-# Save a second file with standard deviations
+sigma_r0_pm = {
+    khwp: {
+        k_ml_pd: np.array(
+            [
+                fisher_r0(
+                    noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3].mean(axis=0)
+                    + noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3].std(axis=0),
+                    noise_cl["instr"][khwp]["ml"][scatter]["ells"][0],
+                    fsky=0.15,
+                )
+                for scatter in SCATTERS
+            ]
+        )
+        for k_ml_pd in ["ml", "pd"]
+    }
+    for khwp in ["hwp", "no_hwp"]
+}
+
+sigma_r0_mm = {
+    khwp: {
+        k_ml_pd: np.array(
+            [
+                fisher_r0(
+                    noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3].mean(axis=0)
+                    - noise_cl["instr"][khwp][k_ml_pd][scatter]["cl_22"][:, 3].std(axis=0),
+                    noise_cl["instr"][khwp]["ml"][scatter]["ells"][0],
+                    fsky=0.15,
+                )
+                for scatter in SCATTERS
+            ]
+        )
+        for k_ml_pd in ["ml", "pd"]
+    }
+    for khwp in ["hwp", "no_hwp"]
+}
+
+data_pm = np.column_stack(
+    [
+        hwp_ml_pm := sigma_r0_pm["hwp"]["ml"],
+        hwp_pd_pm := sigma_r0_pm["hwp"]["pd"],
+        (hwp_pd_pm / hwp_ml_pm - 1) * 100,
+        no_hwp_ml_pm := sigma_r0_pm["no_hwp"]["ml"],
+        no_hwp_pd_pm := sigma_r0_pm["no_hwp"]["pd"],
+        (no_hwp_pd_pm / no_hwp_ml_pm - 1) * 100,
+    ]
+)
+data_mm = np.column_stack(
+    [
+        hwp_ml_mm := sigma_r0_mm["hwp"]["ml"],
+        hwp_pd_mm := sigma_r0_mm["hwp"]["pd"],
+        (hwp_pd_mm / hwp_ml_mm - 1) * 100,
+        no_hwp_ml_mm := sigma_r0_mm["no_hwp"]["ml"],
+        no_hwp_pd_mm := sigma_r0_mm["no_hwp"]["pd"],
+        (no_hwp_pd_mm / no_hwp_ml_mm - 1) * 100,
+    ]
+)
+
 np.savetxt(
     "sigma_r0_std.csv",
-    np.column_stack(
-        [
-            np.array(SCATTERS) * 100,
-            sigma_r0["hwp"]["ml"].std(axis=1),
-            sigma_r0["hwp"]["pd"].std(axis=1),
-            sigma_r0["no_hwp"]["ml"].std(axis=1),
-            sigma_r0["no_hwp"]["pd"].std(axis=1),
-        ]
-    ),
+    (data_pm - data_mm) / 2,
     delimiter=",",
-    header="Scatter (%),IQU hwp std,PD hwp std,IQU no hwp std,PD no hwp std",
-    fmt=("%.1f", "%.18f", "%.18f", "%.18f", "%.18f"),
+    header="IQU hwp,PD hwp,rel increase HWP (%),IQU no hwp,PD no hwp,rel increase no HWP (%)",
+    fmt=("%.3e", "%.3e", "%.3f", "%.3e", "%.3e", "%.3f"),
 )
