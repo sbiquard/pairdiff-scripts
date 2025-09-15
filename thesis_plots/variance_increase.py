@@ -220,7 +220,7 @@ for k_hwp in ["hwp", "no_hwp"]:
     #     err_u[:, i] = np.nanpercentile(eta_maps[k_hwp][i]["uu"] - 1, [10, 90])
 
     ax.errorbar(
-        x_m,
+        x_m * 0.98,
         data["avg_q"],
         yerr=np.abs(q_01_99 - data["avg_q"]),
         ls="",
@@ -229,7 +229,7 @@ for k_hwp in ["hwp", "no_hwp"]:
         label="Q pixels (1-99th percentiles)",
     )
     ax.errorbar(
-        x_m,
+        x_m * 1.02,
         data["avg_u"],
         yerr=np.abs(u_01_99 - data["avg_u"]),
         ls="",
@@ -240,7 +240,7 @@ for k_hwp in ["hwp", "no_hwp"]:
 
     ax.set_xscale("log")
     ax.set_yscale("asinh", linear_width=1e-4)
-    ax.set_ylim(-3e-4, 0.25)  # -0.3 to 25 percent
+    ax.set_ylim(-5e-4, 0.25)  # -0.3 to 25 percent
 
     # Apply custom ticks to both axes
     x_tick_locations = np.array([0.1, 1, 10, 20]) / 100  # percents
