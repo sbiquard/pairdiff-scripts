@@ -52,6 +52,7 @@ srun ./so_mappraiser.py \
     $(< no_scatter.par) \
     --gainscrambler.enable \
     --mappraiser.pair_diff \
+    --mappraiser.estimate_psd \
     --mappraiser.estimate_spin_zero \
     --schedule $schedule \
     --out $outdir \
@@ -72,6 +73,7 @@ srun ./so_mappraiser.py \
     $(< no_hwp.par) \
     --gainscrambler.enable \
     --mappraiser.pair_diff \
+    --mappraiser.estimate_psd \
     --mappraiser.estimate_spin_zero \
     --schedule $schedule \
     --out $outdir \

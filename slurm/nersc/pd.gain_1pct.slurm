@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J PD_GAIN1PCT
 #SBATCH -q regular
-#SBATCH -t 00:15:00
+#SBATCH -t 01:00:00
 #SBATCH -N 1
 #SBATCH -n 64
 #SBATCH -c 4
@@ -52,6 +52,7 @@ srun ./so_mappraiser.py \
     $(< no_scatter.par) \
     --gainscrambler.enable \
     --mappraiser.pair_diff \
+    --mappraiser.estimate_psd \
     --schedule $schedule \
     --out $outdir \
     >$logfile 2>&1
@@ -71,6 +72,7 @@ srun ./so_mappraiser.py \
     $(< no_hwp.par) \
     --gainscrambler.enable \
     --mappraiser.pair_diff \
+    --mappraiser.estimate_psd \
     --schedule $schedule \
     --out $outdir \
     >$logfile 2>&1
